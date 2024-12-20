@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type TokenResponse struct {
+type TokenHolder struct {
 	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI8dXNlci1pZD4iLCJuYW1lIjoiPHRva2VuLXR5cGU-IiwiaWF0IjoxNzM0Njk4NzEwfQ.hzvbcP77EO8dnEyy5i-OgoOp8MYYwslfwKx32ZKgrH8"`
 }
 
@@ -17,7 +17,7 @@ type TokenResponse struct {
 // @Accept json
 // @Produce json
 // @Param User body UserBody true "Email address and password of the user"
-// @Success 200 {object} TokenResponse "Login successful"
+// @Success 200 {object} TokenHolder "Login successful"
 // @Failure 400 {object} ErrorResponse "Invalid request body"
 // @Failure 404 {object} ErrorResponse "User not found"
 // @Failure 500 {object} ErrorResponse "Internal server error"
@@ -45,7 +45,7 @@ func Login(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		TokenResponse{
+		TokenHolder{
 			Token: refreshJWT,
 		},
 	)
