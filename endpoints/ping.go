@@ -1,15 +1,8 @@
 package endpoints
 
 import (
-	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel"
 	"net/http"
-)
-
-var (
-	tracer = otel.Tracer("PingTracer")
-	logger = FlowWatch.GetLogHelper()
 )
 
 // Ping is a simple ping-pong endpoint to check if the server is running properly.
