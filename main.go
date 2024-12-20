@@ -65,6 +65,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		{
 			user.POST("/register", endpoints.Register)
 			user.POST("/login", endpoints.Login)
+			user.POST("/start-session", endpoints.StartSession)
 		}
 	}
 }
