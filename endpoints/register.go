@@ -8,7 +8,7 @@ import (
 
 type UserRegisterBody struct {
 	Email    string `json:"email" binding:"required,email" example:"bob.alice@example.com"`
-	Password string `json:"password" binding:"required,password" example:"<safe-password>"`
+	Password string `json:"password" binding:"required" example:"<safe-password>"`
 }
 
 // Register handles the user registration process.
