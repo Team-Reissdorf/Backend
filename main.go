@@ -60,5 +60,10 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 	{
 		v1.GET("/ping", endpoints.Ping)
 		v1.GET("/coffee", endpoints.Teapot)
+
+		user := v1.Group("/user")
+		{
+			user.POST("/register", endpoints.Register)
+		}
 	}
 }
