@@ -1,8 +1,9 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/endpoints/authMiddleware"
+	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -12,37 +13,38 @@ import (
 // @Tags User Management
 // @Accept json
 // @Produce json
-// @Param Refresh-Token body TokenHolder true "Refresh token of the user"
+// @Param Authorization  header  string  true "Refresh JWT"
 // @Success 200 {object} TokenHolder "Session start successful"
-// @Failure 400 {object} ErrorResponse "Invalid request body"
-// @Failure 401 {object} ErrorResponse "Refresh token expired"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
+// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
 // @Router /v1/user/start-session [post]
 func StartSession(c *gin.Context) {
 	ctx, span := tracer.Start(c.Request.Context(), "StartSession")
 	defer span.End()
 
-	// Bind JSON body to struct
-	var body TokenHolder
-	if err := c.ShouldBindJSON(&body); err != nil {
-		err = errors.Wrap(err, "Failed to bind JSON body")
-		logger.Debug(ctx, err)
+	// Get the user id from the context
+	userId, exists := c.Get(authMiddleware.UserIdContextKey)
+	if !exists || userId == nil {
+		logger.Debug(ctx, "User ID not found in the context")
 		c.JSON(
-			http.StatusBadRequest,
-			ErrorResponse{
-				Error: "Invalid request body",
+			http.StatusInternalServerError,
+			standardJsonAnswers.ErrorResponse{
+				Error: "User ID not found in the context",
 			},
 		)
+		c.Abort()
 		return
 	}
 
-	// ToDo: Implement the login process
-	refreshJWT := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI8dXNlci1pZD4iLCJuYW1lIjoiPHRva2VuLXR5cGU-IiwiaWF0IjoxNzM0Njk4NzEwfQ.hzvbcP77EO8dnEyy5i-OgoOp8MYYwslfwKx32ZKgrH8"
+	// ToDo: Validate the refresh token
+
+	// ToDo: Generate the access token
+	accessJWT := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI8dXNlci1pZD4iLCJuYW1lIjoiPHRva2VuLXR5cGU-IiwiaWF0IjoxNzM0Njk4NzEwfQ.hzvbcP77EO8dnEyy5i-OgoOp8MYYwslfwKx32ZKgrH8"
 
 	c.JSON(
 		http.StatusOK,
 		TokenHolder{
-			Token: refreshJWT,
+			Token: accessJWT,
 		},
 	)
 }

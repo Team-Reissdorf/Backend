@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -18,9 +19,9 @@ type TokenHolder struct {
 // @Produce json
 // @Param User body UserBody true "Email address and password of the user"
 // @Success 200 {object} TokenHolder "Login successful"
-// @Failure 400 {object} ErrorResponse "Invalid request body"
-// @Failure 404 {object} ErrorResponse "User not found"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
+// @Failure 404 {object} standardJsonAnswers.ErrorResponse "User not found"
+// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
 // @Router /v1/user/login [post]
 func Login(c *gin.Context) {
 	ctx, span := tracer.Start(c.Request.Context(), "LoginUser")
@@ -33,7 +34,7 @@ func Login(c *gin.Context) {
 		logger.Debug(ctx, err)
 		c.JSON(
 			http.StatusBadRequest,
-			ErrorResponse{
+			standardJsonAnswers.ErrorResponse{
 				Error: "Invalid request body",
 			},
 		)
