@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"

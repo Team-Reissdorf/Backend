@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -10,14 +11,14 @@ import (
 // @Description  Simple ping-pong endpoint to check if the server is running properly.
 // @Tags         HealthCheck
 // @Produce      json
-// @Success 200  {object} SuccessResponse "Pong response"
+// @Success 200  {object} standardJsonAnswers.SuccessResponse "Pong response"
 // @Router       /v1/ping [get]
 func Ping(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "Ping")
 	defer span.End()
 
 	// Create a response
-	response := SuccessResponse{
+	response := standardJsonAnswers.SuccessResponse{
 		Message: "pong",
 	}
 
@@ -31,14 +32,14 @@ func Ping(c *gin.Context) {
 // @Description  Simple endpoint to return a 418 I'm a teapot response.
 // @Tags         HealthCheck
 // @Produce      json
+// @Success      418 {object} standardJsonAnswers.ErrorResponse "Error: I'm a teapot"
 // @Router       /v1/coffee [get]
-// @Success      418 {object} ErrorResponse "Error: I'm a teapot"
 func Teapot(c *gin.Context) {
 	_, span := tracer.Start(c.Request.Context(), "Teapot")
 	defer span.End()
 
 	// Create a response
-	response := ErrorResponse{
+	response := standardJsonAnswers.ErrorResponse{
 		Error: "I'm a teapot. I brew tea, not coffee. ☕🫖",
 	}
 

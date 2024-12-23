@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -18,10 +19,10 @@ type UserBody struct {
 // @Accept json
 // @Produce json
 // @Param User body UserBody true "Email address and password of the user"
-// @Success 200 {object} SuccessResponse "Registration successful"
-// @Failure 400 {object} ErrorResponse "Invalid request body"
-// @Failure 409 {object} ErrorResponse "User already exists"
-// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Success 200 {object} standardJsonAnswers.SuccessResponse "Registration successful"
+// @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
+// @Failure 409 {object} standardJsonAnswers.ErrorResponse "User already exists"
+// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
 // @Router /v1/user/register [post]
 func Register(c *gin.Context) {
 	ctx, span := tracer.Start(c.Request.Context(), "RegisterUser")
@@ -34,7 +35,7 @@ func Register(c *gin.Context) {
 		logger.Debug(ctx, err)
 		c.JSON(
 			http.StatusBadRequest,
-			ErrorResponse{
+			standardJsonAnswers.ErrorResponse{
 				Error: "Invalid request body",
 			},
 		)
@@ -45,7 +46,7 @@ func Register(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		SuccessResponse{
+		standardJsonAnswers.SuccessResponse{
 			Message: "Registration successful",
 		},
 	)
