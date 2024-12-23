@@ -6,6 +6,7 @@ import (
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/endpoints/authMiddleware"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.opentelemetry.io/otel"
@@ -65,7 +66,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		{
 			user.POST("/register", endpoints.Register)
 			user.POST("/login", endpoints.Login)
-			user.POST("/start-session", endpoints.StartSession)
+			user.POST("/start-session", authMiddleware.GetAuthMiddlewareFor(authMiddleware.RefreshToken), endpoints.StartSession)
 		}
 	}
 }
