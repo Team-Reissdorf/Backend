@@ -34,8 +34,11 @@ type CustomClaims struct {
 
 var accessTokenSecretKey []byte
 var refreshTokenSecretKey []byte
+var settingsAccessTokenSecretKey []byte
+
 var accessTokenDurationMinutes time.Duration
 var refreshTokenDurationDays time.Duration
+var settingsAccessTokenDurationMinutes time.Duration
 
 // init initializes the environment variables and the secret key for the HMAC algorithm
 func init() {
@@ -60,6 +63,13 @@ func init() {
 		logger.Fatal(ctx, err)
 	}
 
+	// Get the secret key for the HMAC algorithm for the settings access token
+	settingsAccessTokenSecretKey = []byte(os.Getenv("SETTINGS_ACCESS_JWT_SECRET_KEY"))
+	if len(settingsAccessTokenSecretKey) <= 12 {
+		err := errors.New("SETTINGS_ACCESS_JWT_SECRET_KEY not set or too short (should be at least 12 characters)")
+		logger.Fatal(ctx, err)
+	}
+
 	// Get the access token duration in minutes
 	accessTokenDurationMinutesInt, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_DURATION_MINUTES"))
 	if err != nil {
@@ -77,6 +87,15 @@ func init() {
 		refreshTokenDurationDaysInt = 30
 	}
 	refreshTokenDurationDays = time.Duration(refreshTokenDurationDaysInt) * 24 * time.Hour
+
+	// Get the settings access token duration in minutes
+	settingsAccessTokenDurationMinutesInt, err := strconv.Atoi(os.Getenv("SETTINGS_ACCESS_TOKEN_DURATION_MINUTES"))
+	if err != nil {
+		err = errors.Wrap(err, "Failed to parse SETTINGS_ACCESS_TOKEN_DURATION_MINUTES, using default")
+		logger.Warn(ctx, err)
+		refreshTokenDurationDaysInt = 15
+	}
+	settingsAccessTokenDurationMinutes = time.Duration(settingsAccessTokenDurationMinutesInt) * time.Minute
 }
 
 // GetAuthMiddlewareFor returns the middleware func for the given token type to be used in the gin router
@@ -140,11 +159,14 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 		}
 		// Use the correct duration for the token type
 		var expiredThreshold time.Time
-		if tokenType == AccessToken {
+		switch tokenType {
+		case AccessToken:
 			expiredThreshold = issuedAt.Time.Add(accessTokenDurationMinutes)
-		} else if tokenType == RefreshToken {
+		case RefreshToken:
 			expiredThreshold = issuedAt.Time.Add(refreshTokenDurationDays)
-		} else {
+		case SettingsAccessToken:
+			expiredThreshold = issuedAt.Time.Add(settingsAccessTokenDurationMinutes)
+		default:
 			logger.Error(ctx, "Token type is not implemented yet")
 			c.JSON(http.StatusInternalServerError, standardJsonAnswers.ErrorResponse{Error: "Token type cannot be handled"})
 			c.Abort()

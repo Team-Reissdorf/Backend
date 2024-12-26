@@ -30,6 +30,8 @@ func getSecretKey(token *jwt.Token) (interface{}, error) {
 		return accessTokenSecretKey, nil
 	case string(RefreshToken):
 		return refreshTokenSecretKey, nil
+	case string(SettingsAccessToken):
+		return settingsAccessTokenSecretKey, nil
 	default:
 		return nil, TokenTypeNotSupportedError
 	}
