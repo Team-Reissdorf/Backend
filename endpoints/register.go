@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -41,6 +42,20 @@ func Register(c *gin.Context) {
 		)
 		return
 	}
+
+	hash, err1 := hashingHelper.DefaultHashParams.HashPassword(ctx, body.Password)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to hash password")
+		logger.Error(ctx, err1)
+		c.JSON(
+			http.StatusInternalServerError,
+			standardJsonAnswers.ErrorResponse{
+				Error: "Internal server error",
+			},
+		)
+		return
+	}
+	logger.Debug(ctx, "Hashed password: ", hash) // ToDo: Remove this line
 
 	// ToDo: Implement the registration process
 
