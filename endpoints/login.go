@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -20,6 +21,7 @@ type TokenHolder struct {
 // @Param User body UserBody true "Email address and password of the user"
 // @Success 200 {object} TokenHolder "Login successful"
 // @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
+// @Failure 401 {object} standardJsonAnswers.ErrorResponse "Wrong credentials"
 // @Failure 404 {object} standardJsonAnswers.ErrorResponse "User not found"
 // @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
 // @Router /v1/user/login [post]
@@ -36,6 +38,29 @@ func Login(c *gin.Context) {
 			http.StatusBadRequest,
 			standardJsonAnswers.ErrorResponse{
 				Error: "Invalid request body",
+			},
+		)
+		return
+	}
+
+	hash := "$argon2id$v=19$m=65536,t=2,p=4$PL26GfocVx8cCYyUnYWJei5ihyAqS0snyTwtqdH4YT8$fxZMiVwi9F/1BCEFieYc9QAHiaOZbNxp6AsnIBJm9xY" // ToDo: Get from database
+	verified, err1 := hashingHelper.VerifyHash(ctx, hash, body.Password)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to verify password")
+		logger.Error(ctx, err1)
+		c.JSON(
+			http.StatusInternalServerError,
+			standardJsonAnswers.ErrorResponse{
+				Error: "Internal server error",
+			},
+		)
+		return
+	}
+	if !verified {
+		c.JSON(
+			http.StatusUnauthorized,
+			standardJsonAnswers.ErrorResponse{
+				Error: "Wrong credentials",
 			},
 		)
 		return
