@@ -23,9 +23,8 @@ func StartSession(c *gin.Context) {
 	defer span.End()
 
 	// Get the user id from the context
-	userId, exists := c.Get(authHelper.UserIdContextKey)
-	if !exists || userId == nil {
-		logger.Debug(ctx, "User ID not found in the context")
+	userId := authHelper.GetUserIdFromContext(ctx, c)
+
 		c.JSON(
 			http.StatusInternalServerError,
 			standardJsonAnswers.ErrorResponse{
