@@ -1,4 +1,4 @@
-package authMiddleware
+package authHelper
 
 import (
 	"context"
