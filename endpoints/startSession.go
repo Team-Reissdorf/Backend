@@ -1,7 +1,7 @@
 package endpoints
 
 import (
-	"github.com/Team-Reissdorf/Backend/endpoints/authMiddleware"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -23,7 +23,7 @@ func StartSession(c *gin.Context) {
 	defer span.End()
 
 	// Get the user id from the context
-	userId, exists := c.Get(authMiddleware.UserIdContextKey)
+	userId, exists := c.Get(authHelper.UserIdContextKey)
 	if !exists || userId == nil {
 		logger.Debug(ctx, "User ID not found in the context")
 		c.JSON(

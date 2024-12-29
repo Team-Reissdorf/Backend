@@ -42,7 +42,7 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 			if errors.Is(err1, NoAuthorizationHeaderError) || errors.Is(err1, InvalidAuthorizationHeaderError) || errors.Is(err1, UnexpectedSigningMethodError) || errors.Is(err1, InvalidTokenSignatureError) {
 				c.JSON(http.StatusUnauthorized, err1.Error())
 			} else {
-				c.JSON(http.StatusInternalServerError, "Token is unverifiable at the moment")
+				c.JSON(http.StatusInternalServerError, standardJsonAnswers.ErrorResponse{Error: "Token is unverifiable at the moment"})
 			}
 			c.Abort()
 			return
