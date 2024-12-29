@@ -1,18 +1,13 @@
-package authMiddleware
+package authHelper
 
 import (
-	"context"
 	"fmt"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -26,80 +21,8 @@ var (
 // UserIdContextKey is the key to get the user id from the context
 const UserIdContextKey = "userId"
 
-// CustomClaims is the struct to define the claim structure used by the JWT tokens
-type CustomClaims struct {
-	jwt.RegisteredClaims
-	Name string `json:"name"`
-}
-
-var accessTokenSecretKey []byte
-var refreshTokenSecretKey []byte
-var settingsAccessTokenSecretKey []byte
-
-var accessTokenDurationMinutes time.Duration
-var refreshTokenDurationDays time.Duration
-var settingsAccessTokenDurationMinutes time.Duration
-
-// init initializes the environment variables and the secret key for the HMAC algorithm
-func init() {
-	ctx := context.Background()
-
-	// Load the environment variables
-	if err := godotenv.Load(".env"); err != nil {
-		logger.Fatal(ctx, "Failed to load environment variables")
-	}
-
-	// Get the secret key for the HMAC algorithm for the access token
-	accessTokenSecretKey = []byte(os.Getenv("ACCESS_JWT_SECRET_KEY"))
-	if len(accessTokenSecretKey) <= 12 {
-		err := errors.New("ACCESS_JWT_SECRET_KEY not set or too short (should be at least 12 characters)")
-		logger.Fatal(ctx, err)
-	}
-
-	// Get the secret key for the HMAC algorithm for the refresh token
-	refreshTokenSecretKey = []byte(os.Getenv("REFRESH_JWT_SECRET_KEY"))
-	if len(refreshTokenSecretKey) <= 12 {
-		err := errors.New("REFRESH_JWT_SECRET_KEY not set or too short (should be at least 12 characters)")
-		logger.Fatal(ctx, err)
-	}
-
-	// Get the secret key for the HMAC algorithm for the settings access token
-	settingsAccessTokenSecretKey = []byte(os.Getenv("SETTINGS_ACCESS_JWT_SECRET_KEY"))
-	if len(settingsAccessTokenSecretKey) <= 12 {
-		err := errors.New("SETTINGS_ACCESS_JWT_SECRET_KEY not set or too short (should be at least 12 characters)")
-		logger.Fatal(ctx, err)
-	}
-
-	// Get the access token duration in minutes
-	accessTokenDurationMinutesInt, err := strconv.Atoi(os.Getenv("ACCESS_TOKEN_DURATION_MINUTES"))
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse ACCESS_TOKEN_DURATION_MINUTES, using default")
-		logger.Warn(ctx, err)
-		accessTokenDurationMinutesInt = 15
-	}
-	accessTokenDurationMinutes = time.Duration(accessTokenDurationMinutesInt) * time.Minute
-
-	// Get the refresh token duration in minutes
-	refreshTokenDurationDaysInt, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_DURATION_DAYS"))
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse REFRESH_TOKEN_DURATION_DAYS, using default")
-		logger.Warn(ctx, err)
-		refreshTokenDurationDaysInt = 30
-	}
-	refreshTokenDurationDays = time.Duration(refreshTokenDurationDaysInt) * 24 * time.Hour
-
-	// Get the settings access token duration in minutes
-	settingsAccessTokenDurationMinutesInt, err := strconv.Atoi(os.Getenv("SETTINGS_ACCESS_TOKEN_DURATION_MINUTES"))
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse SETTINGS_ACCESS_TOKEN_DURATION_MINUTES, using default")
-		logger.Warn(ctx, err)
-		refreshTokenDurationDaysInt = 15
-	}
-	settingsAccessTokenDurationMinutes = time.Duration(settingsAccessTokenDurationMinutesInt) * time.Minute
-}
-
 // GetAuthMiddlewareFor returns the middleware func for the given token type to be used in the gin router
-// Usage: <router>.<Method>(<Path>, authMiddleware.GetAuthMiddlewareFor(authMiddleware.<TokenType>), <Endpoint-Handler>)
+// Usage: <router>.<Method>(<Path>, authHelper.GetAuthMiddlewareFor(authHelper.<TokenType>), <Endpoint-Handler>)
 func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 
 	// Parses and validates the JWT from the authorization header,
@@ -119,7 +42,7 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 			if errors.Is(err1, NoAuthorizationHeaderError) || errors.Is(err1, InvalidAuthorizationHeaderError) || errors.Is(err1, UnexpectedSigningMethodError) || errors.Is(err1, InvalidTokenSignatureError) {
 				c.JSON(http.StatusUnauthorized, err1.Error())
 			} else {
-				c.JSON(http.StatusInternalServerError, "Token is unverifiable at the moment")
+				c.JSON(http.StatusInternalServerError, standardJsonAnswers.ErrorResponse{Error: "Token is unverifiable at the moment"})
 			}
 			c.Abort()
 			return

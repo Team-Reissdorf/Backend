@@ -1,4 +1,4 @@
-package authMiddleware
+package authHelper
 
 import (
 	"context"
@@ -25,7 +25,21 @@ func getSecretKey(token *jwt.Token) (interface{}, error) {
 		return nil, InvalidTokenClaimsError
 	}
 
-	switch claims.Name {
+	// Get the secret key of the token type
+	secretKey, err := getSecretKeyByTokenType(ctx, claims.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return secretKey, nil
+}
+
+// getSecretKeyByTokenType returns the secret key for the HMAC algorithm based on the token type
+func getSecretKeyByTokenType(ctx context.Context, tokenType string) ([]byte, error) {
+	ctx, span := tracer.Start(ctx, "GetJWTSecretKeyByType")
+	defer span.End()
+
+	switch tokenType {
 	case string(AccessToken):
 		return accessTokenSecretKey, nil
 	case string(RefreshToken):

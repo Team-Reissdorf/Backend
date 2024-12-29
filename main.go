@@ -5,8 +5,8 @@ import (
 	"github.com/LucaSchmitz2003/FlowServer"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints"
-	"github.com/Team-Reissdorf/Backend/endpoints/authMiddleware"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.opentelemetry.io/otel"
@@ -62,7 +62,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		v1.GET("/ping", endpoints.Ping)
 		v1.GET("/coffee", endpoints.Teapot)
 
-		settings := v1.Group("/settings", authMiddleware.GetAuthMiddlewareFor(authMiddleware.SettingsAccessToken))
+		settings := v1.Group("/settings", authHelper.GetAuthMiddlewareFor(authHelper.SettingsAccessToken))
 		{
 			settings.POST("/change-log-level", endpoints.ChangeLogLevel) // ToDo: Add auth
 		}
@@ -71,7 +71,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		{
 			user.POST("/register", endpoints.Register)
 			user.POST("/login", endpoints.Login)
-			user.POST("/start-session", authMiddleware.GetAuthMiddlewareFor(authMiddleware.RefreshToken), endpoints.StartSession)
+			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), endpoints.StartSession)
 		}
 	}
 }

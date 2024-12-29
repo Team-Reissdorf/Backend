@@ -1,9 +1,10 @@
 package endpoints
 
 import (
-	"github.com/Team-Reissdorf/Backend/endpoints/authMiddleware"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -23,23 +24,21 @@ func StartSession(c *gin.Context) {
 	defer span.End()
 
 	// Get the user id from the context
-	userId, exists := c.Get(authMiddleware.UserIdContextKey)
-	if !exists || userId == nil {
-		logger.Debug(ctx, "User ID not found in the context")
+	userId := authHelper.GetUserIdFromContext(ctx, c)
+
+	// Generate the access token
+	accessJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.AccessToken)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to generate access token")
+		logger.Error(ctx, err2)
 		c.JSON(
 			http.StatusInternalServerError,
 			standardJsonAnswers.ErrorResponse{
-				Error: "User ID not found in the context",
+				Error: "Internal server error",
 			},
 		)
-		c.Abort()
 		return
 	}
-
-	// ToDo: Validate the refresh token
-
-	// ToDo: Generate the access token
-	accessJWT := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI8dXNlci1pZD4iLCJuYW1lIjoiPHRva2VuLXR5cGU-IiwiaWF0IjoxNzM0Njk4NzEwfQ.hzvbcP77EO8dnEyy5i-OgoOp8MYYwslfwKx32ZKgrH8"
 
 	c.JSON(
 		http.StatusOK,
