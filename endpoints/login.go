@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// ToDo: Implement the login process
+	userId := "<user-id>"                                                                                                            // ToDo: Get from database
 	hash := "$argon2id$v=19$m=65536,t=2,p=4$PL26GfocVx8cCYyUnYWJei5ihyAqS0snyTwtqdH4YT8$fxZMiVwi9F/1BCEFieYc9QAHiaOZbNxp6AsnIBJm9xY" // ToDo: Get from database
+
 	verified, err1 := hashingHelper.VerifyHash(ctx, hash, body.Password)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to verify password")
@@ -66,8 +70,18 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// ToDo: Implement the login process
-	refreshJWT := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI8dXNlci1pZD4iLCJuYW1lIjoiPHRva2VuLXR5cGU-IiwiaWF0IjoxNzM0Njk4NzEwfQ.hzvbcP77EO8dnEyy5i-OgoOp8MYYwslfwKx32ZKgrH8"
+	refreshJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.RefreshToken)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to generate refresh token")
+		logger.Error(ctx, err2)
+		c.JSON(
+			http.StatusInternalServerError,
+			standardJsonAnswers.ErrorResponse{
+				Error: "Internal server error",
+			},
+		)
+		return
+	}
 
 	c.JSON(
 		http.StatusOK,
