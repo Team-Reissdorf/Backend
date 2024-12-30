@@ -1,7 +1,7 @@
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
-github.com/LucaSchmitz2003/FlowServer v0.0.2 h1:IH6echZ3cNmVKfuQWBkj+aYtiuvVa2E4eBHdcoNHdcs=
-github.com/LucaSchmitz2003/FlowServer v0.0.2/go.mod h1:9dIFSZFhBoaGgajy+P2xOhmQDnjNT0EPBh4DkNkVpo4=
+github.com/LucaSchmitz2003/FlowServer v0.0.3 h1:vIiRIauNNbB3QP/6DCntA6obbesbf+qbOY/9Pqmxbz0=
+github.com/LucaSchmitz2003/FlowServer v0.0.3/go.mod h1:9dIFSZFhBoaGgajy+P2xOhmQDnjNT0EPBh4DkNkVpo4=
 github.com/LucaSchmitz2003/FlowWatch v0.0.4 h1:QKmgY7kDwSBq4Vb04e0AegES2kicyy1jASX4XpYlDWQ=
 github.com/LucaSchmitz2003/FlowWatch v0.0.4/go.mod h1:KyLHrT6k24/L5w8p+bDNoMRXf6Qx2aoRav4pTC72mQU=
 github.com/bytedance/sonic v1.12.6 h1:/isNmCUF2x3Sh8RAp/4mh4ZGkcFAX/hLrzrK3AvpRzk=
