@@ -18,7 +18,7 @@ type AccessTokenHolder struct {
 // @Tags User Management
 // @Accept json
 // @Produce json
-// @Param Authorization  header  string  true "Refresh JWT"
+// @Param Authorization  header  string  false  "Refresh JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} AccessTokenHolder "Session start successful"
 // @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
 // @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
