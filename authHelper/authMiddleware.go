@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -28,18 +29,38 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 	// Parses and validates the JWT from the authorization header,
 	// then sets the user ID in the request context for the next handler.
 	// Swag-Annotations to use in the endpoint handlers:
-	// @Param Authorization  header  string  true  "<TokenType> JWT"
+	// @Param Authorization  header  string  false  "<TokenType> JWT is sent in the Authorization header or set as a http-only cookie"
 	// @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
 	// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
 	return func(c *gin.Context) {
 		ctx, span := tracer.Start(c.Request.Context(), "AuthMiddleware")
 		defer span.End()
 
-		// Parse the Authorization header
-		authHeader := c.GetHeader("Authorization")
-		token, err1 := parseAuthorizationHeader(ctx, authHeader)
+		// Try to parse the token from the cookie
+		tokenString, err1 := c.Cookie(string(tokenType))
+		if errors.Is(err1, http.ErrNoCookie) || tokenString == "" { // Try to parse the token from the header if the cookie is empty
+			// Parse the authorization header
+			authHeader := c.GetHeader("Authorization")
+
+			// Check if the Authorization header is in the correct format
+			bearer := strings.Split(authHeader, "Bearer ")
+			if len(bearer) < 2 || len(bearer) > 2 || bearer[0] != "" || bearer[1] == "" {
+				err := "Invalid authorization header format"
+				logger.Debug(ctx, err)
+				c.JSON(http.StatusUnauthorized, standardJsonAnswers.ErrorResponse{Error: err})
+				c.Abort()
+				return
+			}
+
+			tokenString = bearer[1]
+			logger.Debug(ctx, "Token is taken from the header")
+		} else {
+			logger.Debug(ctx, "Token is taken from the cookie")
+		}
+
+		token, err1 := parseAuthorizationToken(ctx, tokenString)
 		if err1 != nil {
-			if errors.Is(err1, NoAuthorizationHeaderError) || errors.Is(err1, InvalidAuthorizationHeaderError) || errors.Is(err1, UnexpectedSigningMethodError) || errors.Is(err1, InvalidTokenSignatureError) {
+			if errors.Is(err1, NoAuthorizationTokenError) || errors.Is(err1, UnexpectedSigningMethodError) || errors.Is(err1, InvalidTokenSignatureError) {
 				c.JSON(http.StatusUnauthorized, err1.Error())
 			} else {
 				c.JSON(http.StatusInternalServerError, standardJsonAnswers.ErrorResponse{Error: "Token is unverifiable at the moment"})

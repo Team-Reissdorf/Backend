@@ -5,7 +5,7 @@ SWAG_BIN=$(shell go env GOPATH)/bin/swag
 run: build swag
 	./build/${BINARY_NAME}
 
-build:
+build: clean
 	go build -o ${BUILD_DIR}${BINARY_NAME} main.go
 
 swag: swag-install

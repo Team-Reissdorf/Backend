@@ -19,7 +19,7 @@ type ChangeLogLevelRequest struct {
 // @Tags Settings
 // @Accept json
 // @Produce json
-// @Param Authorization  header  string  true  "Settings access JWT"
+// @Param Authorization  header  string  false  "Settings access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Param Log-level body ChangeLogLevelRequest true "Log level"
 // @Success 200 {object} standardJsonAnswers.SuccessResponse "Log level changed"
 // @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"

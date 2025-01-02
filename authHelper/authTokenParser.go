@@ -5,34 +5,25 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 var (
-	NoAuthorizationHeaderError      = errors.New("No Authorization header provided")
-	InvalidAuthorizationHeaderError = errors.New("Invalid Authorization header format")
-	UnexpectedSigningMethodError    = errors.New("Unexpected signing method")
-	InvalidTokenSignatureError      = errors.New("Invalid token signature")
-	TokenUnverifiableError          = errors.New("Token is unverifiable, likely problems with the keyFunc")
-	TokenProblemError               = errors.New("Token problem occurred")
+	NoAuthorizationTokenError    = errors.New("No Authorization token provided")
+	UnexpectedSigningMethodError = errors.New("Unexpected signing method")
+	InvalidTokenSignatureError   = errors.New("Invalid token signature")
+	TokenUnverifiableError       = errors.New("Token is unverifiable, likely problems with the keyFunc")
+	TokenProblemError            = errors.New("Token problem occurred")
 )
 
-func parseAuthorizationHeader(ctx context.Context, authHeader string) (*jwt.Token, error) {
-	ctx, span := tracer.Start(ctx, "ParseAuthorizationHeader")
+// parseAuthorizationToken parses the Authorization token from the given string (JWT from the Authorization header or cookie)
+func parseAuthorizationToken(ctx context.Context, tokenString string) (*jwt.Token, error) {
+	ctx, span := tracer.Start(ctx, "ParseAuthorizationToken")
 	defer span.End()
 
-	// Check if the Authorization header is provided
-	if authHeader == "" {
-		return nil, NoAuthorizationHeaderError
+	// Check if the Authorization token is provided
+	if tokenString == "" {
+		return nil, NoAuthorizationTokenError
 	}
-
-	// Check if the Authorization header is in the correct format
-	bearer := strings.Split(authHeader, "Bearer ")
-	if len(bearer) < 2 || len(bearer) > 2 || bearer[0] != "" || bearer[1] == "" {
-		logger.Debug(ctx, InvalidAuthorizationHeaderError)
-		return nil, InvalidAuthorizationHeaderError
-	}
-	tokenString := bearer[1]
 
 	// Validate and parse the token
 	token, err1 := jwt.ParseWithClaims(tokenString, &CustomClaims{}, getSecretKey)
