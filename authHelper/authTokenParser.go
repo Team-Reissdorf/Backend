@@ -30,15 +30,18 @@ func parseAuthorizationToken(ctx context.Context, tokenString string) (*jwt.Toke
 	if errors.Is(err1, jwt.ErrTokenSignatureInvalid) || errors.Is(err1, jwt.ErrTokenMalformed) ||
 		errors.Is(err1, InvalidTokenClaimsError) || errors.Is(err1, TokenTypeNotSupportedError) {
 		// jwt.ErrTokenSignatureInvalid: The token algorithm is invalid or the secret key doesn't match
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			err := errors.Wrap(UnexpectedSigningMethodError, fmt.Sprintf("%v", token.Header["alg"]))
-			logger.Debug(ctx, err)
-			return nil, UnexpectedSigningMethodError
-		} else { // Secret key doesn't match or the signature is malformed
-			err1 = errors.Wrap(err1, InvalidTokenSignatureError.Error())
-			logger.Debug(ctx, err1)
-			return nil, InvalidTokenSignatureError
+		if token != nil {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				err := errors.Wrap(UnexpectedSigningMethodError, fmt.Sprintf("%v", token.Header["alg"]))
+				logger.Debug(ctx, err)
+				return nil, UnexpectedSigningMethodError
+			}
 		}
+
+		// Secret key doesn't match or the signature is malformed
+		err1 = errors.Wrap(err1, InvalidTokenSignatureError.Error())
+		logger.Debug(ctx, err1)
+		return nil, InvalidTokenSignatureError
 	} else if errors.Is(err1, jwt.ErrTokenUnverifiable) {
 		err1 = errors.Wrap(err1, TokenUnverifiableError.Error())
 		logger.Error(ctx, err1)
