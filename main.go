@@ -73,5 +73,10 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			user.POST("/login", endpoints.Login)
 			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), endpoints.StartSession)
 		}
+
+		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			athlete.POST("/create", endpoints.CreateAthlete)
+		}
 	}
 }
