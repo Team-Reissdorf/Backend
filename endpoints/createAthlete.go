@@ -104,7 +104,7 @@ func createNewAthletes(ctx context.Context, athletes []database_models.Athlete) 
 	ctx, span := tracer.Start(ctx, "CreateNewAthletes")
 	defer span.End()
 
-	// Check if the an athlete already exists in the database
+	// Check if an athlete already exists in the database
 	var alreadyExistingAthletes []database_models.Athlete
 	var newAthletes []database_models.Athlete
 	for _, athlete := range athletes {
