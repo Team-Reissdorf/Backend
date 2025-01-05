@@ -2,13 +2,12 @@ package endpoints
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/database_models"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
 )
-
-var AthleteAlreadyExistsError = errors.New("Athlete already exists")
 
 type AthleteBody struct {
 	FirstName string `json:"firstName" example:"Bob"`
@@ -56,24 +55,36 @@ func CreateAthlete(c *gin.Context) {
 	// ToDo: Verify that the user has the coach role
 
 	// Create the athlete
-	err1 := createNewAthlete(ctx, body)
-	if errors.Is(err1, AthleteAlreadyExistsError) {
-		logger.Debug(ctx, err1)
-		c.JSON(
-			http.StatusConflict,
-			standardJsonAnswers.ErrorResponse{
-				Error: "Athlete already exists",
-			},
-		)
-		c.Abort()
-		return
-	} else if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to create athlete")
+	athletes := make([]database_models.Athlete, 1)
+	athletes[0] = database_models.Athlete{
+		FirstName: body.FirstName,
+		LastName:  body.LastName,
+		Email:     body.Email,
+		BirthDate: body.BirthDate,
+		Sex:       body.Sex,
+	}
+	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to create the athlete")
 		logger.Error(ctx, err1)
 		c.JSON(
 			http.StatusInternalServerError,
 			standardJsonAnswers.ErrorResponse{
 				Error: "Internal server error",
+			},
+		)
+		c.Abort()
+		return
+	}
+
+	// Check if the athlete already exists
+	if len(alreadyExistingAthletes) > 0 {
+		err := errors.New("Athlete already exists")
+		logger.Debug(ctx, err)
+		c.JSON(
+			http.StatusConflict,
+			standardJsonAnswers.ErrorResponse{
+				Error: err.Error(),
 			},
 		)
 		c.Abort()
@@ -88,13 +99,24 @@ func CreateAthlete(c *gin.Context) {
 	)
 }
 
-func createNewAthlete(ctx context.Context, athlete AthleteBody) error {
-	// ToDo: Check if the email and birthdate combination already exists
-	if true {
-		return AthleteAlreadyExistsError
+// createNewAthletes creates new athletes in the database and returns the athletes that already exist
+func createNewAthletes(ctx context.Context, athletes []database_models.Athlete) (error, []database_models.Athlete) {
+	ctx, span := tracer.Start(ctx, "CreateNewAthletes")
+	defer span.End()
+
+	// Check if the an athlete already exists in the database
+	var alreadyExistingAthletes []database_models.Athlete
+	var newAthletes []database_models.Athlete
+	for _, athlete := range athletes {
+		// ToDo: Check if the email and birthdate combination already exists
+		if true {
+			alreadyExistingAthletes = append(alreadyExistingAthletes, athlete)
+		} else {
+			newAthletes = append(newAthletes, athlete)
+		}
 	}
 
-	// ToDo: Write the athlete to the database
+	// ToDo: Write the new athletes to the database
 
-	return nil
+	return nil, alreadyExistingAthletes
 }
