@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/database_models"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
+	"os"
+	"strconv"
 )
 
 var (
@@ -38,10 +43,12 @@ func init() {
 	}
 
 	// Register the models for the database
-	/*databaseHelper.RegisterModels(
-		ctx,
+	DatabaseFlow.RegisterModels(ctx,
+		database_models.Person{},
+		database_models.Trainer{},
+		database_models.Athlete{},
 	)
-	databaseHelper.GetDB(ctx) // Initialize the database connection*/
+	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
 	// Initialize the OpenTelemetry SDK connection to the backend
 	otelHelper.SetupOtelHelper()
