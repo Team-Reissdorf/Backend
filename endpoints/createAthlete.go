@@ -52,7 +52,28 @@ func CreateAthlete(c *gin.Context) {
 
 	// Get the user id from the context
 	// userId := authHelper.GetUserIdFromContext(ctx, c)
-	// ToDo: Verify that the user has the coach role
+	// ToDo: Verify that the user is a trainer
+
+	// Check formats
+	email := body.Email
+	if err := formatHelper.IsEmail(email); err != nil {
+		err = errors.Wrap(err, "Invalid email address")
+		logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid email address"})
+		c.Abort()
+		return
+	}
+
+	birthDate := body.BirthDate
+	if err := formatHelper.IsDate(birthDate); err != nil {
+		err = errors.Wrap(err, "Invalid date")
+		logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid birth date"})
+		c.Abort()
+		return
+	}
+
+	sex := strings.ToLower(string(body.Sex[0]))
 
 	// Create the athlete
 	athletes := make([]database_models.Athlete, 1)
