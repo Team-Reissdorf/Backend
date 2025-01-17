@@ -2,7 +2,9 @@ BINARY_NAME=backend
 BUILD_DIR=./build/
 SWAG_BIN=$(shell go env GOPATH)/bin/swag
 
-run: build swag
+build_run: build swag start
+
+start:
 	./build/${BINARY_NAME}
 
 build: clean

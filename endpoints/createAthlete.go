@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/Team-Reissdorf/Backend/database_models"
 	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"strings"
 )
 
 type AthleteBody struct {
@@ -25,7 +27,7 @@ type AthleteBody struct {
 // @Produce json
 // @Param Athlete body AthleteBody true "Details of an athlete to create a profile"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 200 {object} standardJsonAnswers.SuccessResponse "Creation successful"
+// @Success 201 {object} standardJsonAnswers.SuccessResponse "Creation successful"
 // @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
 // @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
 // @Failure 409 {object} standardJsonAnswers.ErrorResponse "Athlete already exists"
@@ -52,16 +54,39 @@ func CreateAthlete(c *gin.Context) {
 
 	// Get the user id from the context
 	// userId := authHelper.GetUserIdFromContext(ctx, c)
-	// ToDo: Verify that the user has the coach role
+	// ToDo: Verify that the user is a trainer
+
+	// Check formats
+	email := body.Email
+	if err := formatHelper.IsEmail(email); err != nil {
+		err = errors.Wrap(err, "Invalid email address")
+		logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid email address"})
+		c.Abort()
+		return
+	}
+
+	birthDate := body.BirthDate
+	if err := formatHelper.IsDate(birthDate); err != nil {
+		err = errors.Wrap(err, "Invalid date")
+		logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid birth date"})
+		c.Abort()
+		return
+	}
+
+	sex := strings.ToLower(string(body.Sex[0]))
 
 	// Create the athlete
 	athletes := make([]database_models.Athlete, 1)
 	athletes[0] = database_models.Athlete{
-		FirstName: body.FirstName,
-		LastName:  body.LastName,
-		Email:     body.Email,
-		BirthDate: body.BirthDate,
-		Sex:       body.Sex,
+		Person: database_models.Person{
+			FirstName: body.FirstName,
+			LastName:  body.LastName,
+			Email:     email,
+		},
+		BirthDate: birthDate,
+		Sex:       sex,
 	}
 	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
 	if err1 != nil {
@@ -92,7 +117,7 @@ func CreateAthlete(c *gin.Context) {
 	}
 
 	c.JSON(
-		http.StatusOK,
+		http.StatusCreated,
 		standardJsonAnswers.SuccessResponse{
 			Message: "Creation successful",
 		},
@@ -108,7 +133,7 @@ func createNewAthletes(ctx context.Context, athletes []database_models.Athlete) 
 	var alreadyExistingAthletes []database_models.Athlete
 	var newAthletes []database_models.Athlete
 	for _, athlete := range athletes {
-		// ToDo: Check if the email and birthdate combination already exists
+		// ToDo: Check if the athlete already exists
 		if true {
 			alreadyExistingAthletes = append(alreadyExistingAthletes, athlete)
 		} else {

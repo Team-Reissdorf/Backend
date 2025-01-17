@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/database_models"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
+	"os"
+	"strconv"
 )
 
 var (
@@ -25,11 +30,25 @@ func init() {
 		logger.Fatal(ctx, "Failed to load environment variables")
 	}
 
+	// Get the information if the program should run in production mode
+	productionMode, err1 := strconv.ParseBool(os.Getenv("RELEASE_MODE"))
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to parse RELEASE_MODE, using default")
+		logger.Warn(ctx, err1)
+		productionMode = false
+	}
+	if !productionMode {
+		FlowWatch.SetLogLevel(FlowWatch.Debug)
+		logger.Warn(ctx, "Development mode enabled. Please change before release!")
+	}
+
 	// Register the models for the database
-	/*databaseHelper.RegisterModels(
-		ctx,
+	DatabaseFlow.RegisterModels(ctx,
+		database_models.Person{},
+		database_models.Trainer{},
+		database_models.Athlete{},
 	)
-	databaseHelper.GetDB(ctx) // Initialize the database connection*/
+	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
 	// Initialize the OpenTelemetry SDK connection to the backend
 	otelHelper.SetupOtelHelper()
@@ -77,6 +96,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			athlete.POST("/create", endpoints.CreateAthlete)
+			athlete.POST("/bulk-create", endpoints.CreateAthleteCVS)
 		}
 	}
 }
