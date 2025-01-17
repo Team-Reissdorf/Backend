@@ -25,6 +25,18 @@ func init() {
 		logger.Fatal(ctx, "Failed to load environment variables")
 	}
 
+	// Get the information if the program should run in production mode
+	productionMode, err1 := strconv.ParseBool(os.Getenv("RELEASE_MODE"))
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to parse RELEASE_MODE, using default")
+		logger.Warn(ctx, err1)
+		productionMode = false
+	}
+	if !productionMode {
+		FlowWatch.SetLogLevel(FlowWatch.Debug)
+		logger.Warn(ctx, "Development mode enabled. Please change before release!")
+	}
+
 	// Register the models for the database
 	/*databaseHelper.RegisterModels(
 		ctx,
