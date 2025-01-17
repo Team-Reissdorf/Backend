@@ -57,11 +57,13 @@ func CreateAthlete(c *gin.Context) {
 	// Create the athlete
 	athletes := make([]database_models.Athlete, 1)
 	athletes[0] = database_models.Athlete{
-		FirstName: body.FirstName,
-		LastName:  body.LastName,
-		Email:     body.Email,
-		BirthDate: body.BirthDate,
-		Sex:       body.Sex,
+		Person: database_models.Person{
+			FirstName: body.FirstName,
+			LastName:  body.LastName,
+			Email:     email,
+		},
+		BirthDate: birthDate,
+		Sex:       sex,
 	}
 	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
 	if err1 != nil {
