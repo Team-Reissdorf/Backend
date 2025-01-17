@@ -96,6 +96,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			athlete.POST("/create", endpoints.CreateAthlete)
+			athlete.POST("/bulk-create", endpoints.CreateAthleteCVS)
 		}
 	}
 }
