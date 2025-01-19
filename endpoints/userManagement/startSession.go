@@ -1,8 +1,8 @@
-package endpoints
+package userManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -20,11 +20,11 @@ type AccessTokenHolder struct {
 // @Produce json
 // @Param Authorization  header  string  false  "Refresh JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} AccessTokenHolder "Session start successful"
-// @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
-// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
+// @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
+// @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/user/start-session [post]
 func StartSession(c *gin.Context) {
-	ctx, span := tracer.Start(c.Request.Context(), "StartSession")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "StartSession")
 	defer span.End()
 
 	// Get the user id from the context
@@ -34,10 +34,10 @@ func StartSession(c *gin.Context) {
 	accessJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.AccessToken)
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to generate access token")
-		logger.Error(ctx, err2)
+		endpoints.Logger.Error(ctx, err2)
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)

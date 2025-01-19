@@ -1,7 +1,7 @@
-package endpoints
+package userManagement
 
 import (
-	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -20,23 +20,23 @@ type UserBody struct {
 // @Accept json
 // @Produce json
 // @Param User body UserBody true "Email address and password of the user"
-// @Success 200 {object} standardJsonAnswers.SuccessResponse "Registration successful"
-// @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
-// @Failure 409 {object} standardJsonAnswers.ErrorResponse "User already exists"
-// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
+// @Success 200 {object} endpoints.SuccessResponse "Registration successful"
+// @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
+// @Failure 409 {object} endpoints.ErrorResponse "User already exists"
+// @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/user/register [post]
 func Register(c *gin.Context) {
-	ctx, span := tracer.Start(c.Request.Context(), "RegisterUser")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "RegisterUser")
 	defer span.End()
 
 	// Bind JSON body to struct
 	var body UserBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
-		logger.Debug(ctx, err)
+		endpoints.Logger.Debug(ctx, err)
 		c.JSON(
 			http.StatusBadRequest,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Invalid request body",
 			},
 		)
@@ -46,22 +46,22 @@ func Register(c *gin.Context) {
 	hash, err1 := hashingHelper.DefaultHashParams.HashPassword(ctx, body.Password)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to hash password")
-		logger.Error(ctx, err1)
+		endpoints.Logger.Error(ctx, err1)
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)
 		return
 	}
-	logger.Debug(ctx, "Hashed password: ", hash) // ToDo: Remove this line
+	endpoints.Logger.Debug(ctx, "Hashed password: ", hash) // ToDo: Remove this line
 
 	// ToDo: Implement the registration process
 
 	c.JSON(
 		http.StatusOK,
-		standardJsonAnswers.SuccessResponse{
+		endpoints.SuccessResponse{
 			Message: "Registration successful",
 		},
 	)

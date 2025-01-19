@@ -6,6 +6,6 @@ import (
 )
 
 var (
-	tracer = otel.Tracer("EndpointTracer")
-	logger = FlowWatch.GetLogHelper()
+	Tracer = otel.Tracer("EndpointTracer")
+	Logger = FlowWatch.GetLogHelper()
 )

@@ -7,8 +7,11 @@ import (
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/database_models"
-	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
+	"github.com/Team-Reissdorf/Backend/endpoints/backendSettings"
+	"github.com/Team-Reissdorf/Backend/endpoints/ping"
+	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
@@ -54,9 +57,9 @@ func init() {
 
 	// Register the models for the database
 	DatabaseFlow.RegisterModels(ctx,
-		database_models.Person{},
-		database_models.Trainer{},
-		database_models.Athlete{},
+		databaseModels.Person{},
+		databaseModels.Trainer{},
+		databaseModels.Athlete{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
@@ -93,25 +96,27 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 	// Define the http routes
 	v1 := router.Group("/v1") // Define a versioned route group
 	{
-		v1.GET("/ping", endpoints.Ping)
-		v1.GET("/coffee", endpoints.Teapot)
+		v1.GET("/ping", ping.Ping)
+		v1.GET("/coffee", ping.Teapot)
 
-		settings := v1.Group("/settings", authHelper.GetAuthMiddlewareFor(authHelper.SettingsAccessToken))
+		settings := v1.Group("/backendSettings", authHelper.GetAuthMiddlewareFor(authHelper.SettingsAccessToken))
 		{
-			settings.POST("/change-log-level", endpoints.ChangeLogLevel) // ToDo: Add auth
+			settings.POST("/change-log-level", backendSettings.ChangeLogLevel) // ToDo: Add auth
 		}
 
 		user := v1.Group("/user")
 		{
-			user.POST("/register", endpoints.Register)
-			user.POST("/login", endpoints.Login)
-			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), endpoints.StartSession)
+			user.POST("/register", userManagement.Register)
+			user.POST("/login", userManagement.Login)
+			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), userManagement.StartSession)
 		}
 
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			athlete.POST("/create", endpoints.CreateAthlete)
 			athlete.POST("/bulk-create", endpoints.CreateAthleteCVS)
+			athlete.POST("/create", athleteManagement.CreateAthlete)
+			athlete.POST("/bulk-create", athleteManagement.CreateAthleteCVS)
 		}
 	}
 }

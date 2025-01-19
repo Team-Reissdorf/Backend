@@ -1,9 +1,9 @@
-package endpoints
+package athleteManagement
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/database_models"
-	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -27,24 +27,24 @@ type AthleteBody struct {
 // @Produce json
 // @Param Athlete body AthleteBody true "Details of an athlete to create a profile"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 201 {object} standardJsonAnswers.SuccessResponse "Creation successful"
-// @Failure 400 {object} standardJsonAnswers.ErrorResponse "Invalid request body"
-// @Failure 401 {object} standardJsonAnswers.ErrorResponse "The token is invalid"
-// @Failure 409 {object} standardJsonAnswers.ErrorResponse "Athlete already exists"
-// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
+// @Success 201 {object} endpoints.SuccessResponse "Creation successful"
+// @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
+// @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
+// @Failure 409 {object} endpoints.ErrorResponse "Athlete already exists"
+// @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/create [post]
 func CreateAthlete(c *gin.Context) {
-	ctx, span := tracer.Start(c.Request.Context(), "CreateAthlete")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "CreateAthlete")
 	defer span.End()
 
 	// Bind JSON body to struct
 	var body AthleteBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
-		logger.Debug(ctx, err)
+		endpoints.Logger.Debug(ctx, err)
 		c.JSON(
 			http.StatusBadRequest,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Invalid request body",
 			},
 		)
@@ -60,8 +60,8 @@ func CreateAthlete(c *gin.Context) {
 	email := body.Email
 	if err := formatHelper.IsEmail(email); err != nil {
 		err = errors.Wrap(err, "Invalid email address")
-		logger.Debug(ctx, err)
-		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid email address"})
+		endpoints.Logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address"})
 		c.Abort()
 		return
 	}
@@ -69,8 +69,8 @@ func CreateAthlete(c *gin.Context) {
 	birthDate := body.BirthDate
 	if err := formatHelper.IsDate(birthDate); err != nil {
 		err = errors.Wrap(err, "Invalid date")
-		logger.Debug(ctx, err)
-		c.JSON(http.StatusBadRequest, standardJsonAnswers.ErrorResponse{Error: "Invalid birth date"})
+		endpoints.Logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid birth date"})
 		c.Abort()
 		return
 	}
@@ -78,9 +78,9 @@ func CreateAthlete(c *gin.Context) {
 	sex := strings.ToLower(string(body.Sex[0]))
 
 	// Create the athlete
-	athletes := make([]database_models.Athlete, 1)
-	athletes[0] = database_models.Athlete{
-		Person: database_models.Person{
+	athletes := make([]databaseModels.Athlete, 1)
+	athletes[0] = databaseModels.Athlete{
+		Person: databaseModels.Person{
 			FirstName: body.FirstName,
 			LastName:  body.LastName,
 			Email:     email,
@@ -91,10 +91,10 @@ func CreateAthlete(c *gin.Context) {
 	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to create the athlete")
-		logger.Error(ctx, err1)
+		endpoints.Logger.Error(ctx, err1)
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)
@@ -105,10 +105,10 @@ func CreateAthlete(c *gin.Context) {
 	// Check if the athlete already exists
 	if len(alreadyExistingAthletes) > 0 {
 		err := errors.New("Athlete already exists")
-		logger.Debug(ctx, err)
+		endpoints.Logger.Debug(ctx, err)
 		c.JSON(
 			http.StatusConflict,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: err.Error(),
 			},
 		)
@@ -118,20 +118,20 @@ func CreateAthlete(c *gin.Context) {
 
 	c.JSON(
 		http.StatusCreated,
-		standardJsonAnswers.SuccessResponse{
+		endpoints.SuccessResponse{
 			Message: "Creation successful",
 		},
 	)
 }
 
 // createNewAthletes creates new athletes in the database and returns the athletes that already exist
-func createNewAthletes(ctx context.Context, athletes []database_models.Athlete) (error, []database_models.Athlete) {
-	ctx, span := tracer.Start(ctx, "CreateNewAthletes")
+func createNewAthletes(ctx context.Context, athletes []databaseModels.Athlete) (error, []databaseModels.Athlete) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewAthletes")
 	defer span.End()
 
 	// Check if an athlete already exists in the database
-	var alreadyExistingAthletes []database_models.Athlete
-	var newAthletes []database_models.Athlete
+	var alreadyExistingAthletes []databaseModels.Athlete
+	var newAthletes []databaseModels.Athlete
 	for _, athlete := range athletes {
 		// ToDo: Check if the athlete already exists
 		if true {

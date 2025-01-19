@@ -1,4 +1,4 @@
-package standardJsonAnswers
+package endpoints
 
 type SuccessResponse struct {
 	Message string `json:"message" example:"<task> successful"`

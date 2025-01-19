@@ -1,4 +1,4 @@
-package database_models
+package databaseModels
 
 import "gorm.io/gorm"
 
@@ -14,6 +14,7 @@ type Athlete struct {
 	Person    Person `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	BirthDate string `json:"birth_date"`
 	Sex       string `json:"sex"`
+	// ToDo: Add FK to trainer
 }
 
 type Trainer struct {

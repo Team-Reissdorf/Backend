@@ -40,7 +40,7 @@ func init() {
 		logger.Fatal(ctx, err)
 	}
 
-	// Get the secret key for the HMAC algorithm for the settings access token
+	// Get the secret key for the HMAC algorithm for the backendSettings access token
 	settingsAccessTokenSecretKey = []byte(os.Getenv("SETTINGS_ACCESS_JWT_SECRET_KEY"))
 	if len(settingsAccessTokenSecretKey) <= 12 {
 		err := errors.New("SETTINGS_ACCESS_JWT_SECRET_KEY not set or too short (should be at least 12 characters)")
@@ -65,7 +65,7 @@ func init() {
 	}
 	refreshTokenDurationDays = time.Duration(refreshTokenDurationDaysInt) * 24 * time.Hour
 
-	// Get the settings access token duration in minutes
+	// Get the backendSettings access token duration in minutes
 	settingsAccessTokenDurationMinutesInt, err := strconv.Atoi(os.Getenv("SETTINGS_ACCESS_TOKEN_DURATION_MINUTES"))
 	if err != nil {
 		err = errors.Wrap(err, "Failed to parse SETTINGS_ACCESS_TOKEN_DURATION_MINUTES, using default")

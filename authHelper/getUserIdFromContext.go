@@ -2,14 +2,14 @@ package authHelper
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/endpoints/standardJsonAnswers"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 // GetUserIdFromContext gets the user id from the gin context and returns it as a string.
 // Swag-Annotations to use in the endpoint handlers:
-// @Failure 500 {object} standardJsonAnswers.ErrorResponse "Internal server error"
+// @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 func GetUserIdFromContext(ctx context.Context, c *gin.Context) string {
 	ctx, span := tracer.Start(c.Request.Context(), "GetUserIdFromContext")
 	defer span.End()
@@ -20,7 +20,7 @@ func GetUserIdFromContext(ctx context.Context, c *gin.Context) string {
 		logger.Error(ctx, "User ID not found in the context")
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)
@@ -34,7 +34,7 @@ func GetUserIdFromContext(ctx context.Context, c *gin.Context) string {
 		logger.Error(ctx, "Failed to assert user id to string")
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)
@@ -47,7 +47,7 @@ func GetUserIdFromContext(ctx context.Context, c *gin.Context) string {
 		logger.Error(ctx, "User ID is empty")
 		c.JSON(
 			http.StatusInternalServerError,
-			standardJsonAnswers.ErrorResponse{
+			endpoints.ErrorResponse{
 				Error: "Internal server error",
 			},
 		)
