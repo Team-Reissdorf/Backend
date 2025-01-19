@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/LucaSchmitz2003/DatabaseFlow v0.0.1
-	github.com/LucaSchmitz2003/FlowServer v0.1.0
+	github.com/LucaSchmitz2003/FlowServer v0.2.0
 	github.com/LucaSchmitz2003/FlowWatch v0.0.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
