@@ -20,6 +20,8 @@ import (
 var (
 	tracer = otel.Tracer("MainTracer")
 	logger = FlowWatch.GetLogHelper()
+
+	frontendUrl string
 )
 
 func init() {
@@ -42,6 +44,14 @@ func init() {
 		logger.Warn(ctx, "Development mode enabled. Please change before release!")
 	}
 
+	// Get the frontend url to allow as origin
+	frontendUrl = os.Getenv("FRONTEND_URL")
+	if frontendUrl == "" {
+		err := errors.New("FRONTEND_URL is empty, using default")
+		logger.Warn(ctx, err)
+		frontendUrl = "http://localhost:8081"
+	}
+
 	// Register the models for the database
 	DatabaseFlow.RegisterModels(ctx,
 		database_models.Person{},
@@ -60,8 +70,13 @@ func main() {
 	// Defer the shutdown function to ensure a graceful shutdown of the SDK connection at the end
 	defer otelHelper.Shutdown()
 
+	// Set frontend url as accepted origin for cors
+	acceptedOrigins := []string{
+		frontendUrl,
+	}
+
 	// Initialize the server
-	address, router := FlowServer.InitServer(ctx, defineRoutes)
+	address, router := FlowServer.InitServer(ctx, defineRoutes, acceptedOrigins)
 
 	// Start the server and keep it alive
 	keepAlive := FlowServer.StartServer(ctx, router, address)
