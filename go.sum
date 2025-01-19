@@ -2,8 +2,8 @@ github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/LucaSchmitz2003/DatabaseFlow v0.0.1 h1:wJ7yrG4n2rqZyeHBmmM9cQrepFyoDBkGyeXUXGXHx68=
 github.com/LucaSchmitz2003/DatabaseFlow v0.0.1/go.mod h1:COg/PKA4BHgthWEkBuAlKtuDYh6VlfW425H+0mYTwso=
-github.com/LucaSchmitz2003/FlowServer v0.2.0 h1:rlQmMdN/sKZF1N7ViQ/oHC3qIZszaNDF9BGUI6psKWA=
-github.com/LucaSchmitz2003/FlowServer v0.2.0/go.mod h1:Bt1uqjtXxFwj+S+13UPU+faw1vmQ64ppF5Ie2WmoS6E=
+github.com/LucaSchmitz2003/FlowServer v0.2.1 h1:9dNUCJAQX5H6mRyFzTU4Iq5Aqj1L8kBy+0FwhpLb4xE=
+github.com/LucaSchmitz2003/FlowServer v0.2.1/go.mod h1:Bt1uqjtXxFwj+S+13UPU+faw1vmQ64ppF5Ie2WmoS6E=
 github.com/LucaSchmitz2003/FlowWatch v0.0.4 h1:QKmgY7kDwSBq4Vb04e0AegES2kicyy1jASX4XpYlDWQ=
 github.com/LucaSchmitz2003/FlowWatch v0.0.4/go.mod h1:KyLHrT6k24/L5w8p+bDNoMRXf6Qx2aoRav4pTC72mQU=
 github.com/bytedance/sonic v1.12.7 h1:CQU8pxOy9HToxhndH0Kx/S1qU/CuS9GnKYrGioDcU1Q=
