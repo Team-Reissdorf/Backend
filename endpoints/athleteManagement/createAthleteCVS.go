@@ -123,11 +123,9 @@ func CreateAthleteCVS(c *gin.Context) {
 
 		// Map CSV data to an athlete object
 		athlete := databaseModels.Athlete{
-			Person: databaseModels.Person{
-				FirstName: record[0],
-				LastName:  record[1],
-				Email:     email,
-			},
+			FirstName: record[0],
+			LastName:  record[1],
+			Email:     email,
 			BirthDate: birthDate,
 			Sex:       sex,
 		}

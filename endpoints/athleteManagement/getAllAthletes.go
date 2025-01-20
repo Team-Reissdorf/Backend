@@ -26,6 +26,27 @@ func GetAllAthletes(c *gin.Context) {
 
 	// ToDo: Get all athletes of the trainer
 
+	// Create test data // ToDo: Remove
+	var athletes []databaseModels.Athlete
+	athletes = append(athletes,
+		databaseModels.Athlete{
+			AthleteId: 0,
+			FirstName: "John",
+			LastName:  "Lennon",
+			Email:     "john@lennon.com",
+			BirthDate: "1940-10-09",
+			Sex:       "m",
+		},
+		databaseModels.Athlete{
+			AthleteId: 1,
+			FirstName: "Julio",
+			LastName:  "Iglesias",
+			Email:     "julio@iglesias.com",
+			BirthDate: "1943-06-23",
+			Sex:       "m",
+		},
+	)
+
 	c.JSON(
 		http.StatusOK,
 		endpoints.SuccessResponse{

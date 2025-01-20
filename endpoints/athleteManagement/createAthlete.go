@@ -80,11 +80,9 @@ func CreateAthlete(c *gin.Context) {
 	// Create the athlete
 	athletes := make([]databaseModels.Athlete, 1)
 	athletes[0] = databaseModels.Athlete{
-		Person: databaseModels.Person{
-			FirstName: body.FirstName,
-			LastName:  body.LastName,
-			Email:     email,
-		},
+		FirstName: body.FirstName,
+		LastName:  body.LastName,
+		Email:     email,
 		BirthDate: birthDate,
 		Sex:       sex,
 	}

@@ -57,7 +57,6 @@ func init() {
 
 	// Register the models for the database
 	DatabaseFlow.RegisterModels(ctx,
-		databaseModels.Person{},
 		databaseModels.Trainer{},
 		databaseModels.Athlete{},
 	)

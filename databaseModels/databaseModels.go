@@ -1,24 +1,29 @@
 package databaseModels
 
-import "gorm.io/gorm"
-
-type Person struct {
-	gorm.Model
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-}
+import (
+	"time"
+)
 
 type Athlete struct {
-	PersonID  uint   `json:"person_id" gorm:"primaryKey"` // FK to person, also PK because athlete is a specialization of person
-	Person    Person `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	AthleteId uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	BirthDate string `json:"birth_date"`
 	Sex       string `json:"sex"`
-	// ToDo: Add FK to trainer
+	Email     string `json:"email"`
+
+	TrainerEmail string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
 type Trainer struct {
-	PersonID uint   `json:"person_id" gorm:"primaryKey"` // FK to person, also PK because trainer is a specialization of person
-	Person   Person `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	Email    string `gorm:"primaryKey" json:"email"`
 	Password string `json:"password"`
 }
