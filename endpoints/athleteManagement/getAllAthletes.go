@@ -1,10 +1,16 @@
 package athleteManagement
 
 import (
+	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
+
+type AthletesResponse struct {
+	Message  string                   `json:"message" example:"Request successful"`
+	Athletes []databaseModels.Athlete `json:"athletes"`
+}
 
 // GetAllAthletes returns all athletes
 // @Summary Returns all athlete profiles
@@ -12,7 +18,7 @@ import (
 // @Tags Athlete Management
 // @Produce json
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 200 {object} endpoints.SuccessResponse "Request successful"
+// @Success 200 {object} AthletesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/get-all [get]
@@ -49,8 +55,9 @@ func GetAllAthletes(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		endpoints.SuccessResponse{
-			Message: "Creation successful",
+		AthletesResponse{
+			Message:  "Request successful",
+			Athletes: athletes,
 		},
 	)
 }
