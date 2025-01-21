@@ -1,10 +1,14 @@
 package athleteManagement
 
 import (
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"net/http"
+	"strings"
 )
 
 type AthletesResponse struct {
@@ -23,35 +27,27 @@ type AthletesResponse struct {
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/get-all [get]
 func GetAllAthletes(c *gin.Context) {
-	_, span := endpoints.Tracer.Start(c.Request.Context(), "GetAllAthletes")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetAllAthletes")
 	defer span.End()
 
 	// Get the user id from the context
 	// userId := authHelper.GetUserIdFromContext(ctx, c)
 	// ToDo: Verify that the user is a trainer
+	trainerEmail := "blabla@test.com"
 
-	// ToDo: Get all athletes of the trainer
-
-	// Create test data // ToDo: Remove
+	// Get all athletes for the given trainer
 	var athletes []databaseModels.Athlete
-	athletes = append(athletes,
-		databaseModels.Athlete{
-			AthleteId: 0,
-			FirstName: "John",
-			LastName:  "Lennon",
-			Email:     "john@lennon.com",
-			BirthDate: "1940-10-09",
-			Sex:       "m",
-		},
-		databaseModels.Athlete{
-			AthleteId: 1,
-			FirstName: "Julio",
-			LastName:  "Iglesias",
-			Email:     "julio@iglesias.com",
-			BirthDate: "1943-06-23",
-			Sex:       "m",
-		},
-	)
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Where("trainer_email LIKE ?", strings.ToLower(trainerEmail)).Find(&athletes).Error
+		err = errors.Wrap(err, "Failed to get the athletes")
+		return err
+	})
+	if err1 != nil {
+		endpoints.Logger.Error(ctx, err1)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athletes"})
+		c.Abort()
+		return
+	}
 
 	c.JSON(
 		http.StatusOK,
