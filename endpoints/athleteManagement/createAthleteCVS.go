@@ -29,6 +29,7 @@ var csvColumnCount = 5
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 201 {object} endpoints.SuccessResponse "Creation successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
+// @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 409 {object} endpoints.ErrorResponse "One or more athlete(s) already exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/bulk-create [post]
@@ -59,6 +60,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	// Get the user id from the context
 	// userId := authHelper.GetUserIdFromContext(ctx, c)
 	// ToDo: Verify that the user is a trainer
+	trainerEmail := "blabla@test.com"
 
 	// Open the CSV file
 	fileContent, err2 := file.Open()
@@ -100,41 +102,31 @@ func CreateAthleteCVS(c *gin.Context) {
 			return
 		}
 
-		// Check formats
-		email := record[2]
-		if err := formatHelper.IsEmail(email); err != nil {
-			err = errors.Wrap(err, "Invalid email address")
-			endpoints.Logger.Debug(ctx, err)
-			c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address"})
-			c.Abort()
-			return
-		}
-
-		birthDate := record[3]
-		if err := formatHelper.IsDate(birthDate); err != nil {
-			err = errors.Wrap(err, "Invalid date")
-			endpoints.Logger.Debug(ctx, err)
-			c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid birth date"})
-			c.Abort()
-			return
-		}
-
-		sex := strings.ToLower(string(record[4][0]))
-
 		// Map CSV data to an athlete object
 		athlete := databaseModels.Athlete{
-			FirstName: record[0],
-			LastName:  record[1],
-			Email:     email,
-			BirthDate: birthDate,
-			Sex:       sex,
+			FirstName:    record[0],
+			LastName:     record[1],
+			BirthDate:    record[3],
+			Sex:          record[4],
+			Email:        record[2],
+			TrainerEmail: trainerEmail,
 		}
 		athletes = append(athletes, athlete)
 	}
 
 	// Write athletes to the db
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
-	if err4 != nil {
+	if errors.Is(err4, formatHelper.InvalidSexLengthError) || errors.Is(err4, formatHelper.InvalidSexValue) {
+		endpoints.Logger.Debug(ctx, err4)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|w|d>"})
+		c.Abort()
+		return
+	} else if errors.Is(err1, NoNewAthletesError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
+		c.Abort()
+		return
+	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
 		endpoints.Logger.Error(ctx, err4)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
