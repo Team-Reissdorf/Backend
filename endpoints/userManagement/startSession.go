@@ -45,7 +45,17 @@ func StartSession(c *gin.Context) {
 	}
 
 	// Set the access token as a cookie
-	c.SetCookie(string(authHelper.AccessToken), accessJWT, accessTokenDurationMinutes*60, "/", domain, secure, true)
+	accessToken := &http.Cookie{
+		Name:     string(authHelper.AccessToken),
+		Value:    accessJWT,
+		MaxAge:   accessTokenDurationMinutes * 60,
+		Path:     "/",
+		Domain:   domain,
+		Secure:   secure,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(c.Writer, accessToken)
 
 	c.JSON(
 		http.StatusOK,
