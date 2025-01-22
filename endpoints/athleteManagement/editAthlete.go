@@ -108,7 +108,7 @@ func EditAthlete(c *gin.Context) {
 	}
 
 	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseModels.Athlete{}).Updates(athlete).Error
+		err := tx.Model(databaseModels.Athlete{}).Where("athlete_id = ?", athlete.AthleteId).Updates(athlete).Error
 		return err
 	})
 	if err3 != nil {
