@@ -55,7 +55,7 @@ func CreateAthlete(c *gin.Context) {
 	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
 	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|w|d>"})
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
 		c.Abort()
 		return
 	} else if errors.Is(err1, NoNewAthletesError) {

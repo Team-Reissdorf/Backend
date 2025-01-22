@@ -2,7 +2,7 @@ package formatHelper
 
 import (
 	"github.com/pkg/errors"
-	"gorm.io/gorm/utils"
+	"slices"
 )
 
 var (
@@ -28,7 +28,7 @@ func IsSex(sex string) error {
 		return InvalidSexLengthError
 	}
 
-	if !utils.Contains(possibleSexValues, sex) {
+	if !slices.Contains(possibleSexValues, sex) {
 		return InvalidSexValue
 	}
 

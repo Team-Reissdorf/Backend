@@ -39,7 +39,7 @@ func GetAllAthletes(c *gin.Context) {
 	// Get all athletes for the given trainer
 	var athletes []databaseModels.Athlete
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Where("trainer_email LIKE ?", strings.ToLower(trainerEmail)).Find(&athletes).Error
+		err := tx.Where("trainer_email = ?", strings.ToLower(trainerEmail)).Find(&athletes).Error
 		err = errors.Wrap(err, "Failed to get the athletes")
 		return err
 	})

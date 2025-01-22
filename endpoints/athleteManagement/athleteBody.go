@@ -5,7 +5,7 @@ type AthleteBody struct {
 	LastName  string `json:"last_name" example:"Alice"`
 	Email     string `json:"email" example:"bob.alice@example.com"`
 	BirthDate string `json:"birth_date" example:"YYYY-MM-DD"`
-	Sex       string `json:"sex" example:"<m|w|d>"`
+	Sex       string `json:"sex" example:"<m|f|d>"`
 }
 
 type AthleteBodyWithId struct {
@@ -14,5 +14,5 @@ type AthleteBodyWithId struct {
 	LastName  string `json:"last_name" example:"Alice"`
 	Email     string `json:"email" example:"bob.alice@example.com"`
 	BirthDate string `json:"birth_date" example:"YYYY-MM-DD"`
-	Sex       string `json:"sex" example:"<m|w|d>"`
+	Sex       string `json:"sex" example:"<m|f|d>"`
 }
