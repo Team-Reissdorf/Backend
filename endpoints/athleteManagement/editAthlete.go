@@ -89,7 +89,7 @@ func EditAthlete(c *gin.Context) {
 	exists, err2 := athleteExists(ctx, &athlete, true)
 	if errors.Is(err2, formatHelper.InvalidSexLengthError) || errors.Is(err2, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err2)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|w|d>"})
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
 		c.Abort()
 		return
 	} else if err2 != nil {
