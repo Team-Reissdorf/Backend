@@ -25,7 +25,7 @@ func createNewAthletes(ctx context.Context, athletes []databaseModels.Athlete) (
 	var alreadyExistingAthletes []databaseModels.Athlete
 	var newAthletes []databaseModels.Athlete
 	for _, athlete := range athletes {
-		exists, err := athleteExists(ctx, &athlete)
+		exists, err := athleteExists(ctx, &athlete, false)
 		if err != nil {
 			return err, nil
 		}
@@ -56,7 +56,7 @@ func createNewAthletes(ctx context.Context, athletes []databaseModels.Athlete) (
 
 // athleteExists checks if the given athlete is already in the database (email and birth_date combination).
 // Note: If the error is not nil, the bool is invalid.
-func athleteExists(ctx context.Context, athlete *databaseModels.Athlete) (bool, error) {
+func athleteExists(ctx context.Context, athlete *databaseModels.Athlete, checkWithId bool) (bool, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "CheckAthleteExists")
 	defer span.End()
 
@@ -68,14 +68,22 @@ func athleteExists(ctx context.Context, athlete *databaseModels.Athlete) (bool, 
 	// Check if the email and birth_date combo already exists
 	var athleteCount int64
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Athlete{}).
-			Where("email LIKE ? AND birth_date = ? AND first_name LIKE ?",
-				strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName).
-			Count(&athleteCount).Error
-		err = errors.Wrap(err, "Failed to check if the athlete exists")
+		var err error
+		if checkWithId {
+			err = tx.Model(&databaseModels.Athlete{}).
+				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ? AND athlete_id != ?",
+					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName, athlete.AthleteId).
+				Count(&athleteCount).Error
+		} else {
+			err = tx.Model(&databaseModels.Athlete{}).
+				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ?",
+					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName).
+				Count(&athleteCount).Error
+		}
 		return err
 	})
 	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to check if the athlete exists")
 		return false, err2
 	}
 
