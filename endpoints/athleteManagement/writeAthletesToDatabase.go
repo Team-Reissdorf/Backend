@@ -98,7 +98,6 @@ func validateAthlete(ctx context.Context, athlete *databaseModels.Athlete) error
 	// Capitalize the first letter of the name
 	athlete.FirstName = strings.ToUpper(string(athlete.FirstName[0])) + athlete.FirstName[1:]
 	athlete.LastName = strings.ToUpper(string(athlete.LastName[0])) + athlete.LastName[1:]
-	endpoints.Logger.Debug(ctx, athlete.FirstName)
 
 	athlete.Email = strings.ToLower(athlete.Email)
 	if err := formatHelper.IsEmail(athlete.Email); err != nil {
