@@ -18,6 +18,7 @@ import (
 // @Success 200 {object} endpoints.SuccessResponse "Creation successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
+// @Failure 404 {object} endpoints.ErrorResponse "Athlete could not be found for this trainer"
 // @Failure 409 {object} endpoints.ErrorResponse "Athlete already exists"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/edit [put]
