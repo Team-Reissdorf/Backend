@@ -101,8 +101,28 @@ func Login(c *gin.Context) {
 	}
 
 	// Set cookies for the client to store the tokens
-	c.SetCookie(string(authHelper.RefreshToken), refreshJWT, refreshTokenDurationDays*24*60*60, path, domain, secure, true)
-	c.SetCookie(string(authHelper.AccessToken), accessJWT, accessTokenDurationMinutes*60, "/", domain, secure, true)
+	accessToken := &http.Cookie{
+		Name:     string(authHelper.AccessToken),
+		Value:    accessJWT,
+		MaxAge:   accessTokenDurationMinutes * 60,
+		Path:     "/",
+		Domain:   domain,
+		Secure:   secure,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	refreshToken := &http.Cookie{
+		Name:     string(authHelper.RefreshToken),
+		Value:    refreshJWT,
+		MaxAge:   refreshTokenDurationDays * 24 * 60 * 60,
+		Path:     path,
+		Domain:   domain,
+		Secure:   secure,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(c.Writer, accessToken)
+	http.SetCookie(c.Writer, refreshToken)
 
 	c.JSON(
 		http.StatusOK,
