@@ -3,6 +3,11 @@ name: Go build test
 on: [push]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
   build:
 
     runs-on: ubuntu-latest
