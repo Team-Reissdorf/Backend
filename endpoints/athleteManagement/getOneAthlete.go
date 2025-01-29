@@ -14,7 +14,7 @@ import (
 
 type AthleteResponse struct {
 	Message string            `json:"message" example:"Request successful"`
-	Athlete AthleteBodyWithId `json:"athletes"`
+	Athlete AthleteBodyWithId `json:"athlete"`
 }
 
 func GetAthleteByID(c *gin.Context) {
