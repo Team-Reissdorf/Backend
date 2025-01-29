@@ -3,6 +3,7 @@ package userManagement
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -45,13 +46,30 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// ToDo: Implement the login process
-	userId := "<user-id>"                                                                                                            // ToDo: Get from database
-	hash := "$argon2id$v=19$m=65536,t=2,p=4$PL26GfocVx8cCYyUnYWJei5ihyAqS0snyTwtqdH4YT8$fxZMiVwi9F/1BCEFieYc9QAHiaOZbNxp6AsnIBJm9xY" // ToDo: Get from database
 	// Validate inputs
 	if err := formatHelper.IsEmail(body.Email); err != nil {
 		endpoints.Logger.Debug(ctx, err)
 		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address"})
+		c.Abort()
+		return
+	}
+
+	// Get trainer from the database
+	var trainer databaseModels.Trainer
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseModels.Trainer{}).Where("email = ?", body.Email).First(&trainer).Error
+		return err
+	})
+	if errors.Is(err1, gorm.ErrRecordNotFound) {
+		err1 = errors.Wrap(err1, "User not found")
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Trainer could not be found"})
+		c.Abort()
+		return
+	} else if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to find the trainer account")
+		endpoints.Logger.Error(ctx, err1)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to login"})
 		c.Abort()
 		return
 	}
