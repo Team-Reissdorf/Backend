@@ -1,6 +1,7 @@
 package userManagement
 
 import (
+	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
@@ -58,7 +59,37 @@ func Register(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	endpoints.Logger.Debug(ctx, "Hashed password: ", hash) // ToDo: Remove this line
+
+	// Create the user
+	trainer := databaseModels.Trainer{
+		Email:    body.Email,
+		Password: hash,
+	}
+
+	// Write the user to the database
+	err2 := createTrainer(ctx, trainer)
+	if errors.Is(err2, TrainerAlreadyExistsErr) {
+		endpoints.Logger.Debug(ctx, err2)
+		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: "Trainer already exists"})
+		c.Abort()
+		return
+	} else if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to create the trainer")
+		endpoints.Logger.Error(ctx, err2)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
+		return
+	}
+
+	// Generate the refresh token
+	refreshJWT, err3 := authHelper.GenerateToken(ctx, trainer.Email, authHelper.RefreshToken, body.RememberMe)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to generate refresh token")
+		endpoints.Logger.Error(ctx, err3)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
+		return
+	}
 
 	// ToDo: Implement the registration process
 
