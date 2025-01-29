@@ -22,12 +22,15 @@ var (
 // UserIdContextKey is the key to get the user id from the context
 const UserIdContextKey = "userId"
 
+// RememberMeContextKey is the key to get the remember me param from the context
+const RememberMeContextKey = "rememberMe"
+
 // GetAuthMiddlewareFor returns the middleware func for the given token type to be used in the gin router
 // Usage: <router>.<Method>(<Path>, authHelper.GetAuthMiddlewareFor(authHelper.<TokenType>), <Endpoint-Handler>)
 func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 
 	// Parses and validates the JWT from the authorization header,
-	// then sets the user ID in the request context for the next handler.
+	// then sets the user ID and the remember-me value in the request context for the next handler.
 	// Swag-Annotations to use in the endpoint handlers:
 	// @Param Authorization  header  string  false  "<TokenType> JWT is sent in the Authorization header or set as a http-only cookie"
 	// @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
@@ -158,6 +161,9 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 
 		// Set the user id in the context for the next handler
 		c.Set(UserIdContextKey, userId)
+
+		// Set the remember-me value in the context for the next handler
+		c.Set(RememberMeContextKey, claims.RememberMe)
 
 		// Go to the next handler
 		c.Next()
