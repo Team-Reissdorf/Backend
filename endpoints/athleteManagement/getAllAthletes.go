@@ -1,7 +1,6 @@
 package athleteManagement
 
 import (
-	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
@@ -50,31 +49,18 @@ func GetAllAthletes(c *gin.Context) {
 		return
 	}
 
+	// Translate athletes to response type
+	athletesResponse := make([]AthleteBodyWithId, len(athletes))
+	for idx, athlete := range athletes {
+		athletesResponse[idx] = translateAthleteToResponse(ctx, athlete)
+	}
+
+	// Send successful response
 	c.JSON(
 		http.StatusOK,
 		AthletesResponse{
 			Message:  "Request successful",
-			Athletes: translateAthletesToResponse(ctx, athletes),
+			Athletes: athletesResponse,
 		},
 	)
-}
-
-// translateAthletesToResponse converts athlete database objects to response type
-func translateAthletesToResponse(ctx context.Context, athletes []databaseModels.Athlete) []AthleteBodyWithId {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthletesToResponse")
-	defer span.End()
-
-	athletesResponse := make([]AthleteBodyWithId, len(athletes))
-	for idx, athlete := range athletes {
-		athletesResponse[idx] = AthleteBodyWithId{
-			AthleteId: athlete.AthleteId,
-			FirstName: athlete.FirstName,
-			LastName:  athlete.LastName,
-			Email:     athlete.Email,
-			BirthDate: athlete.BirthDate,
-			Sex:       athlete.Sex,
-		}
-	}
-
-	return athletesResponse
 }
