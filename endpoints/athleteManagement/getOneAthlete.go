@@ -46,10 +46,16 @@ func GetAthleteByID(c *gin.Context) {
 	}
 
 	// Send successful response
-	c.JSON(http.StatusOK, translateAthleteToResponse(ctx, athlete))
+	c.JSON(
+		http.StatusOK,
+		AthleteResponse{
+			Message: "Request successful",
+			Athlete: translateAthleteToResponse(ctx, athlete),
+		},
+	)
 }
 
-// translateAthleteToResponse converts athlete database objects to response type
+// translateAthleteToResponse converts an athlete database object to response type
 func translateAthleteToResponse(ctx context.Context, athlete databaseModels.Athlete) AthleteBodyWithId {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
