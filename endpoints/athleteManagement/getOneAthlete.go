@@ -13,7 +13,8 @@ import (
 )
 
 type AthleteResponse struct {
-	Athletes AthleteBodyWithId
+	Message string            `json:"message" example:"Request successful"`
+	Athlete AthleteBodyWithId `json:"athletes"`
 }
 
 func GetAthleteByID(c *gin.Context) {
