@@ -20,7 +20,7 @@ type DoubleTokenHolder struct {
 // @Tags User Management
 // @Accept json
 // @Produce json
-// @Param User body UserBody true "Email address and password of the user"
+// @Param User body UserBody true "The user's email address and password, along with a 'remember_me' field. If set to false or left empty, the refresh token cookie will not have a maxAge flag, causing the browser to automatically delete it when the session ends."
 // @Success 200 {object} DoubleTokenHolder "Login successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "Wrong credentials"

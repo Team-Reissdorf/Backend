@@ -9,8 +9,9 @@ import (
 )
 
 type UserBody struct {
-	Email    string `json:"email" binding:"required,email" example:"bob.alice@example.com"`
-	Password string `json:"password" binding:"required" example:"<password>"`
+	Email      string `json:"email" binding:"required,email" example:"bob.alice@example.com"`
+	Password   string `json:"password" binding:"required" example:"<password>"`
+	RememberMe bool   `json:"remember_me" example:"true"`
 }
 
 // Register handles the user registration process.
@@ -19,7 +20,7 @@ type UserBody struct {
 // @Tags User Management
 // @Accept json
 // @Produce json
-// @Param User body UserBody true "Email address and password of the user"
+// @Param User body UserBody true "The user's email address and password, along with a 'remember_me' field. If set to false or left empty, the refresh token cookie will not have a maxAge flag, causing the browser to automatically delete it when the session ends."
 // @Success 200 {object} endpoints.SuccessResponse "Registration successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 409 {object} endpoints.ErrorResponse "User already exists"
