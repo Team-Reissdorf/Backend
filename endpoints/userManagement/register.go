@@ -40,6 +40,15 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Validate inputs
+	if err := formatHelper.IsEmail(body.Email); err != nil {
+		endpoints.Logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address"})
+		c.Abort()
+		return
+	}
+
+	// Hash the given password
 	hash, err1 := hashingHelper.DefaultHashParams.HashPassword(ctx, body.Password)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to hash password")
