@@ -3,6 +3,7 @@ package athleteManagement
 import (
 	"fmt"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -42,9 +43,7 @@ func EditAthlete(c *gin.Context) {
 	}
 
 	// Get the user id from the context
-	// userId := authHelper.GetUserIdFromContext(ctx, c)
-	// ToDo: Verify that the user is a trainer
-	trainerEmail := "blabla@test.com"
+	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Translate into a database object
 	athlete := databaseModels.Athlete{
