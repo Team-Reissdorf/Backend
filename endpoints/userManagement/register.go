@@ -16,7 +16,7 @@ type UserBody struct {
 
 // Register handles the user registration process.
 // @Summary Register a new user
-// @Description Creates a new user account in the database with the provided details and starts the verification process.
+// @Description Creates a new user account in the database with the provided details.
 // @Tags User Management
 // @Accept json
 // @Produce json
