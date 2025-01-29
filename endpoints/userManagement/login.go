@@ -48,6 +48,13 @@ func Login(c *gin.Context) {
 	// ToDo: Implement the login process
 	userId := "<user-id>"                                                                                                            // ToDo: Get from database
 	hash := "$argon2id$v=19$m=65536,t=2,p=4$PL26GfocVx8cCYyUnYWJei5ihyAqS0snyTwtqdH4YT8$fxZMiVwi9F/1BCEFieYc9QAHiaOZbNxp6AsnIBJm9xY" // ToDo: Get from database
+	// Validate inputs
+	if err := formatHelper.IsEmail(body.Email); err != nil {
+		endpoints.Logger.Debug(ctx, err)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address"})
+		c.Abort()
+		return
+	}
 
 	// Verify the password
 	verified, err1 := hashingHelper.VerifyHash(ctx, hash, body.Password)
