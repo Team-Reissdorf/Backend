@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateToken generates a new token for the given user ID and token type
-func GenerateToken(ctx context.Context, userId string, tokenType TokenType) (string, error) {
+func GenerateToken(ctx context.Context, userId string, tokenType TokenType, rememberMe bool) (string, error) {
 	ctx, span := tracer.Start(ctx, "GenerateToken")
 	defer span.End()
 
@@ -18,7 +18,8 @@ func GenerateToken(ctx context.Context, userId string, tokenType TokenType) (str
 			Subject:  userId,
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
-		Name: string(tokenType),
+		Name:       string(tokenType),
+		RememberMe: rememberMe,
 	}
 
 	// Create the token

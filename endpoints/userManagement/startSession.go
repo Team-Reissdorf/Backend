@@ -30,17 +30,16 @@ func StartSession(c *gin.Context) {
 	// Get the user id from the context
 	userId := authHelper.GetUserIdFromContext(ctx, c)
 
+	// Get the remember-me value from the context
+	rememberMe := authHelper.GetBooleanFromContext(ctx, c, authHelper.RememberMeContextKey)
+
 	// Generate the access token
-	accessJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.AccessToken)
+	accessJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.AccessToken, rememberMe)
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to generate access token")
 		endpoints.Logger.Error(ctx, err2)
-		c.JSON(
-			http.StatusInternalServerError,
-			endpoints.ErrorResponse{
-				Error: "Internal server error",
-			},
-		)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
 		return
 	}
 
@@ -57,10 +56,5 @@ func StartSession(c *gin.Context) {
 	}
 	http.SetCookie(c.Writer, accessToken)
 
-	c.JSON(
-		http.StatusOK,
-		AccessTokenHolder{
-			AccessToken: accessJWT,
-		},
-	)
+	c.JSON(http.StatusOK, AccessTokenHolder{AccessToken: accessJWT})
 }
