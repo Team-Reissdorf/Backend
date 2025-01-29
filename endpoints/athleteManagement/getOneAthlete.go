@@ -29,6 +29,7 @@ func GetAthleteByID(c *gin.Context) {
 	// ToDo: Verify that the user is a trainer
 	trainerEmail := "blabla@test.com"
 
+	// Get the specified athlete if he corresponds to the given trainer
 	var athlete databaseModels.Athlete
 	err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		return tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteID).
