@@ -75,7 +75,7 @@ func Login(c *gin.Context) {
 	}
 
 	// Verify the password
-	verified, err1 := hashingHelper.VerifyHash(ctx, hash, body.Password)
+	verified, err1 := hashingHelper.VerifyHash(ctx, trainer.Password, body.Password)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to verify password")
 		endpoints.Logger.Error(ctx, err1)
@@ -98,7 +98,7 @@ func Login(c *gin.Context) {
 	}
 
 	// Generate the refresh token
-	refreshJWT, err2 := authHelper.GenerateToken(ctx, userId, authHelper.RefreshToken, body.RememberMe)
+	refreshJWT, err2 := authHelper.GenerateToken(ctx, trainer.Email, authHelper.RefreshToken, body.RememberMe)
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to generate refresh token")
 		endpoints.Logger.Error(ctx, err2)
@@ -112,7 +112,7 @@ func Login(c *gin.Context) {
 	}
 
 	// Generate an access token
-	accessJWT, err3 := authHelper.GenerateToken(ctx, userId, authHelper.AccessToken, body.RememberMe)
+	accessJWT, err3 := authHelper.GenerateToken(ctx, trainer.Email, authHelper.AccessToken, body.RememberMe)
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to generate access token")
 		endpoints.Logger.Error(ctx, err3)
