@@ -2,6 +2,7 @@ package userManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
