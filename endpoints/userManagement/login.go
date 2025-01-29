@@ -40,12 +40,8 @@ func Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(
-			http.StatusBadRequest,
-			endpoints.ErrorResponse{
-				Error: "Invalid request body",
-			},
-		)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid request body"})
+		c.Abort()
 		return
 	}
 
@@ -82,21 +78,13 @@ func Login(c *gin.Context) {
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to verify password")
 		endpoints.Logger.Error(ctx, err1)
-		c.JSON(
-			http.StatusInternalServerError,
-			endpoints.ErrorResponse{
-				Error: "Internal server error",
-			},
-		)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
 		return
 	}
 	if !verified {
-		c.JSON(
-			http.StatusUnauthorized,
-			endpoints.ErrorResponse{
-				Error: "Wrong credentials",
-			},
-		)
+		c.JSON(http.StatusUnauthorized, endpoints.ErrorResponse{Error: "Wrong credentials"})
+		c.Abort()
 		return
 	}
 
@@ -105,12 +93,8 @@ func Login(c *gin.Context) {
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to generate refresh token")
 		endpoints.Logger.Error(ctx, err2)
-		c.JSON(
-			http.StatusInternalServerError,
-			endpoints.ErrorResponse{
-				Error: "Internal server error",
-			},
-		)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
 		return
 	}
 
@@ -119,12 +103,8 @@ func Login(c *gin.Context) {
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to generate access token")
 		endpoints.Logger.Error(ctx, err3)
-		c.JSON(
-			http.StatusInternalServerError,
-			endpoints.ErrorResponse{
-				Error: "Internal server error",
-			},
-		)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
 		return
 	}
 
