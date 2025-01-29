@@ -35,12 +35,8 @@ func Register(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(
-			http.StatusBadRequest,
-			endpoints.ErrorResponse{
-				Error: "Invalid request body",
-			},
-		)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid request body"})
+		c.Abort()
 		return
 	}
 
@@ -48,12 +44,8 @@ func Register(c *gin.Context) {
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to hash password")
 		endpoints.Logger.Error(ctx, err1)
-		c.JSON(
-			http.StatusInternalServerError,
-			endpoints.ErrorResponse{
-				Error: "Internal server error",
-			},
-		)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
 		return
 	}
 	endpoints.Logger.Debug(ctx, "Hashed password: ", hash) // ToDo: Remove this line
