@@ -21,7 +21,7 @@ type UserBody struct {
 // @Accept json
 // @Produce json
 // @Param User body UserBody true "The user's email address and password, along with a 'remember_me' field. If set to false or left empty, the refresh token cookie will not have a maxAge flag, causing the browser to automatically delete it when the session ends."
-// @Success 200 {object} endpoints.SuccessResponse "Registration successful"
+// @Success 201 {object} endpoints.SuccessResponse "Registration successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 409 {object} endpoints.ErrorResponse "User already exists"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
@@ -61,7 +61,7 @@ func Register(c *gin.Context) {
 	// ToDo: Implement the registration process
 
 	c.JSON(
-		http.StatusOK,
+		http.StatusCreated,
 		endpoints.SuccessResponse{
 			Message: "Registration successful",
 		},
