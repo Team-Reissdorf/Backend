@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"time"
@@ -15,8 +16,6 @@ import (
 var (
 	tracer = otel.Tracer("EndpointMiddlewareTracer")
 	logger = FlowWatch.GetLogHelper()
-
-	UserNotFoundError = errors.New("User could not be found in the database")
 )
 
 // UserIdContextKey is the key to get the user id from the context
@@ -138,7 +137,7 @@ func GetAuthMiddlewareFor(tokenType TokenType) func(c *gin.Context) {
 
 		// Check if the user exists and the status is active
 		active, err4 := isUserActive(ctx, userId)
-		if errors.Is(err4, UserNotFoundError) {
+		if errors.Is(err4, gorm.ErrRecordNotFound) {
 			err4 = errors.Wrap(err4, "User not found")
 			logger.Debug(ctx, err4)
 			c.JSON(http.StatusUnauthorized, endpoints.ErrorResponse{Error: "User not found"})

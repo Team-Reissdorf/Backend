@@ -1,6 +1,7 @@
 package athleteManagement
 
 import (
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -38,9 +39,7 @@ func CreateAthlete(c *gin.Context) {
 	}
 
 	// Get the user id from the context
-	// userId := authHelper.GetUserIdFromContext(ctx, c)
-	// ToDo: Verify that the user is a trainer
-	trainerEmail := "blabla@test.com"
+	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Create the athlete
 	athletes := make([]databaseModels.Athlete, 1)
