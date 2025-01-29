@@ -1,6 +1,7 @@
 package userManagement
 
 import (
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -23,7 +24,7 @@ type UserBody struct {
 // @Accept json
 // @Produce json
 // @Param User body UserBody true "The user's email address and password, along with a 'remember_me' field. If set to false or left empty, the refresh token cookie will not have a maxAge flag, causing the browser to automatically delete it when the session ends."
-// @Success 201 {object} endpoints.SuccessResponse "Registration successful"
+// @Success 201 {object} DoubleTokenHolder "Registration successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 409 {object} endpoints.ErrorResponse "User already exists"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
@@ -91,12 +92,24 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// ToDo: Implement the registration process
+	// Generate an access token
+	accessJWT, err4 := authHelper.GenerateToken(ctx, trainer.Email, authHelper.AccessToken, body.RememberMe)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to generate access token")
+		endpoints.Logger.Error(ctx, err4)
+		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		c.Abort()
+		return
+	}
+
+	// Set cookies for the client to store the tokens
+	SetCookies(c, &accessJWT, &refreshJWT, body.RememberMe)
 
 	c.JSON(
 		http.StatusCreated,
-		endpoints.SuccessResponse{
-			Message: "Registration successful",
+		DoubleTokenHolder{
+			RefreshToken: refreshJWT,
+			AccessToken:  accessJWT,
 		},
 	)
 }
