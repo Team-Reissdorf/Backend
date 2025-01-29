@@ -27,10 +27,10 @@ var csvColumnCount = 5
 // @Produce json
 // @Param Athletes formData file true "CSV file containing details of multiple athletes to create profiles"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 201 {object} endpoints.SuccessResponse "Creation successful"
+// @Success 201 {object} AlreadyExistingAthletesResponse "Creation successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 409 {object} endpoints.ErrorResponse "One or more athlete(s) already exist"
+// @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/bulk-create [post]
 func CreateAthleteCVS(c *gin.Context) {
