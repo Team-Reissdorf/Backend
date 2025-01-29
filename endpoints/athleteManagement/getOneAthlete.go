@@ -34,14 +34,14 @@ func GetAthleteByID(c *gin.Context) {
 		return tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteID).
 			First(&athlete).Error
 	})
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
-			return
-		}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
+		c.Abort()
+		return
+	} else if err != nil {
 		endpoints.Logger.Error(ctx, err)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
+		c.Abort()
 		return
 	}
 
