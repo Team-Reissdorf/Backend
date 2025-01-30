@@ -108,6 +108,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			user.POST("/register", userManagement.Register)
 			user.POST("/login", userManagement.Login)
 			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), userManagement.StartSession)
+			user.POST("/logout", userManagement.Logout)
 		}
 
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
