@@ -2,6 +2,7 @@ package userManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,6 +16,9 @@ import (
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/user/logout [post]
 func Logout(c *gin.Context) {
+	_, span := endpoints.Tracer.Start(c.Request.Context(), "LogoutUser")
+	defer span.End()
+
 	// Generate expired cookies with empty values to override the existing ones, and thus remove them
 	accessJwtCookie := &http.Cookie{
 		Name:     string(authHelper.AccessToken),
