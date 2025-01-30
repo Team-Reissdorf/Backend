@@ -9,24 +9,21 @@ import (
 	"slices"
 )
 
-const localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
 const (
 	localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
+	dateFormatCheckRegexString = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
 )
 
 var (
 	possibleSexValues    = []string{"m", "f", "d"}
 	localEmailCheckRegex *regexp.Regexp
 
-	InvalidSexLengthError         = errors.New("Sex should be one character only")
-	InvalidSexValue               = errors.New("Sex can only be <m|f|d>")
-	EmailAddressContainsNameError = errors.New("Email address should not contain the name")
-	EmailAddressInvalidTldError   = errors.New("Email address TLD is invalid")
 	InvalidSexLengthError          = errors.New("Sex should be one character only")
 	InvalidSexValue                = errors.New("Sex can only be <m|f|d>")
 	InvalidEmailAddressFormatError = errors.New("Email address format is invalid")
 	EmailAddressContainsNameError  = errors.New("Email address should not contain the name")
 	EmailAddressInvalidTldError    = errors.New("Email address TLD is invalid")
+	DateFormatInvalidError         = errors.New("Date format is invalid")
 )
 
 func init() {
