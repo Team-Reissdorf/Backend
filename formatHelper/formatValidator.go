@@ -1,19 +1,51 @@
 package formatHelper
 
 import (
+	"context"
+	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/pkg/errors"
+	"net/mail"
+	"regexp"
 	"slices"
 )
 
-var (
-	possibleSexValues = []string{"m", "f", "d"}
+const localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
 
-	InvalidSexLengthError = errors.New("Sex should be one character only")
-	InvalidSexValue       = errors.New("Sex can only be <m|f|d>")
+var (
+	possibleSexValues    = []string{"m", "f", "d"}
+	localEmailCheckRegex *regexp.Regexp
+
+	InvalidSexLengthError         = errors.New("Sex should be one character only")
+	InvalidSexValue               = errors.New("Sex can only be <m|f|d>")
+	EmailAddressContainsNameError = errors.New("Email address should not contain the name")
+	EmailAddressInvalidTldError   = errors.New("Email address TLD is invalid")
 )
 
+func init() {
+	var err1 error
+	localEmailCheckRegex, err1 = regexp.Compile(localEmailCheckRegexString)
+	if err1 != nil {
+		endpoints.Logger.Fatal(context.Background(), "Unable to compile local email address regex", err1)
+	}
+}
+
 func IsEmail(email string) error {
-	// ToDo: Implement
+	// Validate the email address
+	address, err := mail.ParseAddress(email)
+	if err != nil {
+		return err
+	}
+
+	// Check if the email address contains the name
+	if address.Address != email {
+		return EmailAddressContainsNameError
+	}
+
+	// Check if the email address is local
+	if !localEmailCheckRegex.MatchString(email) {
+		return EmailAddressInvalidTldError
+	}
+
 	return nil
 }
 
