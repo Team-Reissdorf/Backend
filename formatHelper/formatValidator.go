@@ -17,6 +17,7 @@ const (
 var (
 	possibleSexValues    = []string{"m", "f", "d"}
 	localEmailCheckRegex *regexp.Regexp
+	dateFormatCheckRegex *regexp.Regexp
 
 	InvalidSexLengthError          = errors.New("Sex should be one character only")
 	InvalidSexValue                = errors.New("Sex can only be <m|f|d>")
@@ -33,6 +34,12 @@ func init() {
 	localEmailCheckRegex, err1 = regexp.Compile(localEmailCheckRegexString)
 	if err1 != nil {
 		endpoints.Logger.Fatal(ctx, "Unable to compile local email address regex", err1)
+	}
+
+	var err2 error
+	dateFormatCheckRegex, err2 = regexp.Compile(dateFormatCheckRegexString)
+	if err2 != nil {
+		endpoints.Logger.Fatal(ctx, "Unable to compile date format regex", err2)
 	}
 }
 
@@ -59,8 +66,14 @@ func IsEmail(email string) error {
 	return nil
 }
 
+// IsDate checks if the given date is in the required format (YYYY-MM-DD).
+// Throws: DateFormatInvalidError
 func IsDate(date string) error {
-	// ToDo: Implement
+	// Check if the date format matches
+	if !dateFormatCheckRegex.MatchString(date) {
+		return DateFormatInvalidError
+	}
+
 	return nil
 }
 
