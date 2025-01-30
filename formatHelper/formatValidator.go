@@ -29,6 +29,8 @@ func init() {
 	}
 }
 
+// IsEmail validates the email address using the mail.ParseAddress function
+// and additionally checks if it has a valid TLD to block local addresses
 func IsEmail(email string) error {
 	// Validate the email address
 	address, err := mail.ParseAddress(email)
