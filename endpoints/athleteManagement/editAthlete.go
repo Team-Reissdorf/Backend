@@ -91,6 +91,16 @@ func EditAthlete(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
 		c.Abort()
 		return
+	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		c.Abort()
+		return
+	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
+		c.Abort()
+		return
 	} else if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to validate the athlete")
 		endpoints.Logger.Error(ctx, err2)
