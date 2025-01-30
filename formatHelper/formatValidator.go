@@ -10,6 +10,9 @@ import (
 )
 
 const localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
+const (
+	localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
+)
 
 var (
 	possibleSexValues    = []string{"m", "f", "d"}
@@ -19,13 +22,20 @@ var (
 	InvalidSexValue               = errors.New("Sex can only be <m|f|d>")
 	EmailAddressContainsNameError = errors.New("Email address should not contain the name")
 	EmailAddressInvalidTldError   = errors.New("Email address TLD is invalid")
+	InvalidSexLengthError          = errors.New("Sex should be one character only")
+	InvalidSexValue                = errors.New("Sex can only be <m|f|d>")
+	InvalidEmailAddressFormatError = errors.New("Email address format is invalid")
+	EmailAddressContainsNameError  = errors.New("Email address should not contain the name")
+	EmailAddressInvalidTldError    = errors.New("Email address TLD is invalid")
 )
 
 func init() {
+	ctx := context.Background()
+
 	var err1 error
 	localEmailCheckRegex, err1 = regexp.Compile(localEmailCheckRegexString)
 	if err1 != nil {
-		endpoints.Logger.Fatal(context.Background(), "Unable to compile local email address regex", err1)
+		endpoints.Logger.Fatal(ctx, "Unable to compile local email address regex", err1)
 	}
 }
 
@@ -35,6 +45,7 @@ func IsEmail(email string) error {
 	// Validate the email address
 	address, err := mail.ParseAddress(email)
 	if err != nil {
+		err = errors.Wrap(InvalidEmailAddressFormatError, err.Error())
 		return err
 	}
 
