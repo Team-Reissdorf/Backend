@@ -10,6 +10,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/backendSettings"
+	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/ping"
 	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
 	"github.com/gin-gonic/gin"
@@ -119,6 +120,11 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			athlete.GET("/get-one/:AthleteId", athleteManagement.GetAthleteByID)
 			athlete.PUT("/edit", athleteManagement.EditAthlete)
 			athlete.DELETE("/delete/:AthleteId", athleteManagement.DeleteAthlete)
+		}
+
+		performance := v1.Group("/performance", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			performance.POST("/create", performanceManagement.CreatePerformance)
 		}
 	}
 }

@@ -118,3 +118,21 @@ func validateAthlete(ctx context.Context, athlete *databaseModels.Athlete) error
 
 	return nil
 }
+
+// AthleteExistsForTrainer checks if an athlete with the given id exists for the given trainer
+func AthleteExistsForTrainer(ctx context.Context, athleteId uint, trainerEmail string) (bool, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "AthleteExistsCheck")
+	defer span.End()
+
+	var athleteCount int64
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseModels.Athlete{}).Where("athlete_id = ? AND trainer_email = ?", athleteId, strings.ToLower(trainerEmail)).Count(&athleteCount).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to check if the athlete exists")
+		return false, err1
+	}
+
+	return athleteCount > 0, nil
+}
