@@ -117,6 +117,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			athlete.GET("/get-all", athleteManagement.GetAllAthletes)
 			athlete.GET("/get-one/:id", athleteManagement.GetAthleteByID)
 			athlete.PUT("/edit", athleteManagement.EditAthlete)
+			athlete.DELETE("/delete/:AthleteId", athleteManagement.DeleteAthlete)
 		}
 	}
 }
