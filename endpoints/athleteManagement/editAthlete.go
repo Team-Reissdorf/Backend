@@ -37,8 +37,7 @@ func EditAthlete(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid request body"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
 
@@ -66,21 +65,18 @@ func EditAthlete(c *gin.Context) {
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to check whether the athlete exists and is assigned to the trainer")
 		endpoints.Logger.Error(ctx, err1)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
 		return
 	}
 	if athleteCount < 1 {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d does not exist", body.AthleteId))
-		c.JSON(http.StatusNotFound, "Athlete does not exist")
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusNotFound, "Athlete does not exist")
 		return
 	} else if athleteCount == 1 {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d exists and is assigned to the given trainer", body.AthleteId))
 	} else if athleteCount > 1 { // Should never happen if the database works correct
 		endpoints.Logger.Error(ctx, fmt.Sprintf("Athlete with id %d exists %d times", body.AthleteId, athleteCount))
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Athlete exists multiple times. Please consult the database engineer!"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Athlete exists multiple times. Please consult the database engineer!"})
 		return
 	}
 
@@ -88,31 +84,26 @@ func EditAthlete(c *gin.Context) {
 	exists, err2 := athleteExists(ctx, &athlete, true)
 	if errors.Is(err2, formatHelper.InvalidSexLengthError) || errors.Is(err2, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err2)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
 		return
-	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		c.Abort()
+	} else if errors.Is(err2, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
 		return
-	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		c.Abort()
+	} else if errors.Is(err2, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err2, formatHelper.EmailAddressContainsNameError) || errors.Is(err2, formatHelper.EmailAddressInvalidTldError) {
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
 		return
 	} else if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to validate the athlete")
 		endpoints.Logger.Error(ctx, err2)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to validate the athlete"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to validate the athlete"})
 		return
 	}
 	if exists {
 		err := errors.New("Another athlete with the same personal information already exists")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -123,8 +114,7 @@ func EditAthlete(c *gin.Context) {
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to update the athlete")
 		endpoints.Logger.Error(ctx, err3)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the athlete"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the athlete"})
 		return
 	}
 
