@@ -57,6 +57,6 @@ type Performance struct {
 	Points uint64 `json:"points"`
 	Date   string `json:"date" gorm:"type:date"`
 
-	ExerciseId string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
-	AthleteId  string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ExerciseId uint `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	AthleteId  uint `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
