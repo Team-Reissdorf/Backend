@@ -16,7 +16,7 @@ type Athlete struct {
 	Sex       string `json:"sex"`
 	Email     string `json:"email" gorm:"uniqueIndex:unique_combination"`
 
-	TrainerEmail string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	TrainerEmail string `json:"trainer_email" gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
 type Trainer struct {
@@ -45,7 +45,7 @@ type Exercise struct {
 	Name string `json:"name"`
 	Unit string `json:"unit"`
 
-	DisciplineName string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	DisciplineName string `json:"discipline_name" gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
 type Performance struct {
