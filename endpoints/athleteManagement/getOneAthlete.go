@@ -23,18 +23,20 @@ type AthleteResponse struct {
 // @Description One athlete profile with given id and of the given trainer gets returned
 // @Tags Athlete Management
 // @Produce json
+// @Param AthleteId path int true "Get the athlete with the given id"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} AthletesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/athlete/get-one/:id [get]
+// @Router /v1/athlete/get-one/{AthleteId} [get]
 func GetAthleteByID(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetOneAthlete")
 	defer span.End()
 
 	// Get the athlete id from the context
 	athleteID := c.Param("id")
+	athleteIdString := c.Param("AthleteId")
 
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
