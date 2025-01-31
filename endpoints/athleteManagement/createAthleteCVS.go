@@ -2,6 +2,7 @@ package athleteManagement
 
 import (
 	"encoding/csv"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseModels"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -58,9 +59,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	}
 
 	// Get the user id from the context
-	// userId := authHelper.GetUserIdFromContext(ctx, c)
-	// ToDo: Verify that the user is a trainer
-	trainerEmail := "blabla@test.com"
+	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Open the CSV file
 	fileContent, err2 := file.Open()
@@ -119,6 +118,16 @@ func CreateAthleteCVS(c *gin.Context) {
 	if errors.Is(err4, formatHelper.InvalidSexLengthError) || errors.Is(err4, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err4)
 		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
+		c.Abort()
+		return
+	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		c.Abort()
+		return
+	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
 		c.Abort()
 		return
 	} else if errors.Is(err1, NoNewAthletesError) {

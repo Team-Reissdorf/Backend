@@ -10,11 +10,11 @@ type Athlete struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	FirstName string `json:"first_name"`
+	FirstName string `json:"first_name" gorm:"uniqueIndex:unique_combination"`
 	LastName  string `json:"last_name"`
-	BirthDate string `json:"birth_date" gorm:"type:date"`
+	BirthDate string `json:"birth_date" gorm:"type:date" gorm:"uniqueIndex:unique_combination"`
 	Sex       string `json:"sex"`
-	Email     string `json:"email"`
+	Email     string `json:"email" gorm:"uniqueIndex:unique_combination"`
 
 	TrainerEmail string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }

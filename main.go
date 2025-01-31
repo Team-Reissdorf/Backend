@@ -108,6 +108,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			user.POST("/register", userManagement.Register)
 			user.POST("/login", userManagement.Login)
 			user.POST("/start-session", authHelper.GetAuthMiddlewareFor(authHelper.RefreshToken), userManagement.StartSession)
+			user.POST("/logout", userManagement.Logout)
 		}
 
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
@@ -115,8 +116,9 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			athlete.POST("/create", athleteManagement.CreateAthlete)
 			athlete.POST("/bulk-create", athleteManagement.CreateAthleteCVS)
 			athlete.GET("/get-all", athleteManagement.GetAllAthletes)
-			athlete.GET("/get-one/:id", athleteManagement.GetAthleteByID)
+			athlete.GET("/get-one/:AthleteId", athleteManagement.GetAthleteByID)
 			athlete.PUT("/edit", athleteManagement.EditAthlete)
+			athlete.DELETE("/delete/:AthleteId", athleteManagement.DeleteAthlete)
 		}
 	}
 }
