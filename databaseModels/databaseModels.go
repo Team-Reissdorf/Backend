@@ -27,3 +27,36 @@ type Trainer struct {
 	Email    string `gorm:"primaryKey" json:"email"`
 	Password string `json:"password"`
 }
+
+type Discipline struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	Name string `gorm:"primaryKey" json:"name"`
+}
+
+type Exercise struct {
+	ExerciseId uint `gorm:"primarykey"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  *time.Time `gorm:"index"`
+
+	Name string `json:"name"`
+	Unit string `json:"unit"`
+
+	DisciplineName string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+}
+
+type Performance struct {
+	PerformanceId uint `gorm:"primarykey"`
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     *time.Time `gorm:"index"`
+
+	Points uint64 `json:"points"`
+	Date   string `json:"date" gorm:"type:date"`
+
+	ExerciseId string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	AthleteId  string `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
