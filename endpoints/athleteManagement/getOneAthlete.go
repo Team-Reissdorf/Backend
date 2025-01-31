@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -35,8 +36,19 @@ func GetAthleteByID(c *gin.Context) {
 	defer span.End()
 
 	// Get the athlete id from the context
-	athleteID := c.Param("id")
 	athleteIdString := c.Param("AthleteId")
+	if athleteIdString == "" {
+		endpoints.Logger.Debug(ctx, "Missing or invalid athlete ID")
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Missing or invalid athlete ID"})
+		return
+	}
+	athleteId, err1 := strconv.Atoi(athleteIdString)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to parse athlete ID")
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid athlete ID"})
+		return
+	}
 
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
