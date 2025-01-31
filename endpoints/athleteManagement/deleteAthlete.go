@@ -16,7 +16,6 @@ import (
 // @Summary Deletes the given athlete profile
 // @Description Deletes the given athlete profile.
 // @Tags Athlete Management
-// @Accept json
 // @Produce json
 // @Param AthleteId path int true "Delete the given athlete"
 // @Param Authorization  path  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
