@@ -55,18 +55,21 @@ func GetAthleteByID(c *gin.Context) {
 
 	// Get the specified athlete if he corresponds to the given trainer
 	var athlete databaseModels.Athlete
-	err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		return tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteID).
+	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteId).
 			First(&athlete).Error
+		if err != nil {
+			err = errors.Wrap(err, "Failed to get the athlete")
+		}
+		return err
 	})
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
-		c.Abort()
+	if errors.Is(err2, gorm.ErrRecordNotFound) {
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
 		return
-	} else if err != nil {
-		endpoints.Logger.Error(ctx, err)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
-		c.Abort()
+	} else if err2 != nil {
+		endpoints.Logger.Error(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
 		return
 	}
 
