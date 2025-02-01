@@ -30,3 +30,21 @@ func CheckIfExerciseExists(ctx context.Context, exerciseId uint) (bool, error) {
 func createNewPerformance(ctx context.Context, body []PerformanceBody) error {
 	return nil
 }
+
+// translatePerformanceBody translates the performance body to a performance db entry
+func translatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseModels.Performance {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBody")
+	defer span.End()
+
+	performances := make([]databaseModels.Performance, len(performanceBodies))
+	for idx, performance := range performanceBodies {
+		performances[idx] = databaseModels.Performance{
+			Points:     performance.Points,
+			Date:       performance.Date,
+			ExerciseId: performance.ExerciseId,
+			AthleteId:  performance.AthleteId,
+		}
+	}
+
+	return performances
+}
