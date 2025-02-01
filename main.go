@@ -60,6 +60,9 @@ func init() {
 	DatabaseFlow.RegisterModels(ctx,
 		databaseModels.Trainer{},
 		databaseModels.Athlete{},
+		databaseModels.Discipline{},
+		databaseModels.Exercise{},
+		databaseModels.Performance{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
