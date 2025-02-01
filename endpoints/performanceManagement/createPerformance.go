@@ -78,10 +78,9 @@ func CreatePerformance(c *gin.Context) {
 	// Create performance entry in the database
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
-	err4 := createNewPerformance(ctx, performanceBodies)
-	// ToDo: Catch more specific errors
+	err4 := createNewPerformances(ctx, translatePerformanceBody(ctx, performanceBodies))
 	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to create new performance entry")
+		err4 = errors.Wrap(err4, "Failed to create the performance entry")
 		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
