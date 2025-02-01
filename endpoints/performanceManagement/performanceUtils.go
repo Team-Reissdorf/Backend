@@ -27,7 +27,20 @@ func CheckIfExerciseExists(ctx context.Context, exerciseId uint) (bool, error) {
 	return exerciseCount > 0, nil
 }
 
-func createNewPerformance(ctx context.Context, body []PerformanceBody) error {
+// createNewPerformances creates new performances in the database
+func createNewPerformances(ctx context.Context, performanceEntries []databaseModels.Performance) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformances")
+	defer span.End()
+
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Create(&performanceEntries).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to write the performance entry to the database")
+		return err1
+	}
+
 	return nil
 }
 
