@@ -16,7 +16,7 @@ func CheckIfExerciseExists(ctx context.Context, exerciseId uint) (bool, error) {
 
 	var exerciseCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Athlete{}).Where("exercise_id = ?", exerciseId).Count(&exerciseCount).Error
+		err := tx.Model(&databaseModels.Exercise{}).Where("exercise_id = ?", exerciseId).Count(&exerciseCount).Error
 		return err
 	})
 	if err1 != nil {
