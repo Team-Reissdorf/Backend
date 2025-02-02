@@ -17,7 +17,7 @@ var (
 
 // validateAthlete checks if all values of an athlete are valid
 // Throws: Forwards errors of the formatHelper
-func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
+func validateAthlete(ctx context.Context, athlete *AthleteBody) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
 
