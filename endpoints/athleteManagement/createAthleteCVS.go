@@ -86,7 +86,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	}
 
 	// Parse data
-	var athletes []databaseUtils.Athlete
+	var athleteBodies []AthleteBody
 	for _, record := range records {
 		// Ensure the column count is correct
 		if len(record) != csvColumnCount {
@@ -97,13 +97,12 @@ func CreateAthleteCVS(c *gin.Context) {
 		}
 
 		// Map CSV data to an athlete object
-		athlete := databaseUtils.Athlete{
-			FirstName:    record[0],
-			LastName:     record[1],
-			BirthDate:    record[3],
-			Sex:          record[4],
-			Email:        record[2],
-			TrainerEmail: trainerEmail,
+		athlete := AthleteBody{
+			FirstName: record[0],
+			LastName:  record[1],
+			BirthDate: record[3],
+			Sex:       record[4],
+			Email:     record[2],
 		}
 		athletes = append(athletes, athlete)
 	}
