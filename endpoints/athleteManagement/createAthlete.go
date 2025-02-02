@@ -2,7 +2,7 @@ package athleteManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
@@ -42,8 +42,8 @@ func CreateAthlete(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Create the athlete
-	athletes := make([]databaseModels.Athlete, 1)
-	athletes[0] = databaseModels.Athlete{
+	athletes := make([]databaseUtils.Athlete, 1)
+	athletes[0] = databaseUtils.Athlete{
 		FirstName:    body.FirstName,
 		LastName:     body.LastName,
 		BirthDate:    body.BirthDate,

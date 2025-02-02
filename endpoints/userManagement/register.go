@@ -2,7 +2,7 @@ package userManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
@@ -62,7 +62,7 @@ func Register(c *gin.Context) {
 	}
 
 	// Create the user
-	trainer := databaseModels.Trainer{
+	trainer := databaseUtils.Trainer{
 		Email:    body.Email,
 		Password: hash,
 	}

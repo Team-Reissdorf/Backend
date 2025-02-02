@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -54,7 +54,7 @@ func GetAthleteByID(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Get the specified athlete if he corresponds to the given trainer
-	var athlete databaseModels.Athlete
+	var athlete databaseUtils.Athlete
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteId).
 			First(&athlete).Error
@@ -84,12 +84,12 @@ func GetAthleteByID(c *gin.Context) {
 }
 
 // translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseModels.Athlete) AthleteBodyWithId {
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) AthleteBodyWithId {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
 	athleteResponse := AthleteBodyWithId{
-		AthleteId: athlete.AthleteId,
+		AthleteId: athlete.ID,
 		FirstName: athlete.FirstName,
 		LastName:  athlete.LastName,
 		Email:     athlete.Email,

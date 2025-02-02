@@ -5,7 +5,7 @@
 
 ## Setup db for testing
 ```shell
-podman run -d \
+docker run -d \
   --name ComPeteHub \
   -e POSTGRES_USER=test \
   -e POSTGRES_PASSWORD=test123 \

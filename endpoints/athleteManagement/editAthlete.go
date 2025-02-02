@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
@@ -45,8 +45,8 @@ func EditAthlete(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Translate into a database object
-	athlete := databaseModels.Athlete{
-		AthleteId:    body.AthleteId,
+	athlete := databaseUtils.Athlete{
+		ID:           body.AthleteId,
 		FirstName:    body.FirstName,
 		LastName:     body.LastName,
 		BirthDate:    body.BirthDate,
@@ -58,8 +58,8 @@ func EditAthlete(c *gin.Context) {
 	// Check if the user exists and is assigned to the given trainer
 	var athleteCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseModels.Athlete{}).
-			Where("athlete_id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
+		err := tx.Model(databaseUtils.Athlete{}).
+			Where("id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
 		return err
 	})
 	if err1 != nil {
@@ -108,7 +108,7 @@ func EditAthlete(c *gin.Context) {
 	}
 
 	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseModels.Athlete{}).Where("athlete_id = ?", athlete.AthleteId).Updates(athlete).Error
+		err := tx.Model(databaseUtils.Athlete{}).Where("athlete_id = ?", athlete.ID).Updates(athlete).Error
 		return err
 	})
 	if err3 != nil {

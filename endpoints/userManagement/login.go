@@ -3,7 +3,7 @@ package userManagement
 import (
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/Team-Reissdorf/Backend/hashingHelper"
@@ -54,9 +54,9 @@ func Login(c *gin.Context) {
 	}
 
 	// Get trainer from the database
-	var trainer databaseModels.Trainer
+	var trainer databaseUtils.Trainer
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Trainer{}).Where("email = ?", body.Email).First(&trainer).Error
+		err := tx.Model(&databaseUtils.Trainer{}).Where("email = ?", body.Email).First(&trainer).Error
 		return err
 	})
 	if errors.Is(err1, gorm.ErrRecordNotFound) {
