@@ -15,6 +15,36 @@ var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
+// validateAthlete checks if all values of an athlete are valid
+// Throws: Forwards errors of the formatHelper
+func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
+	defer span.End()
+
+	// Capitalize the first letter of the name
+	athlete.FirstName = strings.ToUpper(string(athlete.FirstName[0])) + athlete.FirstName[1:]
+	athlete.LastName = strings.ToUpper(string(athlete.LastName[0])) + athlete.LastName[1:]
+
+	athlete.Email = strings.ToLower(athlete.Email)
+	if err := formatHelper.IsEmail(athlete.Email); err != nil {
+		err = errors.Wrap(err, "Invalid email address")
+		return err
+	}
+
+	if err := formatHelper.IsDate(athlete.BirthDate); err != nil {
+		err = errors.Wrap(err, "Invalid date")
+		return err
+	}
+
+	athlete.Sex = strings.ToLower(string(athlete.Sex[0]))
+	if err := formatHelper.IsSex(athlete.Sex); err != nil {
+		err = errors.Wrap(err, "Invalid sex")
+		return err
+	}
+
+	return nil
+}
+
 // createNewAthletes creates new athletes in the database and returns the athletes that already exist.
 // Note: If the error is not nil, the returned list is invalid.
 func createNewAthletes(ctx context.Context, athletes []databaseUtils.Athlete) (error, []databaseUtils.Athlete) {
