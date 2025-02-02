@@ -15,6 +15,26 @@ var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
+// translateAthleteBodies translates the athlete body to an athlete db entry
+func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
+	defer span.End()
+
+	athletes := make([]databaseUtils.Athlete, len(athleteBodies))
+	for idx, athlete := range athleteBodies {
+		athletes[idx] = databaseUtils.Athlete{
+			FirstName:    athlete.FirstName,
+			LastName:     athlete.LastName,
+			BirthDate:    athlete.BirthDate,
+			Sex:          athlete.Sex,
+			Email:        athlete.Email,
+			TrainerEmail: trainerEmail,
+		}
+	}
+
+	return athletes
+}
+
 // validateAthlete checks if all values of an athlete are valid
 // Throws: Forwards errors of the formatHelper
 func validateAthlete(ctx context.Context, athlete *AthleteBody) error {
