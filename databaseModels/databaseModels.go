@@ -12,7 +12,7 @@ type Athlete struct {
 
 	FirstName string `json:"first_name" gorm:"uniqueIndex:unique_combination"`
 	LastName  string `json:"last_name"`
-	BirthDate string `json:"birth_date" gorm:"type:date" gorm:"uniqueIndex:unique_combination"`
+	BirthDate string `json:"birth_date" gorm:"type:date;uniqueIndex:unique_combination"`
 	Sex       string `json:"sex"`
 	Email     string `json:"email" gorm:"uniqueIndex:unique_combination"`
 
