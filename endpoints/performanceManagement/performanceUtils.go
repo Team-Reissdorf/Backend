@@ -27,8 +27,8 @@ func createNewPerformances(ctx context.Context, performanceEntries []databaseUti
 	return nil
 }
 
-// translatePerformanceBody translates the performance body to a performance db entry
-func translatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
+// translatePerformanceBodies translates the performance body to a performance db entry
+func translatePerformanceBodies(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBodies")
 	defer span.End()
 
