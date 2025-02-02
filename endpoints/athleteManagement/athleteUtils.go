@@ -90,11 +90,6 @@ func athleteExists(ctx context.Context, athlete *databaseUtils.Athlete, checkWit
 	ctx, span := endpoints.Tracer.Start(ctx, "CheckAthleteExists")
 	defer span.End()
 
-	// Validate all values of the athlete
-	if err := validateAthlete(ctx, athlete); err != nil {
-		return false, err
-	}
-
 	// Check if the email and birth_date combo already exists
 	var athleteCount int64
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
