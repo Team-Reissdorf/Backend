@@ -40,8 +40,13 @@ func CreateAthlete(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
+	// Translate into a database object
+	athleteBodies := make([]AthleteBody, 1)
+	athleteBodies[0] = body
+	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
+
 	// Validate the athlete body
-	err1 := validateAthlete(ctx, &body)
+	err1 := validateAthlete(ctx, &athleteEntries[0])
 	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
@@ -60,11 +65,6 @@ func CreateAthlete(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
 		return
 	}
-
-	// Translate into a database object
-	athleteBodies := make([]AthleteBody, 1)
-	athleteBodies[0] = body
-	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
 
 	// Create the athlete
 	err2, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)

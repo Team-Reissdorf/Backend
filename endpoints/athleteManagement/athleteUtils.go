@@ -37,7 +37,7 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 
 // validateAthlete checks if all values of an athlete are valid
 // Throws: Forwards errors of the formatHelper
-func validateAthlete(ctx context.Context, athlete *AthleteBody) error {
+func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
 
