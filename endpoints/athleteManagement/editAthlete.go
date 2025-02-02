@@ -77,28 +77,19 @@ func EditAthlete(c *gin.Context) {
 	}
 
 	// Check if the user exists and is assigned to the given trainer
-	var athleteCount int64
-	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseUtils.Athlete{}).
-			Where("id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
-		return err
-	})
-	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to check whether the athlete exists and is assigned to the trainer")
-		endpoints.Logger.Error(ctx, err1)
+	exists, err2 := AthleteExistsForTrainer(ctx, athleteEntry.ID, trainerEmail)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to check if the athlete exists and is assigned to the trainer")
+		endpoints.Logger.Error(ctx, err2)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
 		return
 	}
-	if athleteCount < 1 {
+	if !exists {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d does not exist", body.AthleteId))
 		c.AbortWithStatusJSON(http.StatusNotFound, "Athlete does not exist")
 		return
-	} else if athleteCount == 1 {
+	} else {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d exists and is assigned to the given trainer", body.AthleteId))
-	} else if athleteCount > 1 { // Should never happen if the database works correct
-		endpoints.Logger.Error(ctx, fmt.Sprintf("Athlete with id %d exists %d times", body.AthleteId, athleteCount))
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Athlete exists multiple times. Please consult the database engineer!"})
-		return
 	}
 
 	// Validate all values of the athlete and check if another athlete with the given unique combo exists
