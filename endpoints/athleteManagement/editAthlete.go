@@ -45,7 +45,7 @@ func EditAthlete(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Translate into a database object
-	athlete := databaseUtils.Athlete{
+	athleteEntry := databaseUtils.Athlete{
 		ID:           body.AthleteId,
 		FirstName:    body.FirstName,
 		LastName:     body.LastName,
@@ -53,6 +53,27 @@ func EditAthlete(c *gin.Context) {
 		Sex:          body.Sex,
 		Email:        body.Email,
 		TrainerEmail: trainerEmail,
+	}
+
+	// Validate the athlete body
+	err1 := validateAthlete(ctx, &athleteEntry)
+	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
+		return
+	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		return
+	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
+		return
+	} else if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to validate the athlete body")
+		endpoints.Logger.Error(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
 	}
 
 	// Check if the user exists and is assigned to the given trainer
