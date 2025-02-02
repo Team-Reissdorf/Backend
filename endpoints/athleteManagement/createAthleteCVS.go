@@ -104,7 +104,28 @@ func CreateAthleteCVS(c *gin.Context) {
 			Sex:       record[4],
 			Email:     record[2],
 		}
-		athletes = append(athletes, athlete)
+		athleteBodies = append(athleteBodies, athlete)
+
+		// Validate the athlete body
+		err1 := validateAthlete(ctx, &athlete)
+		if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
+			return
+		} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+			return
+		} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
+			return
+		} else if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to validate the athlete body")
+			endpoints.Logger.Error(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+			return
+		}
 	}
 
 	// Write athletes to the db
