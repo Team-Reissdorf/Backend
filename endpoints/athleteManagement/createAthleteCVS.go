@@ -3,7 +3,7 @@ package athleteManagement
 import (
 	"encoding/csv"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
@@ -14,8 +14,8 @@ import (
 )
 
 type AlreadyExistingAthletesResponse struct {
-	Message                 string                   `json:"message" example:"Creation successful"`
-	AlreadyExistingAthletes []databaseModels.Athlete `json:"alreadyExistingAthletes"`
+	Message                 string                  `json:"message" example:"Creation successful"`
+	AlreadyExistingAthletes []databaseUtils.Athlete `json:"alreadyExistingAthletes"`
 }
 
 var csvColumnCount = 5
@@ -90,7 +90,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	}
 
 	// Parse data
-	var athletes []databaseModels.Athlete
+	var athletes []databaseUtils.Athlete
 	for _, record := range records {
 		// Ensure the column count is correct
 		if len(record) != csvColumnCount {
@@ -102,7 +102,7 @@ func CreateAthleteCVS(c *gin.Context) {
 		}
 
 		// Map CSV data to an athlete object
-		athlete := databaseModels.Athlete{
+		athlete := databaseUtils.Athlete{
 			FirstName:    record[0],
 			LastName:     record[1],
 			BirthDate:    record[3],

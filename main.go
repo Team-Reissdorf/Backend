@@ -7,7 +7,7 @@ import (
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/LucaSchmitz2003/FlowWatch/otelHelper"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/backendSettings"
 	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
@@ -58,11 +58,11 @@ func init() {
 
 	// Register the models for the database
 	DatabaseFlow.RegisterModels(ctx,
-		databaseModels.Trainer{},
-		databaseModels.Athlete{},
-		databaseModels.Discipline{},
-		databaseModels.Exercise{},
-		databaseModels.Performance{},
+		databaseUtils.Trainer{},
+		databaseUtils.Athlete{},
+		databaseUtils.Discipline{},
+		databaseUtils.Exercise{},
+		databaseUtils.Performance{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 

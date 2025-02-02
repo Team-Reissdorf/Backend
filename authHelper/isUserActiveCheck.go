@@ -3,7 +3,7 @@ package authHelper
 import (
 	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -17,7 +17,7 @@ func isUserActive(ctx context.Context, userId string) (bool, error) {
 
 	var count int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Trainer{}).Where("email = ?", userId).Count(&count).Error
+		err := tx.Model(&databaseUtils.Trainer{}).Where("email = ?", userId).Count(&count).Error
 		return err
 	})
 	if err1 != nil {

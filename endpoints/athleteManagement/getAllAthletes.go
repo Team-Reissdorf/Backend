@@ -3,7 +3,7 @@ package athleteManagement
 import (
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseModels"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -35,7 +35,7 @@ func GetAllAthletes(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Get all athletes for the given trainer
-	var athletes []databaseModels.Athlete
+	var athletes []databaseUtils.Athlete
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Where("trainer_email = ?", strings.ToLower(trainerEmail)).Find(&athletes).Error
 		err = errors.Wrap(err, "Failed to get the athletes")

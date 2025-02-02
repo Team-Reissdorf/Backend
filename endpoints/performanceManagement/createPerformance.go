@@ -2,6 +2,7 @@ package performanceManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -49,7 +50,7 @@ func CreatePerformance(c *gin.Context) {
 		return
 	}
 
-	// Check if the athlete exists for this trainer
+	// Check if the athlete exists for this trainer, since the FK constraint does not check this
 	athleteExists, err2 := athleteManagement.AthleteExistsForTrainer(ctx, body.AthleteId, trainerEmail)
 	if err2 != nil {
 		endpoints.Logger.Error(ctx, err2)
@@ -62,23 +63,16 @@ func CreatePerformance(c *gin.Context) {
 		return
 	}
 
-	// Check if the given exercise exists
-	exerciseExists, err3 := CheckIfExerciseExists(ctx, body.ExerciseId)
-	if err3 != nil {
-		endpoints.Logger.Debug(ctx, err3)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the exercise exists"})
-		return
-	}
-	if !exerciseExists {
-		endpoints.Logger.Debug(ctx, "Exercise does not exist")
-		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Exercise does not exist"})
-		return
-	}
-
 	// Create performance entry in the database
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
 	err4 := CreateNewPerformances(ctx, TranslatePerformanceBody(ctx, performanceBodies))
+	if errors.Is(err4, databaseUtils.ErrForeignKeyViolation) {
+		err4 = errors.Wrap(err4, "Athlete or exercise does not exist")
+		endpoints.Logger.Debug(ctx, err4)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
+		return
+	}
 	if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the performance entry")
 		endpoints.Logger.Error(ctx, err4)
