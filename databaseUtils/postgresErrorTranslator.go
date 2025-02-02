@@ -5,6 +5,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	CodeForeignKeyViolation = "23503"
+)
+
 var (
 	ErrForeignKeyViolation = errors.New("Foreign key constraint violation")
 )
@@ -18,7 +22,7 @@ func TranslatePostgresError(err error) error {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		switch pgErr.Code {
-		case "23503":
+		case CodeForeignKeyViolation:
 			return ErrForeignKeyViolation
 		}
 	}
