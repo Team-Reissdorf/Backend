@@ -2,7 +2,6 @@ package athleteManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
@@ -41,51 +40,50 @@ func CreateAthlete(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Create the athlete
-	athletes := make([]databaseUtils.Athlete, 1)
-	athletes[0] = databaseUtils.Athlete{
-		FirstName:    body.FirstName,
-		LastName:     body.LastName,
-		BirthDate:    body.BirthDate,
-		Sex:          body.Sex,
-		Email:        body.Email,
-		TrainerEmail: trainerEmail,
-	}
-	err1, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
+	// Validate the athlete body
+	err1 := validateAthlete(ctx, &body)
 	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
 		return
 	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
 		return
 	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, NoNewAthletesError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
 		return
 	} else if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to create the athlete")
+		err1 = errors.Wrap(err1, "Failed to validate the athlete body")
 		endpoints.Logger.Error(ctx, err1)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
+	}
+
+	// Translate into a database object
+	athleteBodies := make([]AthleteBody, 1)
+	athleteBodies[0] = body
+	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
+
+	// Create the athlete
+	err2, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
+	if errors.Is(err2, NoNewAthletesError) {
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
+		return
+	} else if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to create the athlete")
+		endpoints.Logger.Error(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the athlete"})
 		return
 	}
 
 	// Check if the athlete already exists
-	if len(alreadyExistingAthletes) > 0 {
+	if len(alreadyExistingAthletes) > 0 { // Should never happen, since the NoNewAthletesError should be thrown
 		err := errors.New("Athlete already exists")
-		endpoints.Logger.Debug(ctx, err)
-		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
-		c.Abort()
+		endpoints.Logger.Error(ctx, err)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
 		return
 	}
 
