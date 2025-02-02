@@ -5,7 +5,7 @@ import (
 )
 
 type Athlete struct {
-	AthleteId uint `gorm:"primarykey"`
+	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
@@ -39,10 +39,10 @@ type Discipline struct {
 }
 
 type Exercise struct {
-	ExerciseId uint `gorm:"primarykey"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  *time.Time `gorm:"index"`
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	Name string `json:"name"`
 	Unit string `json:"unit"`
@@ -53,19 +53,19 @@ type Exercise struct {
 }
 
 type Performance struct {
-	PerformanceId uint `gorm:"primarykey"`
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	DeletedAt     *time.Time `gorm:"index"`
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	Points uint64 `json:"points"`
 	Date   string `json:"date" gorm:"type:date"`
 
 	ExerciseId uint `gorm:"index"`
 	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
-	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ExerciseId;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
 	AthleteId uint `gorm:"index"`
 	// BelongsTo Athlete (FK: AthleteId -> Athlete.AthleteId)
-	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:AthleteId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
