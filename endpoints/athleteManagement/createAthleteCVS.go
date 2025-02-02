@@ -132,23 +132,8 @@ func CreateAthleteCVS(c *gin.Context) {
 	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
 
 	// Write athletes to the db
-	err4, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
-	if errors.Is(err4, formatHelper.InvalidSexLengthError) || errors.Is(err4, formatHelper.InvalidSexValue) {
-		endpoints.Logger.Debug(ctx, err4)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, NoNewAthletesError) {
+	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
+	if errors.Is(err1, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
