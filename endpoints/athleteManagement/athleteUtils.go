@@ -115,35 +115,6 @@ func athleteExists(ctx context.Context, athlete *databaseUtils.Athlete, checkWit
 	return athleteCount > 0, nil
 }
 
-// validateAthlete checks if all values of an athlete are valid
-func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
-	defer span.End()
-
-	// Capitalize the first letter of the name
-	athlete.FirstName = strings.ToUpper(string(athlete.FirstName[0])) + athlete.FirstName[1:]
-	athlete.LastName = strings.ToUpper(string(athlete.LastName[0])) + athlete.LastName[1:]
-
-	athlete.Email = strings.ToLower(athlete.Email)
-	if err := formatHelper.IsEmail(athlete.Email); err != nil {
-		err = errors.Wrap(err, "Invalid email address")
-		return err
-	}
-
-	if err := formatHelper.IsDate(athlete.BirthDate); err != nil {
-		err = errors.Wrap(err, "Invalid date")
-		return err
-	}
-
-	athlete.Sex = strings.ToLower(string(athlete.Sex[0]))
-	if err := formatHelper.IsSex(athlete.Sex); err != nil {
-		err = errors.Wrap(err, "Invalid sex")
-		return err
-	}
-
-	return nil
-}
-
 // AthleteExistsForTrainer checks if an athlete with the given id exists for the given trainer
 func AthleteExistsForTrainer(ctx context.Context, athleteId uint, trainerEmail string) (bool, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "AthleteExistsCheck")
