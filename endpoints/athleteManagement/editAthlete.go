@@ -2,14 +2,12 @@ package athleteManagement
 
 import (
 	"fmt"
-	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -92,38 +90,14 @@ func EditAthlete(c *gin.Context) {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d exists and is assigned to the given trainer", body.AthleteId))
 	}
 
-	// Validate all values of the athlete and check if another athlete with the given unique combo exists
-	exists, err2 := athleteExists(ctx, &athlete, true)
-	if errors.Is(err2, formatHelper.InvalidSexLengthError) || errors.Is(err2, formatHelper.InvalidSexValue) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
+	// Update the athlete in the database
+	err3 := updateAthlete(ctx, athleteEntry)
+	if errors.Is(err3, databaseUtils.ErrForeignKeyViolation) {
+		err3 = errors.Wrap(err3, "Another athlete with the same personal information already exists")
+		endpoints.Logger.Debug(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "Another athlete with the same personal information already exists"})
 		return
-	} else if errors.Is(err2, formatHelper.DateFormatInvalidError) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		return
-	} else if errors.Is(err2, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err2, formatHelper.EmailAddressContainsNameError) || errors.Is(err2, formatHelper.EmailAddressInvalidTldError) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		return
-	} else if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to validate the athlete")
-		endpoints.Logger.Error(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to validate the athlete"})
-		return
-	}
-	if exists {
-		err := errors.New("Another athlete with the same personal information already exists")
-		endpoints.Logger.Debug(ctx, err)
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
-		return
-	}
-
-	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseUtils.Athlete{}).Where("athlete_id = ?", athlete.ID).Updates(athlete).Error
-		return err
-	})
-	if err3 != nil {
+	} else if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to update the athlete")
 		endpoints.Logger.Error(ctx, err3)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the athlete"})
