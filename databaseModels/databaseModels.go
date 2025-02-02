@@ -16,7 +16,9 @@ type Athlete struct {
 	Sex       string `json:"sex"`
 	Email     string `json:"email" gorm:"uniqueIndex:unique_combination"`
 
-	TrainerEmail string `json:"trainer_email" gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	TrainerEmail string `json:"trainer_email" gorm:"index"`
+	// BelongsTo Trainer (FK: TrainerEmail -> Trainer.Email)
+	Trainer Trainer `json:"-" gorm:"foreignKey:TrainerEmail;references:Email;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;-:migration"`
 }
 
 type Trainer struct {
@@ -45,7 +47,9 @@ type Exercise struct {
 	Name string `json:"name"`
 	Unit string `json:"unit"`
 
-	DisciplineName string `json:"discipline_name" gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	DisciplineName string `json:"discipline_name" gorm:"index"`
+	// BelongsTo Discipline (FK: DisciplineName -> Discipline.Name)
+	Discipline Discipline `json:"-" gorm:"foreignKey:DisciplineName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;-:migration"`
 }
 
 type Performance struct {
@@ -57,6 +61,11 @@ type Performance struct {
 	Points uint64 `json:"points"`
 	Date   string `json:"date" gorm:"type:date"`
 
-	ExerciseId uint `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
-	AthleteId  uint `gorm:"index;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ExerciseId uint `gorm:"index"`
+	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
+	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ExerciseId;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;-:migration"`
+
+	AthleteId uint `gorm:"index"`
+	// BelongsTo Athlete (FK: AthleteId -> Athlete.AthleteId)
+	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:AthleteId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;-:migration"`
 }
