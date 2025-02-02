@@ -128,6 +128,9 @@ func CreateAthleteCVS(c *gin.Context) {
 		}
 	}
 
+	// Translate into database objects
+	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
+
 	// Write athletes to the db
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
 	if errors.Is(err4, formatHelper.InvalidSexLengthError) || errors.Is(err4, formatHelper.InvalidSexValue) {
