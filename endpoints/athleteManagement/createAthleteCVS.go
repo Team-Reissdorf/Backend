@@ -43,8 +43,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if err1 != nil || file == nil {
 		err1 = errors.Wrap(err1, "Failed to get the file")
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File is missing or invalid"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File is missing or invalid"})
 		return
 	}
 
@@ -53,8 +52,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if !strings.HasPrefix(fileHeader, "text/csv") && !strings.HasPrefix(fileHeader, "application/vnd.ms-excel") {
 		err := errors.New("Invalid file type, only CSV files are allowed")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -66,8 +64,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to open file")
 		endpoints.Logger.Debug(ctx, err2)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Could not open file"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Could not open file"})
 		return
 	}
 	defer func(fileContent multipart.File) {
@@ -78,14 +75,13 @@ func CreateAthleteCVS(c *gin.Context) {
 		}
 	}(fileContent)
 
-	// Read CSV file
+	// Read the CSV file
 	reader := csv.NewReader(fileContent)
 	records, err3 := reader.ReadAll()
 	if err3 != nil {
-		err3 = errors.Wrap(err3, "Failed to read csv")
-		endpoints.Logger.Debug(ctx, err3)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File could not be read. Invalid CSV format?"})
-		c.Abort()
+		err3 = errors.Wrap(err3, "Failed to read csv. Invalid CSV format?")
+		endpoints.Logger.Warn(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File could not be read. Invalid CSV format?"})
 		return
 	}
 
@@ -96,8 +92,7 @@ func CreateAthleteCVS(c *gin.Context) {
 		if len(record) != csvColumnCount {
 			err := errors.New("Inconsistent number of columns in the CSV file")
 			endpoints.Logger.Debug(ctx, err)
-			c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
 			return
 		}
 
@@ -132,14 +127,12 @@ func CreateAthleteCVS(c *gin.Context) {
 		return
 	} else if errors.Is(err1, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
 		endpoints.Logger.Error(ctx, err4)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
 		return
 	}
 
