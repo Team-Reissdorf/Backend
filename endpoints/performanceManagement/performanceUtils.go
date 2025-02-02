@@ -16,7 +16,7 @@ func CheckIfExerciseExists(ctx context.Context, exerciseId uint) (bool, error) {
 
 	var exerciseCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Exercise{}).Where("exercise_id = ?", exerciseId).Count(&exerciseCount).Error
+		err := tx.Model(&databaseModels.Exercise{}).Where("id = ?", exerciseId).Count(&exerciseCount).Error
 		return err
 	})
 	if err1 != nil {
@@ -27,9 +27,9 @@ func CheckIfExerciseExists(ctx context.Context, exerciseId uint) (bool, error) {
 	return exerciseCount > 0, nil
 }
 
-// createNewPerformances creates new performances in the database
-func createNewPerformances(ctx context.Context, performanceEntries []databaseModels.Performance) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformances")
+// CreateNewPerformances creates new performances in the database
+func CreateNewPerformances(ctx context.Context, performanceEntries []databaseModels.Performance) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "createNewPerformances")
 	defer span.End()
 
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
@@ -44,8 +44,8 @@ func createNewPerformances(ctx context.Context, performanceEntries []databaseMod
 	return nil
 }
 
-// translatePerformanceBody translates the performance body to a performance db entry
-func translatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseModels.Performance {
+// TranslatePerformanceBody translates the performance body to a performance db entry
+func TranslatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseModels.Performance {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBody")
 	defer span.End()
 

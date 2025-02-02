@@ -89,7 +89,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseModels.Athl
 	defer span.End()
 
 	athleteResponse := AthleteBodyWithId{
-		AthleteId: athlete.AthleteId,
+		AthleteId: athlete.ID,
 		FirstName: athlete.FirstName,
 		LastName:  athlete.LastName,
 		Email:     athlete.Email,

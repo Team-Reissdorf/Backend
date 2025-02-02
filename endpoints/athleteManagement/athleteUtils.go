@@ -71,8 +71,8 @@ func athleteExists(ctx context.Context, athlete *databaseModels.Athlete, checkWi
 		var err error
 		if checkWithId {
 			err = tx.Model(&databaseModels.Athlete{}).
-				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ? AND athlete_id != ?",
-					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName, athlete.AthleteId).
+				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ? AND id != ?",
+					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName, athlete.ID).
 				Count(&athleteCount).Error
 		} else {
 			err = tx.Model(&databaseModels.Athlete{}).
@@ -126,7 +126,7 @@ func AthleteExistsForTrainer(ctx context.Context, athleteId uint, trainerEmail s
 
 	var athleteCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseModels.Athlete{}).Where("athlete_id = ? AND trainer_email = ?", athleteId, strings.ToLower(trainerEmail)).Count(&athleteCount).Error
+		err := tx.Model(&databaseModels.Athlete{}).Where("id = ? AND trainer_email = ?", athleteId, strings.ToLower(trainerEmail)).Count(&athleteCount).Error
 		return err
 	})
 	if err1 != nil {

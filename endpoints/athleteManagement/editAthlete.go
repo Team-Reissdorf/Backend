@@ -46,7 +46,7 @@ func EditAthlete(c *gin.Context) {
 
 	// Translate into a database object
 	athlete := databaseModels.Athlete{
-		AthleteId:    body.AthleteId,
+		ID:           body.AthleteId,
 		FirstName:    body.FirstName,
 		LastName:     body.LastName,
 		BirthDate:    body.BirthDate,
@@ -59,7 +59,7 @@ func EditAthlete(c *gin.Context) {
 	var athleteCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Model(databaseModels.Athlete{}).
-			Where("athlete_id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
+			Where("id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
 		return err
 	})
 	if err1 != nil {
@@ -108,7 +108,7 @@ func EditAthlete(c *gin.Context) {
 	}
 
 	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseModels.Athlete{}).Where("athlete_id = ?", athlete.AthleteId).Updates(athlete).Error
+		err := tx.Model(databaseModels.Athlete{}).Where("athlete_id = ?", athlete.ID).Updates(athlete).Error
 		return err
 	})
 	if err3 != nil {
