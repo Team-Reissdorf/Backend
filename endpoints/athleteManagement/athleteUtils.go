@@ -36,20 +36,26 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 }
 
 // translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) AthleteBodyWithId {
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
+
+	// Reformat the date to the correct format
+	birthDate, err := formatHelper.FormatDate(athlete.BirthDate)
+	if err != nil {
+		return nil, err
+	}
 
 	athleteResponse := AthleteBodyWithId{
 		AthleteId: athlete.ID,
 		FirstName: athlete.FirstName,
 		LastName:  athlete.LastName,
 		Email:     athlete.Email,
-		BirthDate: athlete.BirthDate,
+		BirthDate: birthDate,
 		Sex:       athlete.Sex,
 	}
 
-	return athleteResponse
+	return &athleteResponse, nil
 }
 
 // validateAthlete checks if all values of an athlete are valid

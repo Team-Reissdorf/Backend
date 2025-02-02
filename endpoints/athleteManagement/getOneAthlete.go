@@ -72,12 +72,21 @@ func GetAthleteByID(c *gin.Context) {
 		return
 	}
 
+	// Translate athlete to response type
+	athleteBody, err3 := translateAthleteToResponse(ctx, athlete)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to translate the athlete")
+		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
+	}
+
 	// Send successful response
 	c.JSON(
 		http.StatusOK,
 		AthleteResponse{
 			Message: "Request successful",
-			Athlete: translateAthleteToResponse(ctx, athlete),
+			Athlete: *athleteBody,
 		},
 	)
 }
