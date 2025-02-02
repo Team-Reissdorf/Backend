@@ -9,6 +9,7 @@ var (
 	ErrForeignKeyViolation = errors.New("Foreign key constraint violation")
 )
 
+// TranslatePostgresError translates a postgres error to a more readable error
 func TranslatePostgresError(err error) error {
 	if err == nil {
 		return err
