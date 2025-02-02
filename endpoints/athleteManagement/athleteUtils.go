@@ -91,10 +91,10 @@ func createNewAthletes(ctx context.Context, athletes []databaseUtils.Athlete) (e
 	if len(newAthletes) > 0 {
 		err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 			err := tx.Create(&newAthletes).Error
-			err = errors.Wrap(err, "Failed to create new athletes")
 			return err
 		})
 		if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to create new athletes")
 			return err1, alreadyExistingAthletes
 		}
 	} else {
@@ -102,6 +102,22 @@ func createNewAthletes(ctx context.Context, athletes []databaseUtils.Athlete) (e
 	}
 
 	return nil, alreadyExistingAthletes
+}
+
+// updateAthlete updates the given athlete in the database
+func updateAthlete(ctx context.Context, athlete databaseUtils.Athlete) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "EditAthlete")
+	defer span.End()
+
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Athlete{}).Where("id = ?", athlete.ID).Updates(athlete).Error
+		return err
+	})
+	err1 = databaseUtils.TranslatePostgresError(err1)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to update the athlete")
+	}
+	return err1
 }
 
 // athleteExists checks if the given athlete is already in the database (email and birth_date combination).
