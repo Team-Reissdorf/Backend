@@ -1,7 +1,6 @@
 package athleteManagement
 
 import (
-	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -81,21 +80,4 @@ func GetAthleteByID(c *gin.Context) {
 			Athlete: translateAthleteToResponse(ctx, athlete),
 		},
 	)
-}
-
-// translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) AthleteBodyWithId {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
-	defer span.End()
-
-	athleteResponse := AthleteBodyWithId{
-		AthleteId: athlete.ID,
-		FirstName: athlete.FirstName,
-		LastName:  athlete.LastName,
-		Email:     athlete.Email,
-		BirthDate: athlete.BirthDate,
-		Sex:       athlete.Sex,
-	}
-
-	return athleteResponse
 }
