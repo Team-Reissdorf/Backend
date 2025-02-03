@@ -73,11 +73,22 @@ func GetPerformanceEntries(c *gin.Context) {
 	performanceEntries := make([]databaseUtils.Performance, 1)
 	performanceEntries[0] = *performanceEntry
 
+	// Translate performance to response type
+	performanceBody, err4 := translatePerformanceToResponse(ctx, *performanceEntry)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to translate the performance entry")
+		endpoints.Logger.Error(ctx, err4)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
+	}
+	performanceBodies := make([]PerformanceBodyWithId, 1)
+	performanceBodies[0] = *performanceBody
+
 	c.JSON(
 		http.StatusOK,
 		PerformanceResponse{
 			Message:            "Request successful",
-			PerformanceEntries: performanceEntries,
+			PerformanceEntries: performanceBodies,
 		},
 	)
 }
