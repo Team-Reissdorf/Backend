@@ -66,7 +66,7 @@ func CreatePerformance(c *gin.Context) {
 	// Create performance entry in the database
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
-	err4 := CreateNewPerformances(ctx, TranslatePerformanceBody(ctx, performanceBodies))
+	err4 := createNewPerformances(ctx, translatePerformanceBody(ctx, performanceBodies))
 	if errors.Is(err4, databaseUtils.ErrForeignKeyViolation) {
 		err4 = errors.Wrap(err4, "Athlete or exercise does not exist")
 		endpoints.Logger.Debug(ctx, err4)
