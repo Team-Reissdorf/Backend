@@ -5,6 +5,7 @@ import (
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -43,6 +44,28 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	}
 
 	return performances
+}
+
+// translatePerformanceToResponse converts an performance database object to response type
+func translatePerformanceToResponse(ctx context.Context, performance databaseUtils.Performance) (*PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceToResponse")
+	defer span.End()
+
+	// Reformat the date to the correct format
+	date, err := formatHelper.FormatDate(performance.Date)
+	if err != nil {
+		return nil, err
+	}
+
+	performanceResponse := PerformanceBodyWithId{
+		PerformanceId: performance.ID,
+		Points:        performance.Points,
+		Date:          date,
+		ExerciseId:    performance.ExerciseId,
+		AthleteId:     performance.ID,
+	}
+
+	return &performanceResponse, nil
 }
 
 // getLatestPerformanceEntry gets the latest performance entry of an athlete
