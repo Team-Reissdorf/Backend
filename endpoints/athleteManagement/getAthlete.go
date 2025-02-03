@@ -29,7 +29,7 @@ type AthleteResponse struct {
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/athlete/get-one/{AthleteId} [get]
+// @Router /v1/athlete/get/{AthleteId} [get]
 func GetAthleteByID(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetOneAthlete")
 	defer span.End()
