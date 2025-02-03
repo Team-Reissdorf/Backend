@@ -120,7 +120,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			athlete.POST("/create", athleteManagement.CreateAthlete)
 			athlete.POST("/bulk-create", athleteManagement.CreateAthleteCVS)
 			athlete.GET("/get-all", athleteManagement.GetAllAthletes)
-			athlete.GET("/get-one/:AthleteId", athleteManagement.GetAthleteByID)
+			athlete.GET("/get/:AthleteId", athleteManagement.GetAthleteByID)
 			athlete.PUT("/edit", athleteManagement.EditAthlete)
 			athlete.DELETE("/delete/:AthleteId", athleteManagement.DeleteAthlete)
 		}

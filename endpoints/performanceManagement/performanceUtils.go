@@ -11,7 +11,7 @@ import (
 
 // createNewPerformances creates new performances in the database
 func createNewPerformances(ctx context.Context, performanceEntries []databaseUtils.Performance) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "createNewPerformances")
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformanceEntries")
 	defer span.End()
 
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
@@ -27,9 +27,9 @@ func createNewPerformances(ctx context.Context, performanceEntries []databaseUti
 	return nil
 }
 
-// translatePerformanceBody translates the performance body to a performance db entry
-func translatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
-	ctx, span := endpoints.Tracer.Start(ctx, "translatePerformanceBody")
+// translatePerformanceBodies translates the performance body to a performance db entry
+func translatePerformanceBodies(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBodies")
 	defer span.End()
 
 	performances := make([]databaseUtils.Performance, len(performanceBodies))

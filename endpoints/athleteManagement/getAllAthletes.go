@@ -51,7 +51,16 @@ func GetAllAthletes(c *gin.Context) {
 	// Translate athletes to response type
 	athletesResponse := make([]AthleteBodyWithId, len(athletes))
 	for idx, athlete := range athletes {
-		athletesResponse[idx] = translateAthleteToResponse(ctx, athlete)
+		// Translate athlete to response type
+		athleteBody, err2 := translateAthleteToResponse(ctx, athlete)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Failed to translate the athlete")
+			endpoints.Logger.Error(ctx, err2)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+			return
+		}
+
+		athletesResponse[idx] = *athleteBody
 	}
 
 	// Send successful response

@@ -15,82 +15,51 @@ var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
-// createNewAthletes creates new athletes in the database and returns the athletes that already exist.
-// Note: If the error is not nil, the returned list is invalid.
-func createNewAthletes(ctx context.Context, athletes []databaseUtils.Athlete) (error, []databaseUtils.Athlete) {
-	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewAthletes")
+// translateAthleteBodies translates the athlete body to an athlete db entry
+func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
 
-	// Check if an athlete already exists in the database
-	var alreadyExistingAthletes []databaseUtils.Athlete
-	var newAthletes []databaseUtils.Athlete
-	for _, athlete := range athletes {
-		exists, err := athleteExists(ctx, &athlete, false)
-		if err != nil {
-			return err, nil
-		}
-
-		if exists {
-			alreadyExistingAthletes = append(alreadyExistingAthletes, athlete)
-		} else {
-			newAthletes = append(newAthletes, athlete)
+	athletes := make([]databaseUtils.Athlete, len(athleteBodies))
+	for idx, athlete := range athleteBodies {
+		athletes[idx] = databaseUtils.Athlete{
+			FirstName:    athlete.FirstName,
+			LastName:     athlete.LastName,
+			BirthDate:    athlete.BirthDate,
+			Sex:          athlete.Sex,
+			Email:        athlete.Email,
+			TrainerEmail: trainerEmail,
 		}
 	}
 
-	// Write the new athletes to the database if not empty
-	if len(newAthletes) > 0 {
-		err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-			err := tx.Create(&newAthletes).Error
-			err = errors.Wrap(err, "Failed to create new athletes")
-			return err
-		})
-		if err1 != nil {
-			return err1, alreadyExistingAthletes
-		}
-	} else {
-		return NoNewAthletesError, alreadyExistingAthletes
-	}
-
-	return nil, alreadyExistingAthletes
+	return athletes
 }
 
-// athleteExists checks if the given athlete is already in the database (email and birth_date combination).
-// Note: If the error is not nil, the bool is invalid.
-func athleteExists(ctx context.Context, athlete *databaseUtils.Athlete, checkWithId bool) (bool, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "CheckAthleteExists")
+// translateAthleteToResponse converts an athlete database object to response type
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
-	// Validate all values of the athlete
-	if err := validateAthlete(ctx, athlete); err != nil {
-		return false, err
+	// Reformat the date to the correct format
+	birthDate, err := formatHelper.FormatDate(athlete.BirthDate)
+	if err != nil {
+		return nil, err
 	}
 
-	// Check if the email and birth_date combo already exists
-	var athleteCount int64
-	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		var err error
-		if checkWithId {
-			err = tx.Model(&databaseUtils.Athlete{}).
-				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ? AND id != ?",
-					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName, athlete.ID).
-				Count(&athleteCount).Error
-		} else {
-			err = tx.Model(&databaseUtils.Athlete{}).
-				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ?",
-					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName).
-				Count(&athleteCount).Error
-		}
-		return err
-	})
-	if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to check if the athlete exists")
-		return false, err2
+	athleteResponse := AthleteBodyWithId{
+		AthleteId: athlete.ID,
+		FirstName: athlete.FirstName,
+		LastName:  athlete.LastName,
+		Email:     athlete.Email,
+		BirthDate: birthDate,
+		Sex:       athlete.Sex,
 	}
 
-	return athleteCount > 0, nil
+	return &athleteResponse, nil
 }
 
 // validateAthlete checks if all values of an athlete are valid
+// Throws: Forwards errors of the formatHelper
 func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
@@ -117,6 +86,92 @@ func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error 
 	}
 
 	return nil
+}
+
+// createNewAthletes creates new athletes in the database and returns the athletes that already exist.
+// Note: If the error is not nil, the returned list is invalid.
+func createNewAthletes(ctx context.Context, athletes []databaseUtils.Athlete) (error, []databaseUtils.Athlete) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewAthletes")
+	defer span.End()
+
+	// Check if an athlete already exists in the database
+	var alreadyExistingAthletes []databaseUtils.Athlete
+	var newAthletes []databaseUtils.Athlete
+	for _, athlete := range athletes {
+		exists, err := athleteExists(ctx, &athlete, false)
+		if err != nil {
+			return err, nil
+		}
+
+		if exists {
+			alreadyExistingAthletes = append(alreadyExistingAthletes, athlete)
+		} else {
+			newAthletes = append(newAthletes, athlete)
+		}
+	}
+
+	// Write the new athletes to the database if not empty
+	if len(newAthletes) > 0 {
+		err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+			err := tx.Create(&newAthletes).Error
+			return err
+		})
+		if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to create new athletes")
+			return err1, alreadyExistingAthletes
+		}
+	} else {
+		return NoNewAthletesError, alreadyExistingAthletes
+	}
+
+	return nil, alreadyExistingAthletes
+}
+
+// updateAthlete updates the given athlete in the database
+func updateAthlete(ctx context.Context, athlete databaseUtils.Athlete) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "EditAthlete")
+	defer span.End()
+
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Athlete{}).Where("id = ?", athlete.ID).Updates(athlete).Error
+		return err
+	})
+	err1 = databaseUtils.TranslatePostgresError(err1)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to update the athlete")
+	}
+	return err1
+}
+
+// athleteExists checks if the given athlete is already in the database (email and birth_date combination).
+// Note: If the error is not nil, the bool is invalid.
+func athleteExists(ctx context.Context, athlete *databaseUtils.Athlete, checkWithId bool) (bool, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CheckAthleteExists")
+	defer span.End()
+
+	// Check if the email and birth_date combo already exists
+	var athleteCount int64
+	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		var err error
+		if checkWithId {
+			err = tx.Model(&databaseUtils.Athlete{}).
+				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ? AND id != ?",
+					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName, athlete.ID).
+				Count(&athleteCount).Error
+		} else {
+			err = tx.Model(&databaseUtils.Athlete{}).
+				Where("email ILIKE ? AND birth_date = ? AND first_name ILIKE ?",
+					strings.ToLower(athlete.Email), athlete.BirthDate, athlete.FirstName).
+				Count(&athleteCount).Error
+		}
+		return err
+	})
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to check if the athlete exists")
+		return false, err2
+	}
+
+	return athleteCount > 0, nil
 }
 
 // AthleteExistsForTrainer checks if an athlete with the given id exists for the given trainer

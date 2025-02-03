@@ -1,7 +1,6 @@
 package athleteManagement
 
 import (
-	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -30,7 +29,7 @@ type AthleteResponse struct {
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/athlete/get-one/{AthleteId} [get]
+// @Router /v1/athlete/get/{AthleteId} [get]
 func GetAthleteByID(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetOneAthlete")
 	defer span.End()
@@ -56,7 +55,7 @@ func GetAthleteByID(c *gin.Context) {
 	// Get the specified athlete if he corresponds to the given trainer
 	var athlete databaseUtils.Athlete
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Where("trainer_email = ? AND athlete_id = ?", strings.ToLower(trainerEmail), athleteId).
+		err := tx.Where("trainer_email = ? AND id = ?", strings.ToLower(trainerEmail), athleteId).
 			First(&athlete).Error
 		if err != nil {
 			err = errors.Wrap(err, "Failed to get the athlete")
@@ -73,29 +72,21 @@ func GetAthleteByID(c *gin.Context) {
 		return
 	}
 
+	// Translate athlete to response type
+	athleteBody, err3 := translateAthleteToResponse(ctx, athlete)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to translate the athlete")
+		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
+	}
+
 	// Send successful response
 	c.JSON(
 		http.StatusOK,
 		AthleteResponse{
 			Message: "Request successful",
-			Athlete: translateAthleteToResponse(ctx, athlete),
+			Athlete: *athleteBody,
 		},
 	)
-}
-
-// translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) AthleteBodyWithId {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
-	defer span.End()
-
-	athleteResponse := AthleteBodyWithId{
-		AthleteId: athlete.ID,
-		FirstName: athlete.FirstName,
-		LastName:  athlete.LastName,
-		Email:     athlete.Email,
-		BirthDate: athlete.BirthDate,
-		Sex:       athlete.Sex,
-	}
-
-	return athleteResponse
 }

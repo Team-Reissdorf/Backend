@@ -2,14 +2,12 @@ package athleteManagement
 
 import (
 	"fmt"
-	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -45,7 +43,7 @@ func EditAthlete(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Translate into a database object
-	athlete := databaseUtils.Athlete{
+	athleteEntry := databaseUtils.Athlete{
 		ID:           body.AthleteId,
 		FirstName:    body.FirstName,
 		LastName:     body.LastName,
@@ -55,63 +53,51 @@ func EditAthlete(c *gin.Context) {
 		TrainerEmail: trainerEmail,
 	}
 
-	// Check if the user exists and is assigned to the given trainer
-	var athleteCount int64
-	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseUtils.Athlete{}).
-			Where("id = ? AND trainer_email = ?", body.AthleteId, trainerEmail).Count(&athleteCount).Error
-		return err
-	})
-	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to check whether the athlete exists and is assigned to the trainer")
+	// Validate the athlete body
+	err1 := validateAthlete(ctx, &athleteEntry)
+	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
+		return
+	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		return
+	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
+		return
+	} else if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to validate the athlete body")
 		endpoints.Logger.Error(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+		return
+	}
+
+	// Check if the user exists and is assigned to the given trainer
+	exists, err2 := AthleteExistsForTrainer(ctx, athleteEntry.ID, trainerEmail)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to check if the athlete exists and is assigned to the trainer")
+		endpoints.Logger.Error(ctx, err2)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
 		return
 	}
-	if athleteCount < 1 {
+	if !exists {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d does not exist", body.AthleteId))
 		c.AbortWithStatusJSON(http.StatusNotFound, "Athlete does not exist")
 		return
-	} else if athleteCount == 1 {
+	} else {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Athlete with id %d exists and is assigned to the given trainer", body.AthleteId))
-	} else if athleteCount > 1 { // Should never happen if the database works correct
-		endpoints.Logger.Error(ctx, fmt.Sprintf("Athlete with id %d exists %d times", body.AthleteId, athleteCount))
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Athlete exists multiple times. Please consult the database engineer!"})
-		return
 	}
 
-	// Validate all values of the athlete and check if another athlete with the given unique combo exists
-	exists, err2 := athleteExists(ctx, &athlete, true)
-	if errors.Is(err2, formatHelper.InvalidSexLengthError) || errors.Is(err2, formatHelper.InvalidSexValue) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>, but is " + athlete.Sex})
+	// Update the athlete in the database
+	err3 := updateAthlete(ctx, athleteEntry)
+	if errors.Is(err3, databaseUtils.ErrForeignKeyViolation) {
+		err3 = errors.Wrap(err3, "Another athlete with the same personal information already exists")
+		endpoints.Logger.Debug(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "Another athlete with the same personal information already exists"})
 		return
-	} else if errors.Is(err2, formatHelper.DateFormatInvalidError) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		return
-	} else if errors.Is(err2, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err2, formatHelper.EmailAddressContainsNameError) || errors.Is(err2, formatHelper.EmailAddressInvalidTldError) {
-		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		return
-	} else if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to validate the athlete")
-		endpoints.Logger.Error(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to validate the athlete"})
-		return
-	}
-	if exists {
-		err := errors.New("Another athlete with the same personal information already exists")
-		endpoints.Logger.Debug(ctx, err)
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
-		return
-	}
-
-	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseUtils.Athlete{}).Where("athlete_id = ?", athlete.ID).Updates(athlete).Error
-		return err
-	})
-	if err3 != nil {
+	} else if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to update the athlete")
 		endpoints.Logger.Error(ctx, err3)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the athlete"})
