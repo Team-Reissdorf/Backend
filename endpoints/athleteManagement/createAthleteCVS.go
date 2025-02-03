@@ -43,8 +43,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if err1 != nil || file == nil {
 		err1 = errors.Wrap(err1, "Failed to get the file")
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File is missing or invalid"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File is missing or invalid"})
 		return
 	}
 
@@ -53,8 +52,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if !strings.HasPrefix(fileHeader, "text/csv") && !strings.HasPrefix(fileHeader, "application/vnd.ms-excel") {
 		err := errors.New("Invalid file type, only CSV files are allowed")
 		endpoints.Logger.Debug(ctx, err)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -66,8 +64,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to open file")
 		endpoints.Logger.Debug(ctx, err2)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Could not open file"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Could not open file"})
 		return
 	}
 	defer func(fileContent multipart.File) {
@@ -78,26 +75,24 @@ func CreateAthleteCVS(c *gin.Context) {
 		}
 	}(fileContent)
 
-	// Read CSV file
+	// Read the CSV file
 	reader := csv.NewReader(fileContent)
 	records, err3 := reader.ReadAll()
 	if err3 != nil {
-		err3 = errors.Wrap(err3, "Failed to read csv")
-		endpoints.Logger.Debug(ctx, err3)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File could not be read. Invalid CSV format?"})
-		c.Abort()
+		err3 = errors.Wrap(err3, "Failed to read csv. Invalid CSV format?")
+		endpoints.Logger.Warn(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File could not be read. Invalid CSV format?"})
 		return
 	}
 
 	// Parse data
-	var athletes []databaseUtils.Athlete
+	var athleteEntries []databaseUtils.Athlete
 	for _, record := range records {
 		// Ensure the column count is correct
 		if len(record) != csvColumnCount {
 			err := errors.New("Inconsistent number of columns in the CSV file")
 			endpoints.Logger.Debug(ctx, err)
-			c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
 			return
 		}
 
@@ -110,36 +105,40 @@ func CreateAthleteCVS(c *gin.Context) {
 			Email:        record[2],
 			TrainerEmail: trainerEmail,
 		}
-		athletes = append(athletes, athlete)
+		athleteEntries = append(athleteEntries, athlete)
+
+		// Validate the athlete body
+		err1 := validateAthlete(ctx, &athlete)
+		if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
+			return
+		} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+			return
+		} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
+			return
+		} else if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to validate the athlete body")
+			endpoints.Logger.Error(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+			return
+		}
 	}
 
 	// Write athletes to the db
-	err4, alreadyExistingAthletes := createNewAthletes(ctx, athletes)
-	if errors.Is(err4, formatHelper.InvalidSexLengthError) || errors.Is(err4, formatHelper.InvalidSexValue) {
-		endpoints.Logger.Debug(ctx, err4)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
+	if errors.Is(err1, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
-		c.Abort()
-		return
-	} else if errors.Is(err1, NoNewAthletesError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.JSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
 		endpoints.Logger.Error(ctx, err4)
-		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
-		c.Abort()
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
 		return
 	}
 
