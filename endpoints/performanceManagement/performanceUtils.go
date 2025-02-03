@@ -11,7 +11,7 @@ import (
 
 // createNewPerformances creates new performances in the database
 func createNewPerformances(ctx context.Context, performanceEntries []databaseUtils.Performance) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "createNewPerformances")
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformances")
 	defer span.End()
 
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
@@ -29,7 +29,7 @@ func createNewPerformances(ctx context.Context, performanceEntries []databaseUti
 
 // translatePerformanceBody translates the performance body to a performance db entry
 func translatePerformanceBody(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
-	ctx, span := endpoints.Tracer.Start(ctx, "translatePerformanceBody")
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBody")
 	defer span.End()
 
 	performances := make([]databaseUtils.Performance, len(performanceBodies))
@@ -43,4 +43,22 @@ func translatePerformanceBody(ctx context.Context, performanceBodies []Performan
 	}
 
 	return performances
+}
+
+// getLatestPerformanceEntry gets the latest performance entry of an athlete
+func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUtils.Performance, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceEntry")
+	defer span.End()
+
+	var performanceEntry databaseUtils.Performance
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ?", athleteId).Order("date DESC").First(&performanceEntry).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the latest performance entry")
+		return nil, err1
+	}
+
+	return &performanceEntry, nil
 }
