@@ -49,7 +49,7 @@ func DeleteAthlete(c *gin.Context) {
 
 	// Delete the athlete from the database
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		result := tx.Delete(&databaseUtils.Athlete{}, "trainer_email = ? AND athlete_id = ?", trainerEmail, athleteId)
+		result := tx.Delete(&databaseUtils.Athlete{}, "trainer_email = ? AND id = ?", trainerEmail, athleteId)
 		if result.Error != nil {
 			return errors.Wrap(result.Error, "Failed to delete the athlete")
 		}
