@@ -7,6 +7,7 @@ import (
 
 const (
 	CodeForeignKeyViolation = "23503"
+	CodeDuplicateKeyValue   = "23505"
 )
 
 var (
@@ -23,6 +24,8 @@ func TranslatePostgresError(err error) error {
 	if errors.As(err, &pgErr) {
 		switch pgErr.Code {
 		case CodeForeignKeyViolation:
+			return ErrForeignKeyViolation
+		case CodeDuplicateKeyValue:
 			return ErrForeignKeyViolation
 		}
 	}
