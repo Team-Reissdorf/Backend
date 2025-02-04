@@ -65,17 +65,15 @@ func GetLatestPerformanceEntry(c *gin.Context) {
 
 	// Get the latest performance entry from the database
 	performanceEntry, err3 := getLatestPerformanceEntry(ctx, uint(athleteId))
-	if err3 != nil && !errors.Is(err3, gorm.ErrRecordNotFound) {
-		endpoints.Logger.Error(ctx, err3)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
-		return
-	}
-
 	// Check if a performance entry could be found
-	if !errors.Is(err3, gorm.ErrRecordNotFound) {
+	if errors.Is(err3, gorm.ErrRecordNotFound) {
 		err := errors.New("No performance entry exists for this athlete")
 		endpoints.Logger.Debug(ctx, err)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: err.Error()})
+		return
+	} else if err3 != nil {
+		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
 		return
 	}
 
