@@ -46,7 +46,7 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	return performances
 }
 
-// translatePerformanceToResponse converts an performance database object to response type
+// translatePerformanceToResponse converts a performance database object to response type
 func translatePerformanceToResponse(ctx context.Context, performance databaseUtils.Performance) (*PerformanceBodyWithId, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceToResponse")
 	defer span.End()
