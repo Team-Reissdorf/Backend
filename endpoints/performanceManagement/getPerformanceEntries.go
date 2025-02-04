@@ -5,6 +5,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
@@ -22,6 +23,7 @@ type PerformanceResponse struct {
 // @Tags Performance Management
 // @Produce json
 // @Param AthleteId path int true "Get performance entries of the given athlete_id"
+// @Param since query string false "Date in YYYY-MM-DD format to get all entries since then"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformanceResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
@@ -45,6 +47,18 @@ func GetPerformanceEntries(c *gin.Context) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid athlete ID"})
 		return
+	}
+
+	// Get the since query parameter from the context
+	since := c.Query("since")
+	if since != "" {
+		err := formatHelper.IsDate(since)
+		if err != nil {
+			err = errors.Wrap(err, "Invalid 'since' query parameter")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'since' query parameter"})
+			return
+		}
 	}
 
 	// Get the user id from the context
