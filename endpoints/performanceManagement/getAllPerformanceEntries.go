@@ -82,7 +82,17 @@ func GetPerformanceEntries(c *gin.Context) {
 	var performanceEntries []databaseUtils.Performance
 	if sinceIsSet {
 		// Get all performance entries since the specified date from the database
-		// ToDo: Implement
+		performanceEntriesSince, err := getPerformanceEntriesSince(ctx, uint(athleteId), since)
+		if err != nil {
+			endpoints.Logger.Error(ctx, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
+			return
+		}
+		if performanceEntriesSince != nil {
+			performanceEntries = *performanceEntriesSince
+		} else {
+			performanceEntries = []databaseUtils.Performance{}
+		}
 	} else {
 		// ToDo: Return all
 	}
