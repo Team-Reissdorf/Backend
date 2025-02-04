@@ -11,6 +11,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/backendSettings"
 	"github.com/Team-Reissdorf/Backend/endpoints/disciplineManagement"
+	"github.com/Team-Reissdorf/Backend/endpoints/exerciseManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/ping"
 	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
@@ -135,6 +136,11 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		discipline := v1.Group("/discipline", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			discipline.GET("/get-all", disciplineManagement.GetAllDisciplines)
+		}
+
+		exercise := v1.Group("/exercise", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
 		}
 	}
 }
