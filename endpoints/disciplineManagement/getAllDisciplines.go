@@ -1,6 +1,14 @@
 package disciplineManagement
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
+	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
+	"net/http"
+)
 
 type DisciplinesResponse struct {
 	Message         string   `json:"message" example:"Request successful"`
@@ -18,5 +26,33 @@ type DisciplinesResponse struct {
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/discipline/get-all [get]
 func GetAllDisciplines(c *gin.Context) {
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetAllDisciplines")
+	defer span.End()
 
+	// Get all disciplines from the database
+	var disciplines []databaseUtils.Discipline
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Discipline{}).Find(&disciplines).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get all disciplines")
+		endpoints.Logger.Error(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the disciplines"})
+		return
+	}
+
+	// Translate the database objects to a string array
+	disciplineNames := make([]string, len(disciplines))
+	for idx, discipline := range disciplines {
+		disciplineNames[idx] = discipline.Name
+	}
+
+	c.JSON(
+		http.StatusOK,
+		DisciplinesResponse{
+			Message:         "Request successful",
+			DisciplineNames: disciplineNames,
+		},
+	)
 }
