@@ -27,7 +27,7 @@ type PerformanceResponse struct {
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete or performance entry not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/performance/get/{AthleteId} [get]
+// @Router /v1/performance/get-latest/{AthleteId} [get]
 func GetLatestPerformanceEntry(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetLatestPerformanceEntry")
 	defer span.End()
