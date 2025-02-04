@@ -17,13 +17,13 @@ type PerformancesResponse struct {
 	PerformanceEntries []PerformanceBodyWithId `json:"performance_entries"`
 }
 
-// GetPerformanceEntries returns performance entries or the latest, if no 'since' parameter is given
-// @Summary Returns one or more performance entries
-// @Description Returns the latest performance entry or all entries until the 'since' parameter
+// GetPerformanceEntries returns all performance entries
+// @Summary Returns all performance entries of the given athlete
+// @Description Returns all performance entries of the given athlete and can be filtered using the 'since' query parameter
 // @Tags Performance Management
 // @Produce json
-// @Param AthleteId path int true "Get performance entries of the given athlete_id"
-// @Param since query string false "Date in YYYY-MM-DD format to get all entries since then"
+// @Param AthleteId path int true "Get all performance entries of the given athlete"
+// @Param since query string false "Date in YYYY-MM-DD format to get all entries since then (including the entries from that day)"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformancesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
@@ -31,7 +31,7 @@ type PerformancesResponse struct {
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/performance/get-all/{AthleteId} [get]
 func GetPerformanceEntries(c *gin.Context) {
-	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetPerformanceEntries")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetAllPerformanceEntries")
 	defer span.End()
 
 	// Get the athlete id from the context
@@ -85,7 +85,7 @@ func GetPerformanceEntries(c *gin.Context) {
 		performanceEntriesSince, err := getPerformanceEntriesSince(ctx, uint(athleteId), since)
 		if err != nil {
 			endpoints.Logger.Error(ctx, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance entries since " + since})
 			return
 		}
 		if performanceEntriesSince != nil {
@@ -94,7 +94,18 @@ func GetPerformanceEntries(c *gin.Context) {
 			performanceEntries = []databaseUtils.Performance{}
 		}
 	} else {
-		// ToDo: Return all
+		// Get all performance entries from the database
+		allPerformanceEntries, err := getAllPerformanceEntries(ctx, uint(athleteId))
+		if err != nil {
+			endpoints.Logger.Error(ctx, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance entries"})
+			return
+		}
+		if allPerformanceEntries != nil {
+			performanceEntries = *allPerformanceEntries
+		} else {
+			performanceEntries = []databaseUtils.Performance{}
+		}
 	}
 
 	// Translate performance entries to response type
