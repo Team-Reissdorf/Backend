@@ -62,7 +62,7 @@ func translatePerformanceToResponse(ctx context.Context, performance databaseUti
 		Points:        performance.Points,
 		Date:          date,
 		ExerciseId:    performance.ExerciseId,
-		AthleteId:     performance.ID,
+		AthleteId:     performance.AthleteId,
 	}
 
 	return &performanceResponse, nil
