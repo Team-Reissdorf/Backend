@@ -5,6 +5,7 @@ import (
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -43,4 +44,44 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	}
 
 	return performances
+}
+
+// translatePerformanceToResponse converts an performance database object to response type
+func translatePerformanceToResponse(ctx context.Context, performance databaseUtils.Performance) (*PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceToResponse")
+	defer span.End()
+
+	// Reformat the date to the correct format
+	date, err := formatHelper.FormatDate(performance.Date)
+	if err != nil {
+		return nil, err
+	}
+
+	performanceResponse := PerformanceBodyWithId{
+		PerformanceId: performance.ID,
+		Points:        performance.Points,
+		Date:          date,
+		ExerciseId:    performance.ExerciseId,
+		AthleteId:     performance.ID,
+	}
+
+	return &performanceResponse, nil
+}
+
+// getLatestPerformanceEntry gets the latest performance entry of an athlete
+func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUtils.Performance, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceEntry")
+	defer span.End()
+
+	var performanceEntry databaseUtils.Performance
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ?", athleteId).Order("date DESC").First(&performanceEntry).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the latest performance entry")
+		return nil, err1
+	}
+
+	return &performanceEntry, nil
 }
