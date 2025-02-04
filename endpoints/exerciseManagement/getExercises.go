@@ -48,6 +48,7 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 	if !exists {
 		endpoints.Logger.Debug(ctx, "Discipline does not exist")
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Discipline does not exist"})
+		return
 	}
 
 	// Get all exercises of the discipline from the database
