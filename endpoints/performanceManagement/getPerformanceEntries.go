@@ -8,6 +8,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
@@ -51,7 +52,8 @@ func GetPerformanceEntries(c *gin.Context) {
 
 	// Get the since query parameter from the context
 	since := c.Query("since")
-	if since != "" {
+	sinceIsSet := since != ""
+	if sinceIsSet {
 		err := formatHelper.IsDate(since)
 		if err != nil {
 			err = errors.Wrap(err, "Invalid 'since' query parameter")
@@ -77,23 +79,25 @@ func GetPerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Get the latest performance entry from the database
-	performanceEntry, err3 := getLatestPerformanceEntry(ctx, uint(athleteId))
-	if err3 != nil {
-		endpoints.Logger.Error(ctx, err3)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
-		return
-	}
-	performanceEntries := make([]databaseUtils.Performance, 1)
-	performanceEntries[0] = *performanceEntry
+	// Get the performance entry/entries
+	var performanceEntries []databaseUtils.Performance
+	if sinceIsSet {
+		// Get all performance entries since the specified date from the database
+		// ToDo: Implement
+	} else {
+		// Get the latest performance entry from the database
+		performanceEntry, err3 := getLatestPerformanceEntry(ctx, uint(athleteId))
+		if err3 != nil && !errors.Is(err3, gorm.ErrRecordNotFound) {
+			endpoints.Logger.Error(ctx, err3)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
+			return
+		}
 
-	// Translate performance to response type
-	performanceBody, err4 := translatePerformanceToResponse(ctx, *performanceEntry)
-	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to translate the performance entry")
-		endpoints.Logger.Error(ctx, err4)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
-		return
+		// If an entry was found, add it to the response
+		if !errors.Is(err3, gorm.ErrRecordNotFound) {
+			performanceEntries = make([]databaseUtils.Performance, 1)
+			performanceEntries[0] = *performanceEntry
+		}
 	}
 
 	// Translate performance entries to response type
