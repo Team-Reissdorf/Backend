@@ -2,34 +2,34 @@ package performanceManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
 
 type PerformanceResponse struct {
-	Message            string                  `json:"message" example:"Request successful"`
-	PerformanceEntries []PerformanceBodyWithId `json:"performance_entries"`
+	Message          string                `json:"message" example:"Request successful"`
+	PerformanceEntry PerformanceBodyWithId `json:"performance_entry"`
 }
 
-// GetPerformanceEntries returns performance entries or the latest, if no 'since' parameter is given
-// @Summary Returns one or more performance entries
-// @Description Returns the latest performance entry or all entries until the 'since' parameter
+// GetLatestPerformanceEntry returns the latest performance entry
+// @Summary Returns the latest performance entry
+// @Description Returns the latest performance entry from the database
 // @Tags Performance Management
 // @Produce json
-// @Param AthleteId path int true "Get performance entries of the given athlete_id"
+// @Param AthleteId path int true "Get the latest performance entry of the given athlete_id"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformanceResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 404 {object} endpoints.ErrorResponse "Athlete of performance entry not found"
+// @Failure 404 {object} endpoints.ErrorResponse "Athlete or performance entry not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/performance/get/{AthleteId} [get]
-func GetPerformanceEntries(c *gin.Context) {
-	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetPerformanceEntries")
+// @Router /v1/performance/get-latest/{AthleteId} [get]
+func GetLatestPerformanceEntry(c *gin.Context) {
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetLatestPerformanceEntry")
 	defer span.End()
 
 	// Get the athlete id from the context
@@ -65,30 +65,32 @@ func GetPerformanceEntries(c *gin.Context) {
 
 	// Get the latest performance entry from the database
 	performanceEntry, err3 := getLatestPerformanceEntry(ctx, uint(athleteId))
-	if err3 != nil {
+	// Check if a performance entry could be found
+	if errors.Is(err3, gorm.ErrRecordNotFound) {
+		err := errors.New("No performance entry exists for this athlete")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: err.Error()})
+		return
+	} else if err3 != nil {
 		endpoints.Logger.Error(ctx, err3)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
 		return
 	}
-	performanceEntries := make([]databaseUtils.Performance, 1)
-	performanceEntries[0] = *performanceEntry
 
-	// Translate performance to response type
+	// Translate performance entries to response type
 	performanceBody, err4 := translatePerformanceToResponse(ctx, *performanceEntry)
 	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to translate the performance entry")
+		err4 = errors.Wrap(err4, "Failed to translate the performance")
 		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
 		return
 	}
-	performanceBodies := make([]PerformanceBodyWithId, 1)
-	performanceBodies[0] = *performanceBody
 
 	c.JSON(
 		http.StatusOK,
 		PerformanceResponse{
-			Message:            "Request successful",
-			PerformanceEntries: performanceBodies,
+			Message:          "Request successful",
+			PerformanceEntry: *performanceBody,
 		},
 	)
 }

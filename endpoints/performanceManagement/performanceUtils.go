@@ -12,7 +12,7 @@ import (
 
 // createNewPerformances creates new performances in the database
 func createNewPerformances(ctx context.Context, performanceEntries []databaseUtils.Performance) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformanceEntries")
+	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformanceEntriesInDB")
 	defer span.End()
 
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
@@ -62,7 +62,7 @@ func translatePerformanceToResponse(ctx context.Context, performance databaseUti
 		Points:        performance.Points,
 		Date:          date,
 		ExerciseId:    performance.ExerciseId,
-		AthleteId:     performance.ID,
+		AthleteId:     performance.AthleteId,
 	}
 
 	return &performanceResponse, nil
@@ -70,7 +70,7 @@ func translatePerformanceToResponse(ctx context.Context, performance databaseUti
 
 // getLatestPerformanceEntry gets the latest performance entry of an athlete
 func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUtils.Performance, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceEntry")
+	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceEntryFromDB")
 	defer span.End()
 
 	var performanceEntry databaseUtils.Performance
@@ -84,4 +84,40 @@ func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUt
 	}
 
 	return &performanceEntry, nil
+}
+
+// getLatestPerformanceEntriesSince gets all performance entries of an athlete since the given date
+func getPerformanceEntriesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]databaseUtils.Performance, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceEntriesSinceFromDB")
+	defer span.End()
+
+	var performanceEntries []databaseUtils.Performance
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ? AND date >= ?", athleteId, sinceDate).Order("date DESC").Find(&performanceEntries).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the performance entries since "+sinceDate)
+		return nil, err1
+	}
+
+	return &performanceEntries, nil
+}
+
+// getAllPerformanceEntries gets all performance entries of an athlete
+func getAllPerformanceEntries(ctx context.Context, athleteId uint) (*[]databaseUtils.Performance, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAllPerformanceEntriesFromDB")
+	defer span.End()
+
+	var performanceEntries []databaseUtils.Performance
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ?", athleteId).Order("date DESC").Find(&performanceEntries).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get all performance entries")
+		return nil, err1
+	}
+
+	return &performanceEntries, nil
 }

@@ -130,7 +130,8 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		performance := v1.Group("/performance", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			performance.POST("/create", performanceManagement.CreatePerformance)
-			performance.GET("/get", performanceManagement.GetPerformanceEntries)
+			performance.GET("/get-latest/:AthleteId", performanceManagement.GetLatestPerformanceEntry)
+			performance.GET("/get-all/:AthleteId", performanceManagement.GetPerformanceEntries)
 		}
 
 		discipline := v1.Group("/discipline", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
