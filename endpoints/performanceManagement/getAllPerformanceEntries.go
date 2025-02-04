@@ -8,12 +8,11 @@ import (
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
 
-type PerformanceResponse struct {
+type PerformancesResponse struct {
 	Message            string                  `json:"message" example:"Request successful"`
 	PerformanceEntries []PerformanceBodyWithId `json:"performance_entries"`
 }
@@ -26,11 +25,11 @@ type PerformanceResponse struct {
 // @Param AthleteId path int true "Get performance entries of the given athlete_id"
 // @Param since query string false "Date in YYYY-MM-DD format to get all entries since then"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 200 {object} PerformanceResponse "Request successful"
+// @Success 200 {object} PerformancesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 404 {object} endpoints.ErrorResponse "Athlete of performance entry not found"
+// @Failure 404 {object} endpoints.ErrorResponse "Athlete not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/performance/get/{AthleteId} [get]
+// @Router /v1/performance/get-all/{AthleteId} [get]
 func GetPerformanceEntries(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetPerformanceEntries")
 	defer span.End()
@@ -85,19 +84,7 @@ func GetPerformanceEntries(c *gin.Context) {
 		// Get all performance entries since the specified date from the database
 		// ToDo: Implement
 	} else {
-		// Get the latest performance entry from the database
-		performanceEntry, err3 := getLatestPerformanceEntry(ctx, uint(athleteId))
-		if err3 != nil && !errors.Is(err3, gorm.ErrRecordNotFound) {
-			endpoints.Logger.Error(ctx, err3)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the latest performance entry"})
-			return
-		}
-
-		// If an entry was found, add it to the response
-		if !errors.Is(err3, gorm.ErrRecordNotFound) {
-			performanceEntries = make([]databaseUtils.Performance, 1)
-			performanceEntries[0] = *performanceEntry
-		}
+		// ToDo: Return all
 	}
 
 	// Translate performance entries to response type
@@ -116,7 +103,7 @@ func GetPerformanceEntries(c *gin.Context) {
 
 	c.JSON(
 		http.StatusOK,
-		PerformanceResponse{
+		PerformancesResponse{
 			Message:            "Request successful",
 			PerformanceEntries: performanceBodies,
 		},
