@@ -35,21 +35,28 @@ func createNewPerformances(ctx context.Context, performanceEntries []databaseUti
 }
 
 // translatePerformanceBodies translates the performance body to a performance db entry
-func translatePerformanceBodies(ctx context.Context, performanceBodies []PerformanceBody) []databaseUtils.Performance {
+func translatePerformanceBodies(ctx context.Context, performanceBodies []PerformanceBody, age int, sex string) ([]databaseUtils.Performance, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceBodies")
 	defer span.End()
 
 	performances := make([]databaseUtils.Performance, len(performanceBodies))
 	for idx, performance := range performanceBodies {
+		// Get the correct medal status for the performance entry
+		medalStatus, err := evaluateMedalStatus(ctx, performance.ExerciseId, age, sex, performance.Points)
+		if err != nil {
+			return nil, err
+		}
+
 		performances[idx] = databaseUtils.Performance{
 			Points:     performance.Points,
+			Medal:      medalStatus,
 			Date:       performance.Date,
 			ExerciseId: performance.ExerciseId,
 			AthleteId:  performance.AthleteId,
 		}
 	}
 
-	return performances
+	return performances, nil
 }
 
 // translatePerformanceToResponse converts a performance database object to response type
@@ -129,18 +136,18 @@ func getAllPerformanceEntries(ctx context.Context, athleteId uint) (*[]databaseU
 }
 
 // evaluateMedalStatus checks which result a performance entry achieved
-func evaluateMedalStatus(ctx context.Context, exerciseId uint, age uint, sex string, points uint64) (string, error) {
+func evaluateMedalStatus(ctx context.Context, exerciseId uint, age int, sex string, points uint64) (string, error) {
 	// Get the exercise goal to check whether the athlete has reached a medal or not, and if so, which one
 	var exerciseGoal databaseUtils.ExerciseGoal
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Model(&databaseUtils.ExerciseGoal{}).
 			Where("exercise_id = ? AND from_age <= ? AND to_age >= ? AND sex = ?", exerciseId, age, age, sex).
-			Find(&exerciseGoal).
+			First(&exerciseGoal).
 			Error
 		return err
 	})
 	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to calculate the medal status")
+		err1 = errors.Wrap(err1, "Failed to evaluate the medal status")
 		return "", err1
 	}
 
