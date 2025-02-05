@@ -27,7 +27,7 @@ type PerformancesResponse struct {
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformancesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 404 {object} endpoints.ErrorResponse "Athlete not found"
+// @Failure 404 {object} endpoints.ErrorResponse "Athlete does not exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/performance/get-all/{AthleteId} [get]
 func GetPerformanceEntries(c *gin.Context) {
@@ -74,7 +74,7 @@ func GetPerformanceEntries(c *gin.Context) {
 	}
 	if !exists {
 		endpoints.Logger.Debug(ctx, "Athlete does not exist")
-		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
 		return
 	}
 

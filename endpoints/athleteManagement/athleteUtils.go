@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 var (
@@ -190,4 +191,39 @@ func AthleteExistsForTrainer(ctx context.Context, athleteId uint, trainerEmail s
 	}
 
 	return athleteCount > 0, nil
+}
+
+// GetAthlete returns the athlete of the given id
+func GetAthlete(ctx context.Context, athleteId uint, trainerEmail string) (*databaseUtils.Athlete, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromDB")
+	defer span.End()
+
+	var athlete databaseUtils.Athlete
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Athlete{}).Where("trainer_email = ? AND id = ?", strings.ToLower(trainerEmail), athleteId).First(&athlete).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the athlete")
+		return nil, err1
+	}
+
+	return &athlete, nil
+}
+
+// CalculateAge parses the birthDate string and returns the age
+func CalculateAge(ctx context.Context, birthDate string) (int, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CalculateAge")
+	defer span.End()
+
+	birthDay, err1 := time.Parse("2006-01-02", birthDate)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to parse the birth date")
+		return -1, err1
+	}
+	age := time.Now().Year() - birthDay.Year()
+	if time.Now().Before(birthDay.AddDate(age, 0, 0)) {
+		age--
+	}
+	return age, nil
 }
