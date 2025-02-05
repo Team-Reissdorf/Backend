@@ -92,6 +92,7 @@ type Performance struct {
 	DeletedAt *time.Time `gorm:"index"`
 
 	Points uint64 `json:"points"`
+	Medal  string `json:"medal"`
 	Date   string `json:"date" gorm:"type:date"`
 
 	ExerciseId uint `gorm:"index"`
