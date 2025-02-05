@@ -52,6 +52,21 @@ type Exercise struct {
 	Discipline Discipline `json:"-" gorm:"foreignKey:DisciplineName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
+type ExerciseSpecific struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	ExerciseId uint `gorm:"index"`
+	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
+	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+
+	FromAge     uint   `json:"from_age"`
+	ToAge       uint   `json:"to_age"`
+	Description string `json:"description"`
+}
+
 type Performance struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
