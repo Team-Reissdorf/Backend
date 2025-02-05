@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type AthleteResponse struct {
@@ -36,17 +35,20 @@ func GetAthleteByID(c *gin.Context) {
 
 	// Get the athlete id from the context
 	athleteIdString := c.Param("AthleteId")
+	var athleteId uint
 	if athleteIdString == "" {
 		endpoints.Logger.Debug(ctx, "Missing or invalid athlete ID")
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Missing or invalid athlete ID"})
 		return
-	}
-	athleteId, err1 := strconv.Atoi(athleteIdString)
-	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to parse athlete ID")
-		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid athlete ID"})
-		return
+	} else {
+		athleteIdInt, err := strconv.ParseUint(athleteIdString, 10, 32)
+		if err != nil {
+			err = errors.Wrap(err, "Failed to parse athlete id")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid athlete ID"})
+			return
+		}
+		athleteId = uint(athleteIdInt)
 	}
 
 	// Get the user id from the context
@@ -55,10 +57,11 @@ func GetAthleteByID(c *gin.Context) {
 	// Get the specified athlete if he corresponds to the given trainer
 	var athlete databaseUtils.Athlete
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Where("trainer_email = ? AND id = ?", strings.ToLower(trainerEmail), athleteId).
-			First(&athlete).Error
+		athleteEntry, err := GetAthlete(ctx, athleteId, trainerEmail)
 		if err != nil {
 			err = errors.Wrap(err, "Failed to get the athlete")
+		} else {
+			athlete = *athleteEntry
 		}
 		return err
 	})
