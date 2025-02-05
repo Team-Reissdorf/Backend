@@ -67,6 +67,24 @@ type ExerciseSpecific struct {
 	Description string `json:"description"`
 }
 
+type ExerciseGoal struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
+	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
+	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+
+	FromAge uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	ToAge   uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	Sex     string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	Bronze  uint64 `json:"bronze"`
+	Silver  uint64 `json:"silver"`
+	Gold    uint64 `json:"gold"`
+}
+
 type Performance struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
