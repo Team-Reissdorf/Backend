@@ -73,6 +73,7 @@ func translatePerformanceToResponse(ctx context.Context, performance databaseUti
 	performanceResponse := PerformanceBodyWithId{
 		PerformanceId: performance.ID,
 		Points:        performance.Points,
+		Medal:         performance.Medal,
 		Date:          date,
 		ExerciseId:    performance.ExerciseId,
 		AthleteId:     performance.AthleteId,
