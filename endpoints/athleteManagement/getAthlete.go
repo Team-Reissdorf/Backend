@@ -1,9 +1,7 @@
 package athleteManagement
 
 import (
-	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -55,28 +53,21 @@ func GetAthleteByID(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Get the specified athlete if he corresponds to the given trainer
-	var athlete databaseUtils.Athlete
-	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		athleteEntry, err := GetAthlete(ctx, athleteId, trainerEmail)
-		if err != nil {
-			err = errors.Wrap(err, "Failed to get the athlete")
-		} else {
-			athlete = *athleteEntry
-		}
-		return err
-	})
+	athlete, err2 := GetAthlete(ctx, athleteId, trainerEmail)
 	if errors.Is(err2, gorm.ErrRecordNotFound) {
+		err2 = errors.Wrap(err2, "Athlete not found")
 		endpoints.Logger.Debug(ctx, err2)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
 		return
 	} else if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to get the athlete")
 		endpoints.Logger.Error(ctx, err2)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
 		return
 	}
 
 	// Translate athlete to response type
-	athleteBody, err3 := translateAthleteToResponse(ctx, athlete)
+	athleteBody, err3 := translateAthleteToResponse(ctx, *athlete)
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to translate the athlete")
 		endpoints.Logger.Error(ctx, err3)
