@@ -16,15 +16,17 @@ type ExercisesResponse struct {
 	Exercises []ExerciseBodyWithId `json:"exercises"`
 }
 
-// GetExercisesOfDiscipline returns all exercises of the given discipline
+// GetExercisesOfDiscipline returns all exercises of the given discipline. When the athlete id is given, the age specific description will be returned with the exercise.
 // @Summary Returns the exercises
-// @Description All exercises of the given discipline will be returned
+// @Description All exercises of the given discipline will be returned. When the athlete id is given, the age specific description will be returned with the exercise.
 // @Tags Exercise Management
 // @Produce json
 // @Param DisciplineName path string true "Get the exercises with the given discipline name"
+// @Param athlete_id query uint false "Get the exercise_specifics for the given athletes age"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} ExercisesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
+// @Failure 404 {object} endpoints.ErrorResponse "Discipline or athlete does not exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/exercise/get/{DisciplineName} [get]
 func GetExercisesOfDiscipline(c *gin.Context) {
