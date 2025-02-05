@@ -2,13 +2,16 @@ package exerciseManagement
 
 import (
 	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/disciplineManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 )
 
 type ExercisesResponse struct {
@@ -41,16 +44,50 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		return
 	}
 
+	// Get the athlete_id query parameter from the context
+	athleteIdString := c.Query("athlete_id")
+	athleteIdIsSet := athleteIdString != ""
+	var athleteId uint
+	if athleteIdIsSet {
+		athleteIdInt, err := strconv.ParseUint(athleteIdString, 10, 32)
+		if err != nil {
+			err = errors.Wrap(err, "Failed to parse 'athlete_id' query parameter")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'athlete_id' query parameter"})
+			return
+		}
+		athleteId = uint(athleteIdInt)
+	}
+
+	// Get the user id from the context
+	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
+
 	// Check if the given discipline exists
-	exists, err1 := disciplineManagement.DisciplineExists(ctx, disciplineName)
+	disciplineExists, err1 := disciplineManagement.DisciplineExists(ctx, disciplineName)
 	if err1 != nil {
 		endpoints.Logger.Error(ctx, err1)
 		// Move on since the discipline could exist and the following request can handle not existing disciplines
 	}
-	if !exists {
+	if !disciplineExists {
 		endpoints.Logger.Debug(ctx, "Discipline does not exist")
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Discipline does not exist"})
 		return
+	}
+
+	// Check if the athlete exists if the id is given
+	if athleteIdIsSet {
+		// Check if the athlete exists for the given trainer
+		athleteExists, err := athleteManagement.AthleteExistsForTrainer(ctx, athleteId, trainerEmail)
+		if err != nil {
+			endpoints.Logger.Error(ctx, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
+			return
+		}
+		if !athleteExists {
+			endpoints.Logger.Debug(ctx, "Athlete does not exist")
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+			return
+		}
 	}
 
 	// Get all exercises of the discipline from the database
