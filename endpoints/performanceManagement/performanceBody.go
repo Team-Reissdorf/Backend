@@ -13,4 +13,5 @@ type PerformanceBodyWithId struct {
 	Date          string `json:"date" example:"YYYY-MM-DD"`
 	ExerciseId    uint   `json:"exercise_id" example:"1"`
 	AthleteId     uint   `json:"athlete_id" example:"1"`
+	Medal         string `json:"medal" example:"gold"`
 }
