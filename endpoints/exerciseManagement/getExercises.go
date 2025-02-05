@@ -75,22 +75,6 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		return
 	}
 
-	// Check if the athlete exists if the id is given
-	if athleteIdIsSet {
-		// Check if the athlete exists for the given trainer
-		athleteExists, err := athleteManagement.AthleteExistsForTrainer(ctx, athleteId, trainerEmail)
-		if err != nil {
-			endpoints.Logger.Error(ctx, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
-			return
-		}
-		if !athleteExists {
-			endpoints.Logger.Debug(ctx, "Athlete does not exist")
-			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
-			return
-		}
-	}
-
 	// Get the exercises, and if the athlete id is given also get the age specific description
 	var results []ExerciseBodyWithId
 	if athleteIdIsSet {
