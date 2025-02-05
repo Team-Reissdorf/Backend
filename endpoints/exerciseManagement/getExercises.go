@@ -98,6 +98,7 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 			errB = errors.Wrap(errB, "Failed to parse the birth date")
 			endpoints.Logger.Error(ctx, errB)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
+			return
 		}
 		age, errC := athleteManagement.CalculateAge(ctx, birthDate)
 		if errC != nil {
