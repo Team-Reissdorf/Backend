@@ -7,6 +7,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/disciplineManagement"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -90,38 +91,88 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		}
 	}
 
-	// Get all exercises of the discipline from the database
-	var exercises []databaseUtils.Exercise
-	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(databaseUtils.Exercise{}).Where("discipline_name = ?", disciplineName).Find(&exercises).Error
-		return err
-	})
-	if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to get all exercises of the discipline")
-		endpoints.Logger.Error(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercises of the discipline"})
-		return
-	}
-
-	// Translate exercises to response type
-	exercisesResponse := make([]ExerciseBodyWithId, len(exercises))
-	for idx, exercise := range exercises {
-		exerciseBody, err3 := translateExerciseToResponse(ctx, exercise)
-		if err3 != nil {
-			err3 = errors.Wrap(err3, "Failed to translate the exercise")
-			endpoints.Logger.Error(ctx, err3)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+	// Get the exercises, and if the athlete id is given also get the age specific description
+	var results []ExerciseBodyWithId
+	if athleteIdIsSet {
+		athlete, errA := athleteManagement.GetAthlete(ctx, athleteId, trainerEmail)
+		// Check if the athlete could be found
+		if errors.Is(errA, gorm.ErrRecordNotFound) {
+			err := errors.New("Athlete does not exist")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: err.Error()})
+			return
+		} else if errA != nil {
+			errA = errors.Wrap(errA, "Failed to get athlete")
+			endpoints.Logger.Debug(ctx, errA)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
 			return
 		}
 
-		exercisesResponse[idx] = *exerciseBody
+		// Calculate the age of the athlete
+		birthDate, errB := formatHelper.FormatDate(athlete.BirthDate)
+		if errB != nil {
+			errB = errors.Wrap(errB, "Failed to parse the birth date")
+			endpoints.Logger.Error(ctx, errB)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
+		}
+		age, errC := athleteManagement.CalculateAge(ctx, birthDate)
+		if errC != nil {
+			errC = errors.Wrap(errC, "Failed to calculate the age of the athlete")
+			endpoints.Logger.Error(ctx, errC)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
+			return
+		}
+
+		// Query exercises with the age specific description
+		errD := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+			err := tx.Model(&databaseUtils.Exercise{}).
+				Select("exercises.id as exercise_id, exercises.name, exercises.unit, exercises.discipline_name, exercise_specifics.description as age_specifics").
+				Joins("LEFT JOIN exercise_specifics ON exercise_specifics.exercise_id = exercises.id AND exercise_specifics.from_age <= ? AND exercise_specifics.to_age >= ?", age, age).
+				Where("exercises.discipline_name = ?", disciplineName).
+				Find(&results).Error
+			return err
+		})
+		if errD != nil {
+			errD = errors.Wrap(errD, "Failed to get athlete's age-specifics")
+			endpoints.Logger.Error(ctx, errD)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get athlete's age-specifics"})
+			return
+		}
+	} else {
+		// Get all exercises of the discipline from the database
+		var exercises []databaseUtils.Exercise
+		errA := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+			err := tx.Model(databaseUtils.Exercise{}).Where("discipline_name = ?", disciplineName).Find(&exercises).Error
+			return err
+		})
+		if errA != nil {
+			errA = errors.Wrap(errA, "Failed to get all exercises of the discipline")
+			endpoints.Logger.Error(ctx, errA)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercises of the discipline"})
+			return
+		}
+
+		// Translate exercises to response type
+		exercisesResponse := make([]ExerciseBodyWithId, len(exercises))
+		for idx, exercise := range exercises {
+			exerciseBody, err3 := translateExerciseToResponse(ctx, exercise)
+			if err3 != nil {
+				err3 = errors.Wrap(err3, "Failed to translate the exercise")
+				endpoints.Logger.Error(ctx, err3)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
+				return
+			}
+
+			exercisesResponse[idx] = *exerciseBody
+		}
+		results = exercisesResponse
 	}
 
 	c.JSON(
 		http.StatusOK,
 		ExercisesResponse{
 			Message:   "Request successful",
-			Exercises: exercisesResponse,
+			Exercises: results,
 		},
 	)
 }
