@@ -64,6 +64,7 @@ func init() {
 		databaseUtils.Athlete{},
 		databaseUtils.Discipline{},
 		databaseUtils.Exercise{},
+		databaseUtils.ExerciseSpecific{},
 		databaseUtils.Performance{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
