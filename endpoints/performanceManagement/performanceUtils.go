@@ -10,6 +10,12 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	GoldStatus   = "gold"
+	SilverStatus = "silver"
+	BronzeStatus = "bronze"
+)
+
 // createNewPerformances creates new performances in the database
 func createNewPerformances(ctx context.Context, performanceEntries []databaseUtils.Performance) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "CreateNewPerformanceEntriesInDB")
@@ -120,4 +126,45 @@ func getAllPerformanceEntries(ctx context.Context, athleteId uint) (*[]databaseU
 	}
 
 	return &performanceEntries, nil
+}
+
+// evaluateMedalStatus checks which result a performance entry achieved
+func evaluateMedalStatus(ctx context.Context, exerciseId uint, age uint, sex string, points uint64) (string, error) {
+	// Get the exercise goal to check whether the athlete has reached a medal or not, and if so, which one
+	var exerciseGoal databaseUtils.ExerciseGoal
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.ExerciseGoal{}).
+			Where("exercise_id = ? AND from_age <= ? AND to_age >= ? AND sex = ?", exerciseId, age, age, sex).
+			Find(&exerciseGoal).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to calculate the medal status")
+		return "", err1
+	}
+
+	// Check if a smaller or a bigger value is better
+	smallerIsBetter := exerciseGoal.Bronze > exerciseGoal.Gold
+
+	// Create the compare function based on the smallerIsBetter variable
+	compare := func(p, g uint64) bool {
+		if smallerIsBetter {
+			return p <= g
+		} else {
+			return p >= g
+		}
+	}
+
+	// Check the medal status of the athletes performance entry
+	switch {
+	case compare(points, exerciseGoal.Gold):
+		return GoldStatus, nil
+	case compare(points, exerciseGoal.Silver):
+		return SilverStatus, nil
+	case compare(points, exerciseGoal.Bronze):
+		return BronzeStatus, nil
+	default:
+		return "", nil
+	}
 }
