@@ -59,29 +59,6 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	return performances, nil
 }
 
-// translatePerformanceToResponse converts a performance database object to response type
-func translatePerformanceToResponse(ctx context.Context, performance databaseUtils.Performance) (*PerformanceBodyWithId, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslatePerformanceToResponse")
-	defer span.End()
-
-	// Reformat the date to the correct format
-	date, err := formatHelper.FormatDate(performance.Date)
-	if err != nil {
-		return nil, err
-	}
-
-	performanceResponse := PerformanceBodyWithId{
-		PerformanceId: performance.ID,
-		Points:        performance.Points,
-		Medal:         performance.Medal,
-		Date:          date,
-		ExerciseId:    performance.ExerciseId,
-		AthleteId:     performance.AthleteId,
-	}
-
-	return &performanceResponse, nil
-}
-
 // getLatestPerformanceBody gets the latest performance body of an athlete
 func getLatestPerformanceBody(ctx context.Context, athleteId uint) (*PerformanceBodyWithId, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceBodyFromDB")
