@@ -82,14 +82,21 @@ func translatePerformanceToResponse(ctx context.Context, performance databaseUti
 	return &performanceResponse, nil
 }
 
-// getLatestPerformanceEntry gets the latest performance entry of an athlete
-func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUtils.Performance, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceEntryFromDB")
+// getLatestPerformanceBody gets the latest performance body of an athlete
+func getLatestPerformanceBody(ctx context.Context, athleteId uint) (*PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetLatestPerformanceBodyFromDB")
 	defer span.End()
 
-	var performanceEntry databaseUtils.Performance
+	var performanceBody PerformanceBodyWithId
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ?", athleteId).Order("date DESC").First(&performanceEntry).Error
+		err := tx.Model(&databaseUtils.Performance{}).
+			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ?", athleteId).
+			Order("date DESC").
+			First(&performanceBody).
+			Error
+
 		return err
 	})
 	if err1 != nil {
@@ -97,17 +104,32 @@ func getLatestPerformanceEntry(ctx context.Context, athleteId uint) (*databaseUt
 		return nil, err1
 	}
 
-	return &performanceEntry, nil
+	// Format the date field of the performance body
+	var err2 error
+	performanceBody.Date, err2 = formatHelper.FormatDate(performanceBody.Date)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to format the date of the performance entry")
+		return nil, err2
+	}
+
+	return &performanceBody, nil
 }
 
-// getLatestPerformanceEntriesSince gets all performance entries of an athlete since the given date
-func getPerformanceEntriesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]databaseUtils.Performance, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceEntriesSinceFromDB")
+// getPerformanceBodiesSince gets all performance entries of an athlete since the given date
+func getPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceBodiesSinceFromDB")
 	defer span.End()
 
-	var performanceEntries []databaseUtils.Performance
+	var performanceBodies []PerformanceBodyWithId
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ? AND date >= ?", athleteId, sinceDate).Order("date DESC").Find(&performanceEntries).Error
+		err := tx.Model(&databaseUtils.Performance{}).
+			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND date >= ?", athleteId, sinceDate).
+			Order("date DESC").
+			Find(&performanceBodies).
+			Error
+
 		return err
 	})
 	if err1 != nil {
@@ -115,25 +137,52 @@ func getPerformanceEntriesSince(ctx context.Context, athleteId uint, sinceDate s
 		return nil, err1
 	}
 
-	return &performanceEntries, nil
+	// Format the date fields of the performance bodies
+	for idx, performanceBody := range performanceBodies {
+		var err2 error
+		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
+			return nil, err2
+		}
+	}
+
+	return &performanceBodies, nil
 }
 
-// getAllPerformanceEntries gets all performance entries of an athlete
-func getAllPerformanceEntries(ctx context.Context, athleteId uint) (*[]databaseUtils.Performance, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "GetAllPerformanceEntriesFromDB")
+// getAllPerformanceBodies gets all performance bodies of an athlete
+func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAllPerformanceBodiesFromDB")
 	defer span.End()
 
-	var performanceEntries []databaseUtils.Performance
+	var performanceBodies []PerformanceBodyWithId
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseUtils.Performance{}).Where("athlete_id = ?", athleteId).Order("date DESC").Find(&performanceEntries).Error
+		err := tx.Model(&databaseUtils.Performance{}).
+			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ?", athleteId).
+			Order("date DESC").
+			Find(&performanceBodies).
+			Error
+
 		return err
 	})
 	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to get all performance entries")
+		err1 = errors.Wrap(err1, "Failed to get all performance bodies")
 		return nil, err1
 	}
 
-	return &performanceEntries, nil
+	// Format the date fields of the performance bodies
+	for idx, performanceBody := range performanceBodies {
+		var err2 error
+		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
+			return nil, err2
+		}
+	}
+
+	return &performanceBodies, nil
 }
 
 // evaluateMedalStatus checks which result a performance entry achieved
