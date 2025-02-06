@@ -8,6 +8,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -50,32 +51,62 @@ func CreatePerformance(c *gin.Context) {
 		return
 	}
 
-	// Check if the athlete exists for this trainer, since the FK constraint does not check this
-	athleteExists, err2 := athleteManagement.AthleteExistsForTrainer(ctx, body.AthleteId, trainerEmail)
-	if err2 != nil {
+	// Get the athlete for the given trainer
+	athlete, err2 := athleteManagement.GetAthlete(ctx, body.AthleteId, trainerEmail)
+	if errors.Is(err2, gorm.ErrRecordNotFound) {
+		err2 = errors.Wrap(err2, "Athlete does not exist")
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+		return
+	} else if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to get the athlete")
 		endpoints.Logger.Error(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
 		return
 	}
-	if !athleteExists {
-		endpoints.Logger.Debug(ctx, "Athlete does not exist")
-		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+
+	// Calculate the age of the athlete
+	birthDate, err3 := formatHelper.FormatDate(athlete.BirthDate)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to parse the birth date")
+		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
+		return
+	}
+	age, err4 := athleteManagement.CalculateAge(ctx, birthDate)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to calculate the age of the athlete")
+		endpoints.Logger.Error(ctx, err4)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
+		return
+	}
+
+	// Translate the performance body to a database entry
+	performanceBodies := make([]PerformanceBody, 1)
+	performanceBodies[0] = body
+	performanceEntries, err5 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
+	if errors.Is(err5, gorm.ErrRecordNotFound) {
+		err5 = errors.Wrap(err5, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err5)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
+		return
+	} else if err5 != nil {
+		endpoints.Logger.Error(ctx, err5)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's goals for this athlete"})
 		return
 	}
 
 	// Create performance entry in the database
-	performanceBodies := make([]PerformanceBody, 1)
-	performanceBodies[0] = body
-	err4 := createNewPerformances(ctx, translatePerformanceBodies(ctx, performanceBodies))
-	if errors.Is(err4, databaseUtils.ErrForeignKeyViolation) {
-		err4 = errors.Wrap(err4, "Athlete or exercise does not exist")
-		endpoints.Logger.Debug(ctx, err4)
+	err6 := createNewPerformances(ctx, performanceEntries)
+	if errors.Is(err6, databaseUtils.ErrForeignKeyViolation) {
+		err6 = errors.Wrap(err6, "Athlete or exercise does not exist")
+		endpoints.Logger.Debug(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
 		return
 	}
-	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to create the performance entry")
-		endpoints.Logger.Error(ctx, err4)
+	if err6 != nil {
+		err6 = errors.Wrap(err6, "Failed to create the performance entry")
+		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
 	}
