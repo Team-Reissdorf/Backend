@@ -15,7 +15,7 @@ import (
 
 type AlreadyExistingAthletesResponse struct {
 	Message                 string                  `json:"message" example:"Creation successful"`
-	AlreadyExistingAthletes []databaseUtils.Athlete `json:"alreadyExistingAthletes"`
+	AlreadyExistingAthletes []databaseUtils.Athlete `json:"already_existing_athletes"`
 }
 
 var csvColumnCount = 5
