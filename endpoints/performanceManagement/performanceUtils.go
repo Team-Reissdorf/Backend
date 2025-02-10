@@ -162,7 +162,7 @@ func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]Performanc
 	return &performanceBodies, nil
 }
 
-func editPerformanceEntry(ctx context.Context, performanceBody PerformanceBodyEdit) error {
+func editPerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
 	defer span.End()
 
