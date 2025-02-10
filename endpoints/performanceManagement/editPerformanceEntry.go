@@ -63,4 +63,19 @@ func EditPerformanceEntry(c *gin.Context) {
 		ExerciseId: body.ExerciseId,
 	}
 
+	// Update the performance entry in the database
+	err2 := updatePerformanceEntry(ctx, performanceEntry)
+	if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to update the performance entry")
+		endpoints.Logger.Error(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the performance entry"})
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		endpoints.SuccessResponse{
+			Message: "Edited successful",
+		},
+	)
 }

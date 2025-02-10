@@ -184,11 +184,20 @@ func performanceExistsForTrainer(ctx context.Context, performanceId uint, traine
 	return performanceCount > 0, nil
 }
 
-func editPerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
+// updatePerformanceEntry updates the given performance entry in the database
+func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
 	defer span.End()
 
-	// ToDo
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Performance{}).Where("id = ?", performanceEntry.ID).Updates(performanceEntry).Error
+		return err
+	})
+	err1 = databaseUtils.TranslatePostgresError(err1)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to update the performance entry")
+	}
+	return err1
 }
 
 // evaluateMedalStatus checks which result a performance entry achieved
