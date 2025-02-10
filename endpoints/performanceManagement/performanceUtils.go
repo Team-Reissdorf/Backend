@@ -162,43 +162,22 @@ func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]Performanc
 	return &performanceBodies, nil
 }
 
-// evaluateMedalStatus checks which result a performance entry achieved
-func evaluateMedalStatus(ctx context.Context, exerciseId uint, age int, sex string, points uint64) (string, error) {
-	// Get the exercise goal to check whether the athlete has reached a medal or not, and if so, which one
-	var exerciseGoal databaseUtils.ExerciseGoal
+// countPerformanceEntriesPerDisciplinePerDay counts all performance entries per discipline per day of the given athlete
+func countPerformanceEntriesPerDisciplinePerDay(ctx context.Context, athleteId uint, exerciseId uint, date string) (int64, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CountPerformanceEntriesPerDisciplinePerDayInDB")
+	defer span.End()
+
+	var count int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseUtils.ExerciseGoal{}).
-			Where("exercise_id = ? AND from_age <= ? AND to_age >= ? AND sex = ?", exerciseId, age, age, sex).
-			First(&exerciseGoal).
+		err := tx.Model(&databaseUtils.Performance{}).
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND exercises.id = ? AND date = ?", athleteId, exerciseId, date).
+			Count(&count).
 			Error
 		return err
 	})
 	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to evaluate the medal status")
-		return "", err1
+		err1 = errors.Wrap(err1, "Failed to count the already existing performance entries")
 	}
-
-	// Check if a smaller or a bigger value is better
-	smallerIsBetter := exerciseGoal.Bronze > exerciseGoal.Gold
-
-	// Create the compare function based on the smallerIsBetter variable
-	compare := func(p, g uint64) bool {
-		if smallerIsBetter {
-			return p <= g
-		} else {
-			return p >= g
-		}
-	}
-
-	// Check the medal status of the athletes performance entry
-	switch {
-	case compare(points, exerciseGoal.Gold):
-		return GoldStatus, nil
-	case compare(points, exerciseGoal.Silver):
-		return SilverStatus, nil
-	case compare(points, exerciseGoal.Bronze):
-		return BronzeStatus, nil
-	default:
-		return "", nil
-	}
+	return count, err1
 }
