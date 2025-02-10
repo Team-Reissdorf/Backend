@@ -2,7 +2,6 @@ package performanceManagement
 
 import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
-	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -78,48 +77,34 @@ func GetPerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Get the performance entry/entries
-	var performanceEntries []databaseUtils.Performance
+	// Get the performance body/bodies
+	var performanceBodies []PerformanceBodyWithId
 	if sinceIsSet {
-		// Get all performance entries since the specified date from the database
-		performanceEntriesSince, err := getPerformanceEntriesSince(ctx, uint(athleteId), since)
+		// Get all performance bodies since the specified date from the database
+		performanceBodiesSince, err := getPerformanceBodiesSince(ctx, uint(athleteId), since)
 		if err != nil {
 			endpoints.Logger.Error(ctx, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance entries since " + since})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance bodies since " + since})
 			return
 		}
-		if performanceEntriesSince != nil {
-			performanceEntries = *performanceEntriesSince
+		if performanceBodiesSince != nil {
+			performanceBodies = *performanceBodiesSince
 		} else {
-			performanceEntries = []databaseUtils.Performance{}
+			performanceBodies = []PerformanceBodyWithId{}
 		}
 	} else {
-		// Get all performance entries from the database
-		allPerformanceEntries, err := getAllPerformanceEntries(ctx, uint(athleteId))
+		// Get all performance bodies from the database
+		allPerformanceBodies, err := getAllPerformanceBodies(ctx, uint(athleteId))
 		if err != nil {
 			endpoints.Logger.Error(ctx, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance entries"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance bodies"})
 			return
 		}
-		if allPerformanceEntries != nil {
-			performanceEntries = *allPerformanceEntries
+		if allPerformanceBodies != nil {
+			performanceBodies = *allPerformanceBodies
 		} else {
-			performanceEntries = []databaseUtils.Performance{}
+			performanceBodies = []PerformanceBodyWithId{}
 		}
-	}
-
-	// Translate performance entries to response type
-	performanceBodies := make([]PerformanceBodyWithId, len(performanceEntries))
-	for idx, performance := range performanceEntries {
-		performanceBody, err := translatePerformanceToResponse(ctx, performance)
-		if err != nil {
-			err = errors.Wrap(err, "Failed to translate the performance")
-			endpoints.Logger.Error(ctx, err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Internal server error"})
-			return
-		}
-
-		performanceBodies[idx] = *performanceBody
 	}
 
 	c.JSON(
