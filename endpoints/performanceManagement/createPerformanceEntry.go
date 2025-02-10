@@ -18,7 +18,7 @@ import (
 // @Tags Performance Management
 // @Accept json
 // @Produce json
-// @Param Performance body PerformanceBody true "Details of a performance (points should be given in seconds, centimeters, points or as a boolean)"
+// @Param Performance body PerformanceBody true "Details of a performance (valid units are: <second, centimeter, point, bool>)"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 201 {object} endpoints.SuccessResponse "Creation successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
