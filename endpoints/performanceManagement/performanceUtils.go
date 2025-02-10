@@ -136,6 +136,13 @@ func getAllPerformanceEntries(ctx context.Context, athleteId uint) (*[]databaseU
 	return &performanceEntries, nil
 }
 
+func editPerformanceEntry(ctx context.Context, performanceBody PerformanceBodyEdit) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
+	defer span.End()
+
+	// ToDo
+}
+
 // evaluateMedalStatus checks which result a performance entry achieved
 func evaluateMedalStatus(ctx context.Context, exerciseId uint, age int, sex string, points uint64) (string, error) {
 	// Get the exercise goal to check whether the athlete has reached a medal or not, and if so, which one
