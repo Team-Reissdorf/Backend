@@ -1,30 +1,17 @@
-name: Go build test
+name: Go build and test
+
+# on:
+#   push:
+#     branches:
+#       - development
+#       - main
 
 on: [push]
 
 jobs:
-  build-linux:
+  build:
 
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go 1.23.4
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23.4
-          cache-dependency-path: ./go.sum
-
-      - name: display version
-        run: go version
-
-      - name: compile
-        run: go build -o ./build/backend main.go
-
-  build-windows:
-
-    runs-on: windows-latest
+    runs-on: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -40,10 +27,9 @@ jobs:
 
       - name: compile
         run: go build -o ./build/backend main.go
-
 
   test:
-    needs: [build-linux, build-windows]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
