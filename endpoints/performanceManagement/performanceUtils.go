@@ -170,7 +170,7 @@ func performanceExistsForTrainer(ctx context.Context, performanceId uint, traine
 	var performanceCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Model(&databaseUtils.Performance{}).
-			Joins("athletes ON performances.athlete_id = athletes.id").
+			Joins("INNER JOIN athletes ON performances.athlete_id = athletes.id").
 			Where("performances.id = ? AND athletes.trainer_email = ?", performanceId, trainerEmail).
 			Count(&performanceCount).
 			Error
