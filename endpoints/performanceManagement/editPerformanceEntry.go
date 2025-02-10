@@ -5,8 +5,11 @@ import (
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
+	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -20,7 +23,7 @@ import (
 // @Success 200 {object} endpoints.SuccessResponse "Edited successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 404 {object} endpoints.ErrorResponse "Performance entry not found"
+// @Failure 404 {object} endpoints.ErrorResponse "Performance entry or goals not found"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/performance/edit [put]
 func EditPerformanceEntry(c *gin.Context) {
@@ -55,19 +58,64 @@ func EditPerformanceEntry(c *gin.Context) {
 		endpoints.Logger.Debug(ctx, fmt.Sprintf("Performance entry with id %d exists and is assigned to the given trainer", body.PerformanceId))
 	}
 
+	// Get the athlete for the given trainer
+	athlete, err2 := athleteManagement.GetAthleteFromPerformanceId(ctx, body.PerformanceId, trainerEmail)
+	if errors.Is(err2, gorm.ErrRecordNotFound) {
+		err2 = errors.Wrap(err2, "Athlete does not exist")
+		endpoints.Logger.Debug(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+		return
+	} else if err2 != nil {
+		err2 = errors.Wrap(err2, "Failed to get the athlete")
+		endpoints.Logger.Error(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
+		return
+	}
+
+	// Calculate the age of the athlete
+	birthDate, err3 := formatHelper.FormatDate(athlete.BirthDate)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to parse the birth date")
+		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
+		return
+	}
+	age, err4 := athleteManagement.CalculateAge(ctx, birthDate)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to calculate the age of the athlete")
+		endpoints.Logger.Error(ctx, err4)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
+		return
+	}
+
+	// Get the corresponding medal status
+	medal, err5 := evaluateMedalStatus(ctx, body.ExerciseId, age, athlete.Sex, body.Points)
+	if errors.Is(err5, gorm.ErrRecordNotFound) {
+		err5 = errors.Wrap(err5, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err5)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
+		return
+	} else if err5 != nil {
+		err5 = errors.Wrap(err5, "Failed to calculate the medal status")
+		endpoints.Logger.Error(ctx, err5)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
+		return
+	}
+
 	// Translate to database entry
 	performanceEntry := databaseUtils.Performance{
 		ID:         body.PerformanceId,
 		Points:     body.Points,
 		Date:       body.Date,
 		ExerciseId: body.ExerciseId,
+		Medal:      medal,
 	}
 
 	// Update the performance entry in the database
-	err2 := updatePerformanceEntry(ctx, performanceEntry)
-	if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to update the performance entry")
-		endpoints.Logger.Error(ctx, err2)
+	err6 := updatePerformanceEntry(ctx, performanceEntry)
+	if err6 != nil {
+		err6 = errors.Wrap(err6, "Failed to update the performance entry")
+		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the performance entry"})
 		return
 	}
