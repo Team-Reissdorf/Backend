@@ -92,7 +92,7 @@ func CreatePerformance(c *gin.Context) {
 		return
 	} else if err5 != nil {
 		endpoints.Logger.Error(ctx, err5)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's goals for this athlete"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
 		return
 	}
 
