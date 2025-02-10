@@ -1,6 +1,7 @@
 package performanceManagement
 
 import (
+	"fmt"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
@@ -39,7 +40,20 @@ func EditPerformanceEntry(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Check if the given performance entry is for an athlete of the given trainer
-	// ToDo
+	exists, err1 := performanceExistsForTrainer(ctx, body.PerformanceId, trainerEmail)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to check if the performance entry exists and is assigned to the trainer")
+		endpoints.Logger.Error(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the performance entry exists"})
+		return
+	}
+	if !exists {
+		endpoints.Logger.Debug(ctx, fmt.Sprintf("Performance entry with id %d does not exist", body.PerformanceId))
+		c.AbortWithStatusJSON(http.StatusNotFound, "Performance entry does not exist")
+		return
+	} else {
+		endpoints.Logger.Debug(ctx, fmt.Sprintf("Performance entry with id %d exists and is assigned to the given trainer", body.PerformanceId))
+	}
 
 	// Translate to database entry
 	performanceEntry := databaseUtils.Performance{

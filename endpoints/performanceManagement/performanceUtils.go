@@ -162,6 +162,28 @@ func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]Performanc
 	return &performanceBodies, nil
 }
 
+// performanceExistsForTrainer checks if a performance entry with the given id exists for the given trainer
+func performanceExistsForTrainer(ctx context.Context, performanceId uint, trainerEmail string) (bool, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "PerformanceExistsForTrainer")
+	defer span.End()
+
+	var performanceCount int64
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).
+			Joins("athletes ON performances.athlete_id = athletes.id").
+			Where("performances.id = ? AND athletes.trainer_email = ?", performanceId, trainerEmail).
+			Count(&performanceCount).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to check if the performance entry exists")
+		return false, err1
+	}
+
+	return performanceCount > 0, nil
+}
+
 func editPerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
 	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
 	defer span.End()
