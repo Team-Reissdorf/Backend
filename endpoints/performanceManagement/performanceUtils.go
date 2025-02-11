@@ -162,43 +162,60 @@ func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]Performanc
 	return &performanceBodies, nil
 }
 
-// evaluateMedalStatus checks which result a performance entry achieved
-func evaluateMedalStatus(ctx context.Context, exerciseId uint, age int, sex string, points uint64) (string, error) {
-	// Get the exercise goal to check whether the athlete has reached a medal or not, and if so, which one
-	var exerciseGoal databaseUtils.ExerciseGoal
+// performanceExistsForTrainer checks if a performance entry with the given id exists for the given trainer
+func performanceExistsForTrainer(ctx context.Context, performanceId uint, trainerEmail string) (bool, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "PerformanceExistsForTrainer")
+	defer span.End()
+
+	var performanceCount int64
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Model(&databaseUtils.ExerciseGoal{}).
-			Where("exercise_id = ? AND from_age <= ? AND to_age >= ? AND sex = ?", exerciseId, age, age, sex).
-			First(&exerciseGoal).
+		err := tx.Model(&databaseUtils.Performance{}).
+			Joins("INNER JOIN athletes ON performances.athlete_id = athletes.id").
+			Where("performances.id = ? AND athletes.trainer_email = ?", performanceId, trainerEmail).
+			Count(&performanceCount).
 			Error
 		return err
 	})
 	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to evaluate the medal status")
-		return "", err1
+		err1 = errors.Wrap(err1, "Failed to check if the performance entry exists")
+		return false, err1
 	}
 
-	// Check if a smaller or a bigger value is better
-	smallerIsBetter := exerciseGoal.Bronze > exerciseGoal.Gold
+	return performanceCount > 0, nil
+}
 
-	// Create the compare function based on the smallerIsBetter variable
-	compare := func(p, g uint64) bool {
-		if smallerIsBetter {
-			return p <= g
-		} else {
-			return p >= g
-		}
-	}
+// updatePerformanceEntry updates the given performance entry in the database
+func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
+	defer span.End()
 
-	// Check the medal status of the athletes performance entry
-	switch {
-	case compare(points, exerciseGoal.Gold):
-		return GoldStatus, nil
-	case compare(points, exerciseGoal.Silver):
-		return SilverStatus, nil
-	case compare(points, exerciseGoal.Bronze):
-		return BronzeStatus, nil
-	default:
-		return "", nil
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Performance{}).Where("id = ?", performanceEntry.ID).Updates(performanceEntry).Error
+		return err
+	})
+	err1 = databaseUtils.TranslatePostgresError(err1)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to update the performance entry")
 	}
+	return err1
+}
+
+// countPerformanceEntriesPerDisciplinePerDay counts all performance entries per discipline per day of the given athlete
+func countPerformanceEntriesPerDisciplinePerDay(ctx context.Context, athleteId uint, exerciseId uint, date string) (int64, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CountPerformanceEntriesPerDisciplinePerDayInDB")
+	defer span.End()
+
+	var count int64
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND exercises.id = ? AND date = ?", athleteId, exerciseId, date).
+			Count(&count).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to count the already existing performance entries")
+	}
+	return count, err1
 }

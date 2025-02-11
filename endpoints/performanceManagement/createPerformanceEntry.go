@@ -12,6 +12,8 @@ import (
 	"net/http"
 )
 
+var limitPerDisciplinePerDay uint8 = 3
+
 // CreatePerformance creates a new performance entry
 // @Summary Creates a new performance entry
 // @Description Creates a new performance entry with the given data. Maximum 3 entries/discipline/athlete/day are allowed (performance limit).
@@ -65,18 +67,32 @@ func CreatePerformance(c *gin.Context) {
 		return
 	}
 
-	// Calculate the age of the athlete
-	birthDate, err3 := formatHelper.FormatDate(athlete.BirthDate)
+	// Check if the creation limit is reached
+	count, err3 := countPerformanceEntriesPerDisciplinePerDay(ctx, athlete.ID, body.ExerciseId, body.Date)
 	if err3 != nil {
-		err3 = errors.Wrap(err3, "Failed to parse the birth date")
 		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
+		return
+	}
+	if uint8(count) >= limitPerDisciplinePerDay {
+		err := errors.New("The athlete has reached the daily limit for this discipline")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	// Calculate the age of the athlete
+	birthDate, err4 := formatHelper.FormatDate(athlete.BirthDate)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to parse the birth date")
+		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
 		return
 	}
-	age, err4 := athleteManagement.CalculateAge(ctx, birthDate)
-	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to calculate the age of the athlete")
-		endpoints.Logger.Error(ctx, err4)
+	age, err5 := athleteManagement.CalculateAge(ctx, birthDate)
+	if err5 != nil {
+		err5 = errors.Wrap(err5, "Failed to calculate the age of the athlete")
+		endpoints.Logger.Error(ctx, err5)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
 		return
 	}
@@ -84,29 +100,29 @@ func CreatePerformance(c *gin.Context) {
 	// Translate the performance body to a database entry
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
-	performanceEntries, err5 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
-	if errors.Is(err5, gorm.ErrRecordNotFound) {
-		err5 = errors.Wrap(err5, "No exercise goals for this athlete found")
-		endpoints.Logger.Debug(ctx, err5)
+	performanceEntries, err6 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
+	if errors.Is(err6, gorm.ErrRecordNotFound) {
+		err6 = errors.Wrap(err6, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
 		return
-	} else if err5 != nil {
-		endpoints.Logger.Error(ctx, err5)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's goals for this athlete"})
+	} else if err6 != nil {
+		endpoints.Logger.Error(ctx, err6)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
 		return
 	}
 
 	// Create performance entry in the database
-	err6 := createNewPerformances(ctx, performanceEntries)
-	if errors.Is(err6, databaseUtils.ErrForeignKeyViolation) {
-		err6 = errors.Wrap(err6, "Athlete or exercise does not exist")
-		endpoints.Logger.Debug(ctx, err6)
+	err7 := createNewPerformances(ctx, performanceEntries)
+	if errors.Is(err7, databaseUtils.ErrForeignKeyViolation) {
+		err7 = errors.Wrap(err7, "Athlete or exercise does not exist")
+		endpoints.Logger.Debug(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
 		return
 	}
-	if err6 != nil {
-		err6 = errors.Wrap(err6, "Failed to create the performance entry")
-		endpoints.Logger.Error(ctx, err6)
+	if err7 != nil {
+		err7 = errors.Wrap(err7, "Failed to create the performance entry")
+		endpoints.Logger.Error(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
 	}

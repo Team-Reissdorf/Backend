@@ -211,6 +211,28 @@ func GetAthlete(ctx context.Context, athleteId uint, trainerEmail string) (*data
 	return &athlete, nil
 }
 
+// GetAthleteFromPerformanceId returns the athlete of the given performance entry
+func GetAthleteFromPerformanceId(ctx context.Context, performanceId uint, trainerEmail string) (*databaseUtils.Athlete, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromPerformanceEntryFromDB")
+	defer span.End()
+
+	var athlete databaseUtils.Athlete
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Athlete{}).
+			Joins("LEFT JOIN performances ON performances.athlete_id = athletes.id").
+			Where("trainer_email = ? AND performances.id = ?", strings.ToLower(trainerEmail), performanceId).
+			First(&athlete).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the athlete")
+		return nil, err1
+	}
+
+	return &athlete, nil
+}
+
 // CalculateAge parses the birthDate string and returns the age
 func CalculateAge(ctx context.Context, birthDate string) (int, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "CalculateAge")
