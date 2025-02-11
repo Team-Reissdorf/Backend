@@ -72,32 +72,46 @@ func EditPerformanceEntry(c *gin.Context) {
 		return
 	}
 
-	// Calculate the age of the athlete
-	birthDate, err3 := formatHelper.FormatDate(athlete.BirthDate)
+	// Check if the creation limit is reached
+	count, err3 := countPerformanceEntriesPerDisciplinePerDayEditMode(ctx, athlete.ID, body.ExerciseId, body.PerformanceId, body.Date)
 	if err3 != nil {
-		err3 = errors.Wrap(err3, "Failed to parse the birth date")
 		endpoints.Logger.Error(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
+		return
+	}
+	if uint8(count) >= limitPerDisciplinePerDay {
+		err := errors.New("The athlete has reached the daily limit for this discipline")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	// Calculate the age of the athlete
+	birthDate, err4 := formatHelper.FormatDate(athlete.BirthDate)
+	if err4 != nil {
+		err4 = errors.Wrap(err4, "Failed to parse the birth date")
+		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
 		return
 	}
-	age, err4 := athleteManagement.CalculateAge(ctx, birthDate)
-	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to calculate the age of the athlete")
-		endpoints.Logger.Error(ctx, err4)
+	age, err5 := athleteManagement.CalculateAge(ctx, birthDate)
+	if err5 != nil {
+		err5 = errors.Wrap(err5, "Failed to calculate the age of the athlete")
+		endpoints.Logger.Error(ctx, err5)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
 		return
 	}
 
 	// Get the corresponding medal status
-	medal, err5 := evaluateMedalStatus(ctx, body.ExerciseId, age, athlete.Sex, body.Points)
-	if errors.Is(err5, gorm.ErrRecordNotFound) {
-		err5 = errors.Wrap(err5, "No exercise goals for this athlete found")
-		endpoints.Logger.Debug(ctx, err5)
+	medal, err6 := evaluateMedalStatus(ctx, body.ExerciseId, age, athlete.Sex, body.Points)
+	if errors.Is(err6, gorm.ErrRecordNotFound) {
+		err6 = errors.Wrap(err6, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
 		return
-	} else if err5 != nil {
-		err5 = errors.Wrap(err5, "Failed to calculate the medal status")
-		endpoints.Logger.Error(ctx, err5)
+	} else if err6 != nil {
+		err6 = errors.Wrap(err6, "Failed to calculate the medal status")
+		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
 		return
 	}
@@ -112,10 +126,10 @@ func EditPerformanceEntry(c *gin.Context) {
 	}
 
 	// Update the performance entry in the database
-	err6 := updatePerformanceEntry(ctx, performanceEntry)
-	if err6 != nil {
-		err6 = errors.Wrap(err6, "Failed to update the performance entry")
-		endpoints.Logger.Error(ctx, err6)
+	err7 := updatePerformanceEntry(ctx, performanceEntry)
+	if err7 != nil {
+		err7 = errors.Wrap(err7, "Failed to update the performance entry")
+		endpoints.Logger.Error(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the performance entry"})
 		return
 	}
