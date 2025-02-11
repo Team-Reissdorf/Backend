@@ -12,6 +12,11 @@ import (
 	"net/http"
 )
 
+type CreatePerformanceResponse struct {
+	Message     string `json:"message" example:"Creation successful"`
+	MedalStatus string `json:"medal_status" example:"Medal status"`
+}
+
 var limitPerDisciplinePerDay uint8 = 3
 
 // CreatePerformance creates a new performance entry
@@ -22,7 +27,7 @@ var limitPerDisciplinePerDay uint8 = 3
 // @Produce json
 // @Param Performance body PerformanceBody true "Details of a performance (valid units are: <second, centimeter, point, bool>)"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 201 {object} endpoints.SuccessResponse "Creation successful"
+// @Success 201 {object} CreatePerformanceResponse "Creation successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete or exercise does not exist"
@@ -129,8 +134,9 @@ func CreatePerformance(c *gin.Context) {
 
 	c.JSON(
 		http.StatusCreated,
-		endpoints.SuccessResponse{
-			Message: "Creation successful",
+		CreatePerformanceResponse{
+			Message:     "Creation successful",
+			MedalStatus: performanceEntries[0].Medal,
 		},
 	)
 }
