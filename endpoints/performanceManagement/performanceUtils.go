@@ -219,3 +219,36 @@ func countPerformanceEntriesPerDisciplinePerDay(ctx context.Context, athleteId u
 	}
 	return count, err1
 }
+
+// countPerformanceEntriesPerDisciplinePerDayEditMode counts all performance entries per discipline (besides its old one) per day of the given athlete
+func countPerformanceEntriesPerDisciplinePerDayEditMode(ctx context.Context, athleteId uint, exerciseId uint, performanceId uint, date string) (int64, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "CountPerformanceEntriesPerDisciplinePerDayEditModeInDB")
+	defer span.End()
+
+	var count int64
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		var disciplineName string
+		errA := tx.Model(&databaseUtils.Performance{}).
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Select("discipline_name").
+			Where("performances.id = ?", performanceId).
+			Find(&disciplineName).
+			Error
+		if errA != nil {
+			errA = errors.Wrap(errA, "Failed to get the discipline_name")
+			return errA
+		}
+
+		errB := tx.Model(&databaseUtils.Performance{}).
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND exercises.id = ? AND date = ? AND exercises.discipline_name != ?", athleteId, exerciseId, date, disciplineName).
+			Count(&count).
+			Error
+		if errB != nil {
+			errB = errors.Wrap(errB, "Failed to count the already existing performance entries")
+			return errB
+		}
+		return nil
+	})
+	return count, err1
+}
