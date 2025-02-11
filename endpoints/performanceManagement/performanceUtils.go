@@ -162,6 +162,44 @@ func getAllPerformanceBodies(ctx context.Context, athleteId uint) (*[]Performanc
 	return &performanceBodies, nil
 }
 
+// performanceExistsForTrainer checks if a performance entry with the given id exists for the given trainer
+func performanceExistsForTrainer(ctx context.Context, performanceId uint, trainerEmail string) (bool, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "PerformanceExistsForTrainer")
+	defer span.End()
+
+	var performanceCount int64
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).
+			Joins("INNER JOIN athletes ON performances.athlete_id = athletes.id").
+			Where("performances.id = ? AND athletes.trainer_email = ?", performanceId, trainerEmail).
+			Count(&performanceCount).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to check if the performance entry exists")
+		return false, err1
+	}
+
+	return performanceCount > 0, nil
+}
+
+// updatePerformanceEntry updates the given performance entry in the database
+func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.Performance) error {
+	ctx, span := endpoints.Tracer.Start(ctx, "EditPerformanceEntryInDB")
+	defer span.End()
+
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(databaseUtils.Performance{}).Where("id = ?", performanceEntry.ID).Updates(performanceEntry).Error
+		return err
+	})
+	err1 = databaseUtils.TranslatePostgresError(err1)
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to update the performance entry")
+	}
+	return err1
+}
+
 // countPerformanceEntriesPerDisciplinePerDay counts all performance entries per discipline per day of the given athlete
 func countPerformanceEntriesPerDisciplinePerDay(ctx context.Context, athleteId uint, exerciseId uint, date string) (int64, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "CountPerformanceEntriesPerDisciplinePerDayInDB")

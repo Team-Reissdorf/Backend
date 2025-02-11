@@ -19,7 +19,7 @@ import (
 // @Produce json
 // @Param Athlete body AthleteBodyWithId true "Edited details of an athlete"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 200 {object} endpoints.SuccessResponse "Creation successful"
+// @Success 200 {object} endpoints.SuccessResponse "Edited successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete could not be found for this trainer"
