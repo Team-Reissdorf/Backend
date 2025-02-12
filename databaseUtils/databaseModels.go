@@ -46,7 +46,7 @@ type Exercise struct {
 
 	Name        string `json:"name"`
 	Unit        string `json:"unit"`
-	DateVersion string `json:"date_version" gorm:"type:date"`
+	VersionYear string `json:"version_year" gorm:"type:date"`
 
 	DisciplineName string `json:"discipline_name" gorm:"index"`
 	// BelongsTo Discipline (FK: DisciplineName -> Discipline.Name)
