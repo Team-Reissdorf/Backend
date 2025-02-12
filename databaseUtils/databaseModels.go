@@ -44,8 +44,9 @@ type Exercise struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	Name string `json:"name"`
-	Unit string `json:"unit"`
+	Name        string `json:"name"`
+	Unit        string `json:"unit"`
+	DateVersion string `json:"date_version" gorm:"type:date"`
 
 	DisciplineName string `json:"discipline_name" gorm:"index"`
 	// BelongsTo Discipline (FK: DisciplineName -> Discipline.Name)
