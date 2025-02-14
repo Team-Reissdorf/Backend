@@ -1,25 +1,22 @@
-FROM golang:1.23-bookworm AS builder
+FROM golang:1.24-alpine3.21 AS builder
 
-RUN mkdir /build
-
-WORKDIR /build
-
-COPY . .
-
-RUN go install github.com/swaggo/swag/cmd/swag@latest
-
-RUN swag init
-
-RUN go build -o backend main.go
-
-FROM docker.io/debian:12.9-slim
-
-RUN mkdir /app
 
 WORKDIR /app
 
-COPY --from=builder /build/backend .
+COPY . .
 
+RUN apk add --no-cache make
+RUN make build_with_swag
+
+FROM scratch
+
+WORKDIR /app/
+
+COPY --from=builder /app/build/. .
 COPY .env.example .env
+COPY --from=builder /app/docs /app/docs
+RUN ["unset HTTP_PROXY HTTPS_PROXY"]
+
+EXPOSE 8080
 
 CMD ["/app/backend"]
