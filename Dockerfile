@@ -15,7 +15,6 @@ WORKDIR /app/
 COPY --from=builder /app/build/. .
 COPY .env.example .env
 COPY --from=builder /app/docs /app/docs
-RUN ["unset HTTP_PROXY HTTPS_PROXY"]
 
 EXPOSE 8080
 
