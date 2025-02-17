@@ -8,14 +8,16 @@ COPY . .
 RUN apk add --no-cache make
 RUN make build_with_swag
 
+
+
 FROM scratch
 
 WORKDIR /app/
 
-COPY --from=builder /app/build/. .
+COPY --from=builder /app/build/. /app/build/
 COPY .env.example .env
 COPY --from=builder /app/docs /app/docs
 
 EXPOSE 8080
 
-CMD ["/app/backend"]
+CMD ["/app/build/backend"]
