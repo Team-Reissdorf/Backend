@@ -23,11 +23,11 @@ services:
     networks:
       - competehub
 
-  debug:
-    image: alpine:latest
-    command: sleep infinity
-    networks:
-      - competehub
+#  debug:
+#    image: alpine:latest
+#    command: sleep infinity
+#    networks:
+#      - competehub
 networks:
   competehub:
     driver: bridge
