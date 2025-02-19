@@ -18,7 +18,7 @@ var (
 
 // translateAthleteBodies translates the athlete body to an athlete db entry
 func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
+	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
 
 	athletes := make([]databaseUtils.Athlete, len(athleteBodies))
@@ -38,7 +38,7 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 
 // translateAthleteToResponse converts an athlete database object to response type
 func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
+	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
 	// Reformat the date to the correct format
