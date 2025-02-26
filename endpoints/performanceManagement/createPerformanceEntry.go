@@ -50,12 +50,20 @@ func CreatePerformance(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Validate the date format
+	// Validate the date Format and if it is in the past
 	err1 := formatHelper.IsDate(body.Date)
 	if err1 != nil {
-		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-		return
+		if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+			return
+		}
+		if errors.Is(err1, formatHelper.DateInFutureError) {
+			err1 = errors.Wrap(err1, "Date is in the future")
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
+			return
+		}
 	}
 
 	// Get the athlete for the given trainer
