@@ -25,6 +25,7 @@ var (
 	EmailAddressContainsNameError  = errors.New("Email address should not contain the name")
 	EmailAddressInvalidTldError    = errors.New("Email address TLD is invalid")
 	DateFormatInvalidError         = errors.New("Date format is invalid")
+	EmptyStringError               = errors.New("Empty String")
 )
 
 func init() {
@@ -87,5 +88,12 @@ func IsSex(sex string) error {
 		return InvalidSexValue
 	}
 
+	return nil
+}
+
+func IsEmpty(bodyPart string) error {
+	if len(bodyPart) == 0 {
+		return EmptyStringError
+	}
 	return nil
 }
