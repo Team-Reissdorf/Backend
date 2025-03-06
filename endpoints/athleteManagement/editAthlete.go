@@ -29,6 +29,7 @@ import (
 func EditAthlete(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "EditAthlete")
 	defer span.End()
+
 	// Bind JSON body to struct
 	var body AthleteBodyWithId
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -54,11 +55,7 @@ func EditAthlete(c *gin.Context) {
 
 	// Validate the athlete body
 	err1 := validateAthlete(ctx, &athleteEntry)
-	if errors.Is(err1, formatHelper.EmptyStringError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err1.Error()})
-		return
-	} else if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
 		return

@@ -45,15 +45,9 @@ func CreateAthlete(c *gin.Context) {
 	athleteBodies[0] = body
 	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
 
-	//err3
-
 	// Validate the athlete body
 	err1 := validateAthlete(ctx, &athleteEntries[0])
-	if errors.Is(err1, formatHelper.EmptyStringError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err1.Error()})
-		return
-	} else if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
+	if errors.Is(err1, formatHelper.InvalidSexLengthError) || errors.Is(err1, formatHelper.InvalidSexValue) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Sex needs to be <m|f|d>"})
 		return

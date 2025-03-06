@@ -51,12 +51,8 @@ func CreatePerformance(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Validate the date format
-	if err1 := formatHelper.IsEmpty(body.Date); err1 != nil {
-		endpoints.Logger.Debug(ctx, err1)
-		err1 = errors.Wrap(err1, "Date is empty")
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err1.Error()})
-		return
-	} else if err1 := formatHelper.IsDate(body.Date); err1 != nil {
+	err1 := formatHelper.IsDate(body.Date)
+	if err1 != nil {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
 		return

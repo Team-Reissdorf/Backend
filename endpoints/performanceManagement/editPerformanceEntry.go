@@ -42,13 +42,6 @@ func EditPerformanceEntry(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	if err1 := formatHelper.IsEmpty(body.Date); err1 != nil {
-		endpoints.Logger.Debug(ctx, err1)
-		err1 = errors.Wrap(err1, "Date is empty")
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err1.Error()})
-		return
-	}
-
 	// Check if the given performance entry is for an athlete of the given trainer
 	exists, err1 := performanceExistsForTrainer(ctx, body.PerformanceId, trainerEmail)
 	if err1 != nil {
