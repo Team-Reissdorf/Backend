@@ -70,7 +70,7 @@ func init() {
 	if err != nil {
 		err = errors.Wrap(err, "Failed to parse SETTINGS_ACCESS_TOKEN_DURATION_MINUTES, using default")
 		logger.Warn(ctx, err)
-		refreshTokenDurationDaysInt = 15
+		// refreshTokenDurationDaysInt = 15
 	}
 	settingsAccessTokenDurationMinutes = time.Duration(settingsAccessTokenDurationMinutesInt) * time.Minute
 }

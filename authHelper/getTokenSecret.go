@@ -36,7 +36,7 @@ func getSecretKey(token *jwt.Token) (interface{}, error) {
 
 // getSecretKeyByTokenType returns the secret key for the HMAC algorithm based on the token type
 func getSecretKeyByTokenType(ctx context.Context, tokenType string) ([]byte, error) {
-	ctx, span := tracer.Start(ctx, "GetJWTSecretKeyByType")
+	_, span := tracer.Start(ctx, "GetJWTSecretKeyByType")
 	defer span.End()
 
 	switch tokenType {
