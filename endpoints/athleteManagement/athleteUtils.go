@@ -18,7 +18,7 @@ var (
 
 // translateAthleteBodies translates the athlete body to an athlete db entry
 func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
-	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
 
 	athletes := make([]databaseUtils.Athlete, len(athleteBodies))
@@ -38,7 +38,7 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 
 // translateAthleteToResponse converts an athlete database object to response type
 func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
-	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
+	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
 	// Reformat the date to the correct format
@@ -62,7 +62,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 // validateAthlete checks if all values of an athlete are valid
 // Throws: Forwards errors of the formatHelper
 func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
-	_, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
+	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
 
 	// Capitalize the first letter of the name
@@ -235,7 +235,7 @@ func GetAthleteFromPerformanceId(ctx context.Context, performanceId uint, traine
 
 // CalculateAge parses the birthDate string and returns the age
 func CalculateAge(ctx context.Context, birthDate string) (int, error) {
-	_, span := endpoints.Tracer.Start(ctx, "CalculateAge")
+	ctx, span := endpoints.Tracer.Start(ctx, "CalculateAge")
 	defer span.End()
 
 	birthDay, err1 := time.Parse("2006-01-02", birthDate)
