@@ -8,15 +8,13 @@ import (
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
-// translateAthleteBodies translates the athlete body to an athlete db entry
+// translateAthleteBodies translates the athlete body to an athlete db entry.
 func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
 	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
