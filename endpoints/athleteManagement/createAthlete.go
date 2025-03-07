@@ -45,8 +45,6 @@ func CreateAthlete(c *gin.Context) {
 	athleteBodies[0] = body
 	athleteEntries := translateAthleteBodies(ctx, athleteBodies, trainerEmail)
 
-	//err3
-
 	// Validate the athlete body
 	err1 := validateAthlete(ctx, &athleteEntries[0])
 	if errors.Is(err1, formatHelper.EmptyStringError) {
