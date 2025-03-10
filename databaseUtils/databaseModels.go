@@ -103,3 +103,8 @@ type Performance struct {
 	// BelongsTo Athlete (FK: AthleteId -> Athlete.AthleteId)
 	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
+type PerformanceCertificate struct {
+	ID          uint        `gorm:"primarykey"`
+	Performance Performance `json:"-" gorm:"foreignKey:PerformanceID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Path        string      `json:"path"`
+}
