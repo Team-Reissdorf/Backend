@@ -2,11 +2,12 @@ package authHelper
 
 import (
 	"context"
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 )
 
 var accessTokenSecretKey []byte
@@ -70,7 +71,7 @@ func init() {
 	if err != nil {
 		err = errors.Wrap(err, "Failed to parse SETTINGS_ACCESS_TOKEN_DURATION_MINUTES, using default")
 		logger.Warn(ctx, err)
-		refreshTokenDurationDaysInt = 15
+		settingsAccessTokenDurationMinutesInt = 15
 	}
 	settingsAccessTokenDurationMinutes = time.Duration(settingsAccessTokenDurationMinutesInt) * time.Minute
 }
