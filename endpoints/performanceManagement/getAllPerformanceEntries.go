@@ -59,6 +59,13 @@ func GetPerformanceEntries(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'since' query parameter"})
 			return
 		}
+		err = formatHelper.IsFuture(since)
+		if err != nil {
+			err = errors.Wrap(err, "Date is in the future")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the Future"})
+			return
+		}
 	}
 
 	// Get the user id from the context

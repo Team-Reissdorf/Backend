@@ -52,18 +52,22 @@ func CreatePerformance(c *gin.Context) {
 
 	// Validate the date Format and if it is in the past
 	err1 := formatHelper.IsDate(body.Date)
-	if err1 != nil {
-		if errors.Is(err1, formatHelper.DateFormatInvalidError) {
-			endpoints.Logger.Debug(ctx, err1)
-			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
-			return
-		}
-		if errors.Is(err1, formatHelper.DateInFutureError) {
-			err1 = errors.Wrap(err1, "Date is in the future")
-			endpoints.Logger.Debug(ctx, err1)
-			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
-			return
-		}
+	if errors.Is(err1, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		return
+	}
+	err1 = formatHelper.IsFuture(body.Date)
+	if errors.Is(err1, formatHelper.DateInFutureError) {
+		err1 = errors.Wrap(err1, "Date is in the future")
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
+		return
+	} else if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to check the date")
+		endpoints.Logger.Error(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check the date"})
+		return
 	}
 
 	// Get the athlete for the given trainer
