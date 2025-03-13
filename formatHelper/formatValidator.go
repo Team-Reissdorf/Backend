@@ -69,7 +69,6 @@ func IsEmail(email string) error {
 }
 
 // IsDate checks if the given date is in the required format (YYYY-MM-DD).
-// IsFuture checks if the given date is in the future and throws an error if it is.
 // Throws: DateFormatInvalidError
 func IsDate(date string) error {
 	// Check if the date format matches
@@ -79,6 +78,7 @@ func IsDate(date string) error {
 	return nil
 }
 
+// IsFuture checks if the given date is in the future and throws an error if it is.
 func IsFuture(date string) error {
 	parsedDate, err := time.Parse("2006-01-02", date)
 	if err != nil {

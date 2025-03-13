@@ -52,17 +52,19 @@ func GetPerformanceEntries(c *gin.Context) {
 	since := c.Query("since")
 	sinceIsSet := since != ""
 	if sinceIsSet {
-		err := formatHelper.IsDate(since)
-		if err != nil {
-			err = errors.Wrap(err, "Invalid 'since' query parameter")
-			endpoints.Logger.Debug(ctx, err)
+		//Check if the date is in the correct format
+		err2 := formatHelper.IsDate(since)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Invalid 'since' query parameter")
+			endpoints.Logger.Debug(ctx, err2)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'since' query parameter"})
 			return
 		}
-		err = formatHelper.IsFuture(since)
-		if err != nil {
-			err = errors.Wrap(err, "Date is in the future")
-			endpoints.Logger.Debug(ctx, err)
+		//Check if date is in the past
+		err3 := formatHelper.IsFuture(since)
+		if err3 != nil {
+			err3 = errors.Wrap(err3, "Date is in the future")
+			endpoints.Logger.Debug(ctx, err3)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the Future"})
 			return
 		}
@@ -72,9 +74,9 @@ func GetPerformanceEntries(c *gin.Context) {
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
 	// Check if the athlete exists for the given trainer
-	exists, err2 := athleteManagement.AthleteExistsForTrainer(ctx, uint(athleteId), trainerEmail)
-	if err2 != nil {
-		endpoints.Logger.Error(ctx, err2)
+	exists, err4 := athleteManagement.AthleteExistsForTrainer(ctx, uint(athleteId), trainerEmail)
+	if err4 != nil {
+		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
 		return
 	}

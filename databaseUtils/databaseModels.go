@@ -13,7 +13,7 @@ type Athlete struct {
 	FirstName string `json:"first_name" gorm:"uniqueIndex:unique_combination_athletes"`
 	LastName  string `json:"last_name"`
 	BirthDate string `json:"birth_date" gorm:"type:date;uniqueIndex:unique_combination_athletes"`
-	Sex       string `json:"sex"`
+	Sex       string `json:"sex" gorm:"type:char(1)"`
 	Email     string `json:"email" gorm:"uniqueIndex:unique_combination_athletes"`
 
 	TrainerEmail string `json:"trainer_email" gorm:"index"`
@@ -79,7 +79,7 @@ type ExerciseGoal struct {
 
 	FromAge uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
 	ToAge   uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	Sex     string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	Sex     string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals;type:char(1)"`
 	Bronze  uint64 `json:"bronze"`
 	Silver  uint64 `json:"silver"`
 	Gold    uint64 `json:"gold"`
