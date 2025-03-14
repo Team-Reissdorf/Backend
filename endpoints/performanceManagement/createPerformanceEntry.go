@@ -50,7 +50,7 @@ func CreatePerformance(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Validate the date Format
+	// Validate the date format
 	err1 := formatHelper.IsDate(body.Date)
 	if errors.Is(err1, formatHelper.DateFormatInvalidError) {
 		endpoints.Logger.Debug(ctx, err1)
@@ -66,7 +66,7 @@ func CreatePerformance(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
 		return
 	} else if err2 != nil {
-		err1 = errors.Wrap(err2, "Failed to check the date")
+		err2 = errors.Wrap(err2, "Failed to check the date")
 		endpoints.Logger.Error(ctx, err2)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check the date"})
 		return
@@ -121,7 +121,7 @@ func CreatePerformance(c *gin.Context) {
 	performanceBodies[0] = body
 	performanceEntries, err7 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
 	if errors.Is(err7, gorm.ErrRecordNotFound) {
-		err6 = errors.Wrap(err7, "No exercise goals for this athlete found")
+		err7 = errors.Wrap(err7, "No exercise goals for this athlete found")
 		endpoints.Logger.Debug(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
 		return
@@ -134,7 +134,7 @@ func CreatePerformance(c *gin.Context) {
 	// Create performance entry in the database
 	err8 := createNewPerformances(ctx, performanceEntries)
 	if errors.Is(err8, databaseUtils.ErrForeignKeyViolation) {
-		err7 = errors.Wrap(err8, "Athlete or exercise does not exist")
+		err8 = errors.Wrap(err8, "Athlete or exercise does not exist")
 		endpoints.Logger.Debug(ctx, err8)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
 		return
