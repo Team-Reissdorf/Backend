@@ -2,14 +2,16 @@ package authHelper
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // GetUserIdFromContext gets the user id from the gin context and returns it as a string.
 // Swag-Annotations to use in the endpoint handlers:
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
+// nolint:staticcheck
 func GetUserIdFromContext(ctx context.Context, c *gin.Context) string {
 	ctx, span := tracer.Start(c.Request.Context(), "GetUserIdFromContext")
 	defer span.End()
