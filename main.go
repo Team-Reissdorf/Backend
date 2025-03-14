@@ -7,7 +7,6 @@
 // @license.name   MIT License
 // @license.url    https://mit-license.org/
 // @host           localhost:8080
-// @BasePath       /v1
 // @schemes        http https
 // @accept         json
 // @produce        json
