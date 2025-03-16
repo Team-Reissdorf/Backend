@@ -116,6 +116,28 @@ func EditPerformanceEntry(c *gin.Context) {
 		return
 	}
 
+	//Check if the Date is in Correct Format
+	err7 := formatHelper.IsDate(body.Date)
+	if errors.Is(err7, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err7)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		return
+	}
+
+	//Check if the Date is in the Past
+	err8 := formatHelper.IsFuture(body.Date)
+	if errors.Is(err8, formatHelper.DateInFutureError) {
+		err8 = errors.Wrap(err8, "Date is in the future")
+		endpoints.Logger.Debug(ctx, err8)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
+		return
+	} else if err8 != nil {
+		err8 = errors.Wrap(err8, "Failed to check the date")
+		endpoints.Logger.Error(ctx, err8)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check the date"})
+		return
+	}
+
 	// Translate to database entry
 	performanceEntry := databaseUtils.Performance{
 		ID:         body.PerformanceId,
@@ -126,10 +148,10 @@ func EditPerformanceEntry(c *gin.Context) {
 	}
 
 	// Update the performance entry in the database
-	err7 := updatePerformanceEntry(ctx, performanceEntry)
-	if err7 != nil {
-		err7 = errors.Wrap(err7, "Failed to update the performance entry")
-		endpoints.Logger.Error(ctx, err7)
+	err9 := updatePerformanceEntry(ctx, performanceEntry)
+	if err9 != nil {
+		err9 = errors.Wrap(err9, "Failed to update the performance entry")
+		endpoints.Logger.Error(ctx, err9)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the performance entry"})
 		return
 	}
