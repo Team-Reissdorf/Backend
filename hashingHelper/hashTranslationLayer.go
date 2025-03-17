@@ -14,7 +14,7 @@ var (
 
 // EncodeHash encodes the hash and salt using the provided parameters
 func (params *HashParams) EncodeHash(ctx context.Context, hash []byte, salt []byte) string {
-	ctx, span := tracer.Start(ctx, "EncodeHash")
+	_, span := tracer.Start(ctx, "EncodeHash")
 	defer span.End()
 
 	// Base64 encode the salt and hashed password.
