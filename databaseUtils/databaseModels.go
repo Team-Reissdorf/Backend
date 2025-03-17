@@ -66,9 +66,9 @@ type ExerciseRuleset struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	Year string `gorm:"index;uniqueIndex:unique_combination_exercise_ruleset"`
-	// BelongsTo Ruleset (FK: Year -> Ruleset.Year)
-	Ruleset Ruleset `json:"-" gorm:"foreignKey:Year;references:Year;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	RulesetYear string `gorm:"index;uniqueIndex:unique_combination_exercise_ruleset"`
+	// BelongsTo Ruleset (FK: RulesetYear -> Ruleset.Year)
+	Ruleset Ruleset `json:"-" gorm:"foreignKey:RulesetYear;references:Year;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
 	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
 	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
@@ -81,11 +81,10 @@ type ExerciseGoal struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
-	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
-	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	RulesetId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
+	// BelongsTo ExerciseRuleset (FK: RulesetId -> ExerciseRuleset.Id)
+	ExerciseRuleset ExerciseRuleset `json:"-" gorm:"foreignKey:RulesetId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
-	VersionYear string `json:"version_year"`
 	FromAge     uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
 	ToAge       uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
 	Sex         string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals"`
