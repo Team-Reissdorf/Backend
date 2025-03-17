@@ -26,7 +26,7 @@ type ExercisesResponse struct {
 // @Tags Exercise Management
 // @Produce json
 // @Param DisciplineName path string true "Get the exercises with the given discipline name"
-// @Param athlete_id query uint false "Get the exercise_specifics for the given athletes age"
+// @Param athlete-id query uint false "Get the exercise_specifics for the given athletes age"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} ExercisesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
@@ -46,15 +46,15 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 	}
 
 	// Get the athlete_id query parameter from the context
-	athleteIdString := c.Query("athlete_id")
+	athleteIdString := c.Query("athlete-id")
 	athleteIdIsSet := athleteIdString != ""
 	var athleteId uint
 	if athleteIdIsSet {
 		athleteIdInt, err := strconv.ParseUint(athleteIdString, 10, 32)
 		if err != nil {
-			err = errors.Wrap(err, "Failed to parse 'athlete_id' query parameter")
+			err = errors.Wrap(err, "Failed to parse 'athlete-id' query parameter")
 			endpoints.Logger.Debug(ctx, err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'athlete_id' query parameter"})
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'athlete-id' query parameter"})
 			return
 		}
 		athleteId = uint(athleteIdInt)
