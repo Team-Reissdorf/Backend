@@ -27,6 +27,7 @@ type ExercisesResponse struct {
 // @Produce json
 // @Param DisciplineName path string true "Get the exercises with the given discipline name"
 // @Param athlete-id query uint false "Get the exercise_specifics for the given athletes age"
+// @Param performance-date query string false "Date in YYYY-MM-DD format to get the exercises according to the ruleset of the given year"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} ExercisesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
