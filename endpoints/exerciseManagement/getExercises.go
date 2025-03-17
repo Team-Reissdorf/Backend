@@ -111,8 +111,9 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		// Query exercises with the age specific description
 		errD := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 			err := tx.Model(&databaseUtils.Exercise{}).
-				Select("exercises.id as exercise_id, exercises.name, exercises.unit, exercises.discipline_name, exercise_specifics.description as age_specifics").
-				Joins("LEFT JOIN exercise_specifics ON exercise_specifics.exercise_id = exercises.id AND exercise_specifics.from_age <= ? AND exercise_specifics.to_age >= ?", age, age).
+				Select("exercises.id as exercise_id, exercises.name, exercises.unit, exercises.discipline_name, exercise_goals.description as age_specifics").
+				Joins("JOIN exercise_rulesets ON exercise_rulesets.exercise_id = exercises.id").
+				Joins("JOIN exercise_goals ON exercise_goals.ruleset_id = exercise_rulesets.id AND exercise_goals.from_age <= ? AND exercise_goals.to_age >= ?", age, age).
 				Where("exercises.discipline_name = ?", disciplineName).
 				Find(&results).Error
 			return err
