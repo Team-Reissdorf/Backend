@@ -70,6 +70,10 @@ func EditAthlete(c *gin.Context) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})
 		return
+	} else if errors.Is(err1, formatHelper.DateInFutureError) {
+		endpoints.Logger.Debug(ctx, err1)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the Future"})
+		return
 	} else if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to validate the athlete body")
 		endpoints.Logger.Error(ctx, err1)

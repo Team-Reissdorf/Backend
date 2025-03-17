@@ -8,6 +8,8 @@ import (
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"strings"
+	"time"
 )
 
 var (
@@ -92,6 +94,11 @@ func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error 
 	if err := formatHelper.IsEmpty(athlete.Sex); err != nil {
 		return errors.Wrap(err, "Sex")
 	}
+	if err := formatHelper.IsFuture(athlete.BirthDate); err != nil {
+		err = errors.Wrap(err, "Date is in the future")
+		return err
+	}
+
 	athlete.Sex = strings.ToLower(string(athlete.Sex[0]))
 	if err := formatHelper.IsSex(athlete.Sex); err != nil {
 		err = errors.Wrap(err, "Invalid sex")
