@@ -1,12 +1,14 @@
 package databaseUtils
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
 type Athlete struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	FirstName string `json:"first_name" gorm:"uniqueIndex:unique_combination_athletes"`
 	LastName  string `json:"last_name"`
@@ -37,7 +39,10 @@ type Discipline struct {
 }
 
 type Exercise struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	Name string `json:"name"`
 	Unit string `json:"unit"`
@@ -56,7 +61,10 @@ type Ruleset struct {
 }
 
 type ExerciseRuleset struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	Year string `gorm:"index;uniqueIndex:unique_combination_exercise_ruleset"`
 	// BelongsTo Ruleset (FK: Year -> Ruleset.Year)
@@ -68,7 +76,10 @@ type ExerciseRuleset struct {
 }
 
 type ExerciseGoal struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
 	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
@@ -85,7 +96,10 @@ type ExerciseGoal struct {
 }
 
 type Performance struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
 
 	Points uint64 `json:"points"`
 	Medal  string `json:"medal"`
