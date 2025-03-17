@@ -3,6 +3,7 @@ BUILD_DIR=./build/
 SWAG_BIN=$(shell go env GOPATH)/bin/swag
 
 build_run: build swag start
+build_with_swag: build swag
 
 start:
 	./build/${BINARY_NAME}
