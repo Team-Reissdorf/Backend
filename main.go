@@ -64,7 +64,8 @@ func init() {
 		databaseUtils.Athlete{},
 		databaseUtils.Discipline{},
 		databaseUtils.Exercise{},
-		databaseUtils.ExerciseSpecific{},
+		databaseUtils.ExerciseRuleset{},
+		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
 	)
