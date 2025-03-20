@@ -52,30 +52,44 @@ func CreatePerformance(c *gin.Context) {
 
 	// Validate the date format
 	err1 := formatHelper.IsDate(body.Date)
-	if err1 != nil {
+	if errors.Is(err1, formatHelper.DateFormatInvalidError) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
 		return
 	}
 
-	// Get the athlete for the given trainer
-	athlete, err2 := athleteManagement.GetAthlete(ctx, body.AthleteId, trainerEmail)
-	if errors.Is(err2, gorm.ErrRecordNotFound) {
-		err2 = errors.Wrap(err2, "Athlete does not exist")
+	// Check if the date is in past
+	err2 := formatHelper.IsFuture(body.Date)
+	if errors.Is(err2, formatHelper.DateInFutureError) {
+		err2 = errors.Wrap(err2, "Date is in the future")
 		endpoints.Logger.Debug(ctx, err2)
-		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
 		return
 	} else if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to get the athlete")
+		err2 = errors.Wrap(err2, "Failed to check the date")
 		endpoints.Logger.Error(ctx, err2)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check the date"})
+		return
+	}
+
+	// Get the athlete for the given trainer
+	athlete, err3 := athleteManagement.GetAthlete(ctx, body.AthleteId, trainerEmail)
+	if errors.Is(err3, gorm.ErrRecordNotFound) {
+		err3 = errors.Wrap(err3, "Athlete does not exist")
+		endpoints.Logger.Debug(ctx, err3)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete does not exist"})
+		return
+	} else if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to get the athlete")
+		endpoints.Logger.Error(ctx, err3)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
 		return
 	}
 
 	// Check if the creation limit is reached
-	count, err3 := countPerformanceEntriesPerDisciplinePerDay(ctx, athlete.ID, body.ExerciseId, body.Date)
-	if err3 != nil {
-		endpoints.Logger.Error(ctx, err3)
+	count, err4 := countPerformanceEntriesPerDisciplinePerDay(ctx, athlete.ID, body.ExerciseId, body.Date)
+	if err4 != nil {
+		endpoints.Logger.Error(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
 	}
@@ -87,17 +101,17 @@ func CreatePerformance(c *gin.Context) {
 	}
 
 	// Calculate the age of the athlete
-	birthDate, err4 := formatHelper.FormatDate(athlete.BirthDate)
-	if err4 != nil {
-		err4 = errors.Wrap(err4, "Failed to parse the birth date")
-		endpoints.Logger.Error(ctx, err4)
+	birthDate, err5 := formatHelper.FormatDate(athlete.BirthDate)
+	if err5 != nil {
+		err5 = errors.Wrap(err5, "Failed to parse the birth date")
+		endpoints.Logger.Error(ctx, err5)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
 		return
 	}
-	age, err5 := athleteManagement.CalculateAge(ctx, birthDate)
-	if err5 != nil {
-		err5 = errors.Wrap(err5, "Failed to calculate the age of the athlete")
-		endpoints.Logger.Error(ctx, err5)
+	age, err6 := athleteManagement.CalculateAge(ctx, birthDate)
+	if err6 != nil {
+		err6 = errors.Wrap(err6, "Failed to calculate the age of the athlete")
+		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
 		return
 	}
@@ -105,29 +119,29 @@ func CreatePerformance(c *gin.Context) {
 	// Translate the performance body to a database entry
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
-	performanceEntries, err6 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
-	if errors.Is(err6, gorm.ErrRecordNotFound) {
-		err6 = errors.Wrap(err6, "No exercise goals for this athlete found")
-		endpoints.Logger.Debug(ctx, err6)
+	performanceEntries, err7 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
+	if errors.Is(err7, gorm.ErrRecordNotFound) {
+		err7 = errors.Wrap(err7, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
 		return
-	} else if err6 != nil {
-		endpoints.Logger.Error(ctx, err6)
+	} else if err7 != nil {
+		endpoints.Logger.Error(ctx, err7)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
 		return
 	}
 
 	// Create performance entry in the database
-	err7 := createNewPerformances(ctx, performanceEntries)
-	if errors.Is(err7, databaseUtils.ErrForeignKeyViolation) {
-		err7 = errors.Wrap(err7, "Athlete or exercise does not exist")
-		endpoints.Logger.Debug(ctx, err7)
+	err8 := createNewPerformances(ctx, performanceEntries)
+	if errors.Is(err8, databaseUtils.ErrForeignKeyViolation) {
+		err8 = errors.Wrap(err8, "Athlete or exercise does not exist")
+		endpoints.Logger.Debug(ctx, err8)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
 		return
 	}
-	if err7 != nil {
-		err7 = errors.Wrap(err7, "Failed to create the performance entry")
-		endpoints.Logger.Error(ctx, err7)
+	if err8 != nil {
+		err8 = errors.Wrap(err8, "Failed to create the performance entry")
+		endpoints.Logger.Error(ctx, err8)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
 	}

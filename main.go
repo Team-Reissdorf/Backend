@@ -7,7 +7,6 @@
 // @license.name   MIT License
 // @license.url    https://mit-license.org/
 // @host           localhost:8080
-// @BasePath       /v1
 // @schemes        http https
 // @accept         json
 // @produce        json
@@ -83,7 +82,8 @@ func init() {
 		databaseUtils.Athlete{},
 		databaseUtils.Discipline{},
 		databaseUtils.Exercise{},
-		databaseUtils.ExerciseSpecific{},
+		databaseUtils.ExerciseRuleset{},
+		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
 	)

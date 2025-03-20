@@ -117,6 +117,10 @@ func CreateAthleteCVS(c *gin.Context) {
 			endpoints.Logger.Debug(ctx, err1)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
 			return
+		} else if errors.Is(err1, formatHelper.DateInFutureError) {
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the Future"})
+			return
 		} else if errors.Is(err1, formatHelper.InvalidEmailAddressFormatError) || errors.Is(err1, formatHelper.EmailAddressContainsNameError) || errors.Is(err1, formatHelper.EmailAddressInvalidTldError) {
 			endpoints.Logger.Debug(ctx, err1)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid email address format"})

@@ -80,6 +80,11 @@ func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error 
 		return err
 	}
 
+	if err := formatHelper.IsFuture(athlete.BirthDate); err != nil {
+		err = errors.Wrap(err, "Date is in the future")
+		return err
+	}
+
 	athlete.Sex = strings.ToLower(string(athlete.Sex[0]))
 	if err := formatHelper.IsSex(athlete.Sex); err != nil {
 		err = errors.Wrap(err, "Invalid sex")
