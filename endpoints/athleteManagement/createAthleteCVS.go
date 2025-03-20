@@ -131,7 +131,7 @@ func CreateAthleteCVS(c *gin.Context) {
 
 	// Write athletes to the db
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
-	if errors.Is(err1, NoNewAthletesError) {
+	if errors.Is(err4, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err1)
 		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
