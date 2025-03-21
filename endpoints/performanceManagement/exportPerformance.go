@@ -2,7 +2,9 @@ package performanceManagement
 
 import (
 	"encoding/csv"
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
 	"github.com/gin-gonic/gin"
@@ -98,14 +100,22 @@ func ExportPerformances(c *gin.Context) {
 			if sex == "f" {
 				sex = "w"
 			}
+			var exercise databaseUtils.Exercise
+			err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+				err := tx.First(&exercise, p.ExerciseId).Error
+				return err
+			})
+			if err != nil {
+				err = errors.Wrap(err, "Failed to get the athlete")
+			}
 			_ = w.Write([]string{
 				athlete.LastName,
 				athlete.FirstName,
 				sex,
 				birthyear,
 				birthdate,
-				strconv.Itoa(int(p.ExerciseId)),
-				strconv.Itoa(int(p.PerformanceId)),
+				exercise.Name,
+				exercise.DisciplineName,
 				date,
 				p.Medal,
 				strconv.FormatUint(p.Points, 10),
