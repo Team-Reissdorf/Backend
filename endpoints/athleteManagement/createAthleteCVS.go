@@ -29,6 +29,7 @@ var csvColumnCount = 5
 // @Param Athletes formData file true "CSV file containing details of multiple athletes to create profiles"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 201 {object} AlreadyExistingAthletesResponse "Creation successful"
+// @Success 202 {object} AlreadyExistingAthletesResponse "Athletes already exist"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
@@ -136,8 +137,14 @@ func CreateAthleteCVS(c *gin.Context) {
 	// Write athletes to the db
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
 	if errors.Is(err4, NoNewAthletesError) {
-		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
+		endpoints.Logger.Debug(ctx, err4)
+		c.JSON(
+			http.StatusAccepted,
+			AlreadyExistingAthletesResponse{
+				Message:                 "Athletes already exist",
+				AlreadyExistingAthletes: alreadyExistingAthletes,
+			},
+		)
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
