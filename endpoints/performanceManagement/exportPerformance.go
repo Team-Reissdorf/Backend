@@ -43,19 +43,21 @@ type PerformanceCSV struct {
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/performance/export [post]
 func ExportPerformances(c *gin.Context) {
-	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetOneAthlete")
+	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "ExportPerformances")
 	defer span.End()
 
 	// JSON-Body einlesen
 	var req ExportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		err = errors.Wrap(err, "Failed to bind JSON body")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid request body"})
 		return
 	}
 
 	// Falls keine IDs übergeben wurden
 	if len(req.AthleteIDs) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No athlete IDs provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "No athlete IDs provided"})
 		return
 	}
 
@@ -76,17 +78,17 @@ func ExportPerformances(c *gin.Context) {
 		// Athleteninformationen abrufen
 		athlete, err := athleteManagement.GetAthlete(ctx, uint(athleteID), trainerEmail)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Athlete not found"})
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Could not find athlete"})
 			return
 		} else if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch athlete data"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch athlete data"})
 			return
 		}
 
 		// Performances abrufen
 		performances, err := getAllPerformanceBodies(ctx, uint(athleteID))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch performances"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch performances"})
 			return
 		}
 
@@ -106,7 +108,8 @@ func ExportPerformances(c *gin.Context) {
 				return err
 			})
 			if err != nil {
-				err = errors.Wrap(err, "Failed to get the athlete")
+				err = errors.Wrap(err, "Failed to get the exercise")
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercise"})
 			}
 			_ = w.Write([]string{
 				athlete.LastName,
