@@ -42,7 +42,7 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	performances := make([]databaseUtils.Performance, len(performanceBodies))
 	for idx, performance := range performanceBodies {
 		// Get the correct medal status for the performance entry
-		medalStatus, err := evaluateMedalStatus(ctx, performance.ExerciseId, age, sex, performance.Points)
+		medalStatus, err := evaluateMedalStatus(ctx, performance.ExerciseId, performance.Date, age, sex, performance.Points)
 		if err != nil {
 			return nil, err
 		}

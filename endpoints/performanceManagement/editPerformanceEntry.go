@@ -103,7 +103,7 @@ func EditPerformanceEntry(c *gin.Context) {
 	}
 
 	// Get the corresponding medal status
-	medal, err6 := evaluateMedalStatus(ctx, body.ExerciseId, age, athlete.Sex, body.Points)
+	medal, err6 := evaluateMedalStatus(ctx, body.ExerciseId, body.Date, age, athlete.Sex, body.Points)
 	if errors.Is(err6, gorm.ErrRecordNotFound) {
 		err6 = errors.Wrap(err6, "No exercise goals for this athlete found")
 		endpoints.Logger.Debug(ctx, err6)
