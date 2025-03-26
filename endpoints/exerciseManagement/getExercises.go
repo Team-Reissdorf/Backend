@@ -31,7 +31,7 @@ type ExercisesResponse struct {
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} ExercisesResponse "Request successful"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 404 {object} endpoints.ErrorResponse "Discipline or athlete does not exist"
+// @Failure 404 {object} endpoints.ErrorResponse "Discipline, athlete or ruleset year does not exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/exercise/get/{DisciplineName} [get]
 func GetExercisesOfDiscipline(c *gin.Context) {
@@ -59,6 +59,46 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 			return
 		}
 		athleteId = uint(athleteIdInt)
+	}
+
+	// Get the performance year from the context
+	performanceDateString := c.Query("performance-date")
+	var performanceYear int
+	performanceDateIsSet := performanceDateString != ""
+	if performanceDateIsSet {
+		// Parse the performance date
+		t, err1 := time.Parse(time.DateOnly, performanceDateString)
+		if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to parse date: "+performanceDateString)
+			endpoints.Logger.Debug(ctx, err1)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'performance-date' query parameter"})
+			return
+		}
+		performanceYear = t.Year()
+
+		// Check if date is in the past
+		if err := formatHelper.IsFuture(performanceDateString); err != nil {
+			err = errors.Wrap(err, "'performance-date' is in the future")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "'performance-date' is in the Future"})
+			return
+		}
+	}
+
+	// Check if a ruleset for the given year exists
+	if performanceDateIsSet {
+		var rulesetCount int64
+		err := DatabaseFlow.GetDB(ctx).
+			Model(&databaseUtils.Ruleset{}).
+			Where("year = ?", performanceYear).
+			Count(&rulesetCount).
+			Error
+		if err != nil {
+			err = errors.Wrap(err, "Failed to get rulesets")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Ruleset for the given performance year does not exist"})
+			return
+		}
 	}
 
 	// Get the user id from the context
