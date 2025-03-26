@@ -118,6 +118,40 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 	}
 
 	// Get the exercises, and if the athlete id is given also get the age specific description
+	// Get the athletes age
+	var age int
+	if athleteIdIsSet {
+		athlete, errA := athleteManagement.GetAthlete(ctx, athleteId, trainerEmail)
+		// Check if the athlete could be found
+		if errors.Is(errA, gorm.ErrRecordNotFound) {
+			err := errors.New("Athlete does not exist")
+			endpoints.Logger.Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: err.Error()})
+			return
+		} else if errA != nil {
+			errA = errors.Wrap(errA, "Failed to get athlete")
+			endpoints.Logger.Debug(ctx, errA)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete"})
+			return
+		}
+
+		// Calculate the age of the athlete
+		birthDate, errB := formatHelper.FormatDate(athlete.BirthDate)
+		if errB != nil {
+			errB = errors.Wrap(errB, "Failed to parse the birth date")
+			endpoints.Logger.Error(ctx, errB)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to parse the birth date"})
+			return
+		}
+		var errC error
+		age, errC = athleteManagement.CalculateAge(ctx, birthDate)
+		if errC != nil {
+			errC = errors.Wrap(errC, "Failed to calculate the age of the athlete")
+			endpoints.Logger.Error(ctx, errC)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
+			return
+		}
+	}
 	var results []ExerciseBodyWithId
 	if athleteIdIsSet {
 		athlete, errA := athleteManagement.GetAthlete(ctx, athleteId, trainerEmail)
