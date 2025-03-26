@@ -91,7 +91,7 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		var rulesetCount int64
 		err := DatabaseFlow.GetDB(ctx).
 			Model(&databaseUtils.Ruleset{}).
-			Where("year = ?", performanceYear).
+			Where("year = ?", strconv.Itoa(performanceYear)).
 			Count(&rulesetCount).
 			Error
 		if err != nil {
