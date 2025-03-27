@@ -34,6 +34,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/endpoints/exerciseManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/ping"
+	"github.com/Team-Reissdorf/Backend/endpoints/swimCertificate"
 	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -86,6 +87,7 @@ func init() {
 		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
+		databaseUtils.SwimCertificate{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
@@ -165,5 +167,11 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		{
 			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
 		}
+
+		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
+		}
+
 	}
 }

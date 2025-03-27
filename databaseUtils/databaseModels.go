@@ -112,3 +112,14 @@ type Performance struct {
 	// BelongsTo Athlete (FK: AthleteId -> Athlete.Id)
 	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
+
+type SwimCertificate struct {
+	ID        uint `gorm:"primarykey"`
+	Date time.Time
+
+	AthleteId uint `gorm:"index"`
+	// BelongsTo Athlete (FK: AthleteId -> Athlete.Id)
+	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+
+	DocumentPath string 	
+}
