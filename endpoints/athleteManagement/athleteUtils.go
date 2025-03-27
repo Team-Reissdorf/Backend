@@ -16,7 +16,7 @@ var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
-// translateAthleteBodies translates the athlete body to an athlete db entry
+// translateAthleteBodies translates the athlete body to an athlete db entry.
 func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
 	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
@@ -64,22 +64,36 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
 	_, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
+	if err := formatHelper.IsEmpty(athlete.FirstName); err != nil {
+		return errors.Wrap(err, "First Name")
+	}
+
+	if err := formatHelper.IsEmpty(athlete.LastName); err != nil {
+		return errors.Wrap(err, "Last Name")
+	}
 
 	// Capitalize the first letter of the name
 	athlete.FirstName = strings.ToUpper(string(athlete.FirstName[0])) + athlete.FirstName[1:]
 	athlete.LastName = strings.ToUpper(string(athlete.LastName[0])) + athlete.LastName[1:]
 
 	athlete.Email = strings.ToLower(athlete.Email)
-	if err := formatHelper.IsEmail(athlete.Email); err != nil {
+	if err := formatHelper.IsEmpty(athlete.Email); err != nil {
+		return errors.Wrap(err, "Email address")
+	} else if err = formatHelper.IsEmail(athlete.Email); err != nil {
 		err = errors.Wrap(err, "Invalid email address")
 		return err
 	}
 
-	if err := formatHelper.IsDate(athlete.BirthDate); err != nil {
+	if err := formatHelper.IsEmpty(athlete.BirthDate); err != nil {
+		return errors.Wrap(err, "Birthdate")
+	} else if err = formatHelper.IsDate(athlete.BirthDate); err != nil {
 		err = errors.Wrap(err, "Invalid date")
 		return err
 	}
 
+	if err := formatHelper.IsEmpty(athlete.Sex); err != nil {
+		return errors.Wrap(err, "Sex")
+	}
 	if err := formatHelper.IsFuture(athlete.BirthDate); err != nil {
 		err = errors.Wrap(err, "Date is in the future")
 		return err
