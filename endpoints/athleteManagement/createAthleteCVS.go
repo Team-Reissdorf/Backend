@@ -20,7 +20,7 @@ type AlreadyExistingAthletesResponse struct {
 
 var csvColumnCount = 5
 
-// CreateAthleteCVS bulk creates new athletes in the db from a cvs file
+// CreateAthleteCVS bulk creates new athletes in the db from a csv file
 // @Summary Bulk creates new athletes from cvs file
 // @Description Upload a CSV file to create multiple athlete profiles. If an athlete already exists, the process will continue, and the response will indicate which athletes already exist.
 // @Tags Athlete Management
