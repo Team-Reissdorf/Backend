@@ -34,11 +34,11 @@ type PerformanceCSV struct {
 	Points           uint64
 }
 
-// ExportPerformances exports all performance entries of the given athletes as a csv-file.
-// Pro Tag wird nur der Eintrag mit der besten Medaille exportiert (gold > silver > bronze).
-// @Summary Exports all performance entries of the given athletes as a csv-file
-// @Description Exports all performance entries of the given athletes as a csv-file
-// @Tags Performance Management
+// ExportPerformances exports all performance entries of the specified athletes as a csv file.
+// Only the entry with the best medal is exported per day (gold > silver > bronze).
+// @Summary Exports all performance entries of the specified athletes as a csv file
+// @Description Exports all performance entries of the specified athletes as a csv file
+// @Tags performance management
 // @Produce text/csv
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformanceCSV "Request successful"
