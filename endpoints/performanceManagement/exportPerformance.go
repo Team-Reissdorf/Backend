@@ -11,13 +11,16 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"net/http"
+	"sort"
 	"strconv"
 )
 
+// ExportRequest defines the athlete IDs to be exported.
 type ExportRequest struct {
 	AthleteIDs []int `json:"athlete_ids"`
 }
 
+// PerformanceCSV defines the CSV format of the exported performance data.
 type PerformanceCSV struct {
 	AthleteLastName  string
 	AthleteFirstName string
@@ -31,7 +34,8 @@ type PerformanceCSV struct {
 	Points           uint64
 }
 
-// ExportPerformances exports all performance entries of the given athletes as a csv-file
+// ExportPerformances exports all performance entries of the given athletes as a csv-file.
+// Pro Tag wird nur der Eintrag mit der besten Medaille exportiert (gold > silver > bronze).
 // @Summary Exports all performance entries of the given athletes as a csv-file
 // @Description Exports all performance entries of the given athletes as a csv-file
 // @Tags Performance Management
@@ -46,7 +50,7 @@ func ExportPerformances(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "ExportPerformances")
 	defer span.End()
 
-	// JSON-Body einlesen
+	// Read in JSON body
 	var req ExportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		err = errors.Wrap(err, "Failed to bind JSON body")
@@ -55,27 +59,38 @@ func ExportPerformances(c *gin.Context) {
 		return
 	}
 
-	// Falls keine IDs übergeben wurden
+	// If no IDs were transferred
 	if len(req.AthleteIDs) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "No athlete IDs provided"})
 		return
 	}
 
-	// CSV-Header setzen
+	// Set CSV header
 	c.Header("Content-Type", "text/csv")
 	c.Header("Content-Disposition", "attachment; filename=performances.csv")
 	w := csv.NewWriter(c.Writer)
 	defer w.Flush()
 
-	// CSV-Header schreiben
-	//_ = w.Write([]string{"Nachname", "Vorname", "Geschlecht", "Geburtsjahr", "Geburtstag", "Übung", "Disziplin", "Datum", "Medaille", "Punkte"})
-
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Über alle Athlete-IDs iterieren und Performances abrufen
+	// Help function for rating the medals (gold > silver > bronze)
+	medalRank := func(medal string) int {
+		switch medal {
+		case "gold":
+			return 3
+		case "silver":
+			return 2
+		case "bronze":
+			return 1
+		default:
+			return 0
+		}
+	}
+
+	// Iterate over all athlete IDs
 	for _, athleteID := range req.AthleteIDs {
-		// Athleteninformationen abrufen
+		// Retrieve athlete information
 		athlete, err := athleteManagement.GetAthlete(ctx, uint(athleteID), trainerEmail)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Could not find athlete"})
@@ -85,32 +100,61 @@ func ExportPerformances(c *gin.Context) {
 			return
 		}
 
-		// Performances abrufen
+		// Retrieve all performance entries
 		performances, err := getAllPerformanceBodies(ctx, uint(athleteID))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch performances"})
 			return
 		}
 
-		// Performances in CSV schreiben mit Athleten-Infos
+		//Group the performances per day (assuming p.Date has the format “YYYY-MM-DD”) only
+		//the entry with the best medal (based on medalRank) is saved per day.
+		bestPerformanceByDate := make(map[string]PerformanceBodyWithId)
 		for _, p := range *performances {
-			birthday := athlete.BirthDate
-			birthyear := birthday[:4]
-			birthdate := birthday[8:10] + "." + birthday[5:7] + "." + birthday[:4]
-			date := p.Date[8:10] + "." + p.Date[5:7] + "." + p.Date[:4]
-			sex := athlete.Sex
-			if sex == "f" {
-				sex = "w"
+			day := p.Date[:10]
+			if existing, ok := bestPerformanceByDate[day]; !ok {
+				bestPerformanceByDate[day] = p
+			} else {
+				if medalRank(p.Medal) > medalRank(existing.Medal) {
+					bestPerformanceByDate[day] = p
+				}
 			}
+		}
+
+		// The days are sorted for consistent output
+		var days []string
+		for day := range bestPerformanceByDate {
+			days = append(days, day)
+		}
+		sort.Strings(days)
+
+		// Write the best entry for each day in the CSV
+		for _, day := range days {
+			p := bestPerformanceByDate[day]
+
+			// Retrieve exercise for the respective performance entry
 			var exercise databaseUtils.Exercise
 			err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-				err := tx.First(&exercise, p.ExerciseId).Error
-				return err
+				return tx.First(&exercise, p.ExerciseId).Error
 			})
 			if err != nil {
 				err = errors.Wrap(err, "Failed to get the exercise")
 				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercise"})
+				return
 			}
+
+			// Formatting of date and birthday
+			birthday := athlete.BirthDate
+			birthyear := birthday[:4]
+			birthdate := birthday[8:10] + "." + birthday[5:7] + "." + birthday[:4]
+			formattedDate := p.Date[8:10] + "." + p.Date[5:7] + "." + p.Date[:4]
+
+			sex := athlete.Sex
+			if sex == "f" {
+				sex = "w"
+			}
+
+			// Write a CSV line
 			_ = w.Write([]string{
 				athlete.LastName,
 				athlete.FirstName,
@@ -119,7 +163,7 @@ func ExportPerformances(c *gin.Context) {
 				birthdate,
 				exercise.Name,
 				exercise.DisciplineName,
-				date,
+				formattedDate,
 				p.Medal,
 				strconv.FormatUint(p.Points, 10),
 			})
