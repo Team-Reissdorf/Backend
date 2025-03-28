@@ -41,10 +41,10 @@ func CreateSwimCertificate(c *gin.Context) {
 	defer span.End()
 
 	//get file from request
-	file, err := c.FormFile("file")
-	if err != nil {
-		err = errors.Wrap(err, "Failed to retrieve file from request")
-		endpoints.Logger.Debug(ctx, err)
+	file, errGetFile := c.FormFile("file")
+	if errGetFile != nil {
+		errGetFile = errors.Wrap(errGetFile, "Failed to retrieve file from request")
+		endpoints.Logger.Debug(ctx, errGetFile)
 		c.JSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid file upload"})
 		return
 	}
@@ -56,10 +56,10 @@ func CreateSwimCertificate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Missing or invalid athlete ID"})
 		return
 	}
-	athleteID, err1 := strconv.Atoi(athleteIdString)
-	if err1 != nil {
-		err1 = errors.Wrap(err1, "Failed to parse athlete ID")
-		endpoints.Logger.Debug(ctx, err1)
+	athleteID, errGetAthleteID := strconv.Atoi(athleteIdString)
+	if errGetAthleteID != nil {
+		errGetAthleteID = errors.Wrap(errGetAthleteID, "Failed to parse athlete ID")
+		endpoints.Logger.Debug(ctx, errGetAthleteID)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid athlete ID"})
 		return
 	}
@@ -67,10 +67,10 @@ func CreateSwimCertificate(c *gin.Context) {
 	// Check if the user exists and is assigned to the correct trainer
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
-	exists, err2 := athleteManagement.AthleteExistsForTrainer(ctx, uint(athleteID), trainerEmail)
-	if err2 != nil {
-		err2 = errors.Wrap(err2, "Failed to check if the athlete exists and is assigned to the trainer")
-		endpoints.Logger.Error(ctx, err2)
+	exists, errCheckAthleteTrainer := athleteManagement.AthleteExistsForTrainer(ctx, uint(athleteID), trainerEmail)
+	if errCheckAthleteTrainer != nil {
+		errCheckAthleteTrainer = errors.Wrap(errCheckAthleteTrainer, "Failed to check if the athlete exists and is assigned to the trainer")
+		endpoints.Logger.Error(ctx, errCheckAthleteTrainer)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check if the athlete exists"})
 		return
 	}
@@ -84,9 +84,9 @@ func CreateSwimCertificate(c *gin.Context) {
 
 	//create directory to store files
 	uploadDir := filepath.Join("uploads", "swimCertificates", "athlete_"+strconv.Itoa(athleteID))
-	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-		err = errors.Wrap(err, "Failed to create upload directory")
-		endpoints.Logger.Error(ctx, err)
+	if errCreateDir := os.MkdirAll(uploadDir, os.ModePerm); errCreateDir != nil {
+		errCreateDir = errors.Wrap(errCreateDir, "Failed to create upload directory")
+		endpoints.Logger.Error(ctx, errCreateDir)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Could not create directory"})
 		return
 	}
@@ -95,25 +95,26 @@ func CreateSwimCertificate(c *gin.Context) {
 	uniqueFileName := uuid.New().String() + filepath.Ext(file.Filename)
 	filePath := filepath.Join(uploadDir, uniqueFileName)
 
-	if err := c.SaveUploadedFile(file, filePath); err != nil {
-		err = errors.Wrap(err, "Failed to save uploaded file")
-		endpoints.Logger.Error(ctx, err)
+	if errSaveFile := c.SaveUploadedFile(file, filePath); errSaveFile != nil {
+		errSaveFile = errors.Wrap(errSaveFile, "Failed to save uploaded file into directory")
+		endpoints.Logger.Error(ctx, errSaveFile)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Could not save file"})
 		return
 	}
 
 	//create swimCertificate object & load in DB
 	swimCert := databaseUtils.SwimCertificate{
-		AthleteId:    uint(athleteID),
-		Date:         time.Now(),
-		DocumentPath: filePath,
+		AthleteId:    		uint(athleteID),
+		Date:         		time.Now(),
+		DocumentPath: 		filePath,
+		OriginalFileName: 	file.Filename,
 	}
 
-	err2 = DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+	errSaveToDB := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		return tx.Create(&swimCert).Error
 	})
-	if err2 != nil { //error if something went wrong with saving to DB
-		endpoints.Logger.Error(ctx, err)
+	if errSaveToDB != nil { //error if something went wrong with saving to DB
+		endpoints.Logger.Error(ctx, errSaveToDB)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Could not save swim certificate"})
 		return
 	}
