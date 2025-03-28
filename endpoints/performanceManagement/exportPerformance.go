@@ -17,7 +17,7 @@ import (
 
 // ExportRequest defines the athlete IDs to be exported.
 type ExportRequest struct {
-	AthleteIDs []int `json:"athlete_ids"`
+	AthleteIDs []int `json:"athlete_ids" example:"1"`
 }
 
 // PerformanceCSV defines the CSV format of the exported performance data.
@@ -38,10 +38,11 @@ type PerformanceCSV struct {
 // Only the entry with the best medal is exported per day (gold > silver > bronze).
 // @Summary Exports all performance entries of the specified athletes as a csv file
 // @Description Exports all performance entries of the specified athletes as a csv file
-// @Tags performance management
+// @Tags Performance Management
 // @Produce text/csv
+// @Param json body ExportRequest true "JSON payload in the format: "athlete_ids": [] "
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
-// @Success 200 {object} PerformanceCSV "Request successful"
+// @Success 200 {file} file "CSV file"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "One or more athletes do not exist"
