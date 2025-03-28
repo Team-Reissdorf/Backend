@@ -66,11 +66,11 @@ type ExerciseRuleset struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	RulesetYear string `gorm:"index;uniqueIndex:unique_combination_exercise_ruleset"`
+	RulesetYear string `gorm:"uniqueIndex:unique_combination_exercise_ruleset"`
 	// BelongsTo Ruleset (FK: RulesetYear -> Ruleset.Year)
 	Ruleset Ruleset `json:"-" gorm:"foreignKey:RulesetYear;references:Year;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
-	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
+	ExerciseId uint `gorm:"uniqueIndex:unique_combination_exercise_ruleset"`
 	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
 	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
@@ -85,12 +85,12 @@ type ExerciseGoal struct {
 	// BelongsTo ExerciseRuleset (FK: RulesetId -> ExerciseRuleset.Id)
 	ExerciseRuleset ExerciseRuleset `json:"-" gorm:"foreignKey:RulesetId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
-	FromAge uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	ToAge   uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	Sex     string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals;type:char(1);not null"`
-	Bronze  uint64 `json:"bronze"`
-	Silver  uint64 `json:"silver"`
-	Gold    uint64 `json:"gold"`
+	FromAge     uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	ToAge       uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	Sex         string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals;type:char(1);not null"`
+	Bronze      uint64 `json:"bronze"` // Time: ms; Distance: cm; Points; Bool: <0|1>
+	Silver      uint64 `json:"silver"` // Time: ms; Distance: cm; Points; Bool: <0|1>
+	Gold        uint64 `json:"gold"`   // Time: ms; Distance: cm; Points; Bool: <0|1>
 	Description string `json:"description"`
 }
 
