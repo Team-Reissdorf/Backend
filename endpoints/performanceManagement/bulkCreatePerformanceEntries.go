@@ -40,7 +40,6 @@ type FailedPerformanceEntry struct {
 // @Failure 409 {object} endpoints.ErrorResponse "All entries failed, none have been created"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/performance/bulk-create [post]
-
 func BulkCreatePerformanceEntries(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "BulkCreatePerformanceEntries")
 	defer span.End()
@@ -169,7 +168,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 
 	// Return response with potential failed entries
 	c.JSON(http.StatusCreated, BulkCreatePerformanceResponse{
-		Message:       "Bulk creation succesful",
+		Message:       "Bulk creation successful",
 		FailedEntries: failedEntries,
 	})
 }
