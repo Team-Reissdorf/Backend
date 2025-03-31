@@ -1,7 +1,27 @@
+// @title          ComPeteHub API
+// @version        1.0
+// @description    This API allows managing athletes, disciplines and performances in the ComPeteHub system.
+// @contact.name   Team Reissdorf
+// @contact.url    https://github.com/Team-Reissdorf
+// @contact.email  david.clarafigueiredo@stud-provadis-hochschule.de
+// @license.name   MIT License
+// @license.url    https://mit-license.org/
+// @host           localhost:8080
+// @schemes        http https
+// @accept         json
+// @produce        json
+// @securityDefinitions.apikey BearerAuth
+// @name           Authorization
+// @in             header
+// @description    Bearer token-based authentication. Use "Bearer {your-token}"
+
 package main
 
 import (
 	"context"
+	"os"
+	"strconv"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
 	"github.com/LucaSchmitz2003/FlowWatch"
@@ -19,8 +39,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
-	"os"
-	"strconv"
 )
 
 var (
@@ -64,7 +82,8 @@ func init() {
 		databaseUtils.Athlete{},
 		databaseUtils.Discipline{},
 		databaseUtils.Exercise{},
-		databaseUtils.ExerciseSpecific{},
+		databaseUtils.ExerciseRuleset{},
+		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
 	)
