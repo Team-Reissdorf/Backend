@@ -63,6 +63,9 @@ func ExportPerformances(c *gin.Context) {
 
 	// If no IDs were transferred
 	if len(req.AthleteIDs) == 0 {
+		var err error
+		err = errors.Wrap(err, "No Athlete IDs provided")
+		endpoints.Logger.Debug(ctx, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "No athlete IDs provided"})
 		return
 	}
@@ -95,9 +98,13 @@ func ExportPerformances(c *gin.Context) {
 		// Retrieve athlete information
 		athlete, err := athleteManagement.GetAthlete(ctx, uint(athleteID), trainerEmail)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = errors.Wrap(err, "Could not find athlete")
+			endpoints.Logger.Debug(ctx, err)
 			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Could not find athlete"})
 			return
 		} else if err != nil {
+			err = errors.Wrap(err, "Failed to fetch athlete data")
+			endpoints.Logger.Debug(ctx, err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch athlete data"})
 			return
 		}
@@ -105,6 +112,8 @@ func ExportPerformances(c *gin.Context) {
 		// Retrieve all performance entries
 		performances, err := getAllPerformanceBodies(ctx, uint(athleteID))
 		if err != nil {
+			err = errors.Wrap(err, "Failed to fetch performances")
+			endpoints.Logger.Debug(ctx, err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch performances"})
 			return
 		}
@@ -141,6 +150,7 @@ func ExportPerformances(c *gin.Context) {
 			})
 			if err != nil {
 				err = errors.Wrap(err, "Failed to get the exercise")
+				endpoints.Logger.Debug(ctx, err)
 				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercise"})
 				return
 			}
