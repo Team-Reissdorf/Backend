@@ -84,7 +84,7 @@ func GetAllAthletes(c *gin.Context) {
 	for idx, cert := range certs {
 		cert_t := SwimCertificateWithID{
 			ID:        cert.ID,
-			AthleteId: cert.AthleteId,
+			AthleteId: cert.Athlete.ID,
 		}
 		cert_r[idx] = cert_t
 	}
