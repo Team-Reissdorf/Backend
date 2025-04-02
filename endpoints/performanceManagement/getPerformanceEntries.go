@@ -111,7 +111,7 @@ func GetPerformanceEntries(c *gin.Context) {
 
 	// Get the performance body/bodies
 	var performanceBodies []PerformanceBodyWithId
-	if since != "" {
+	if since != "" && date != "" {
 		if err := formatHelper.IsBefore(date, since); err != nil {
 			endpoints.Logger.Debug(ctx, "Date parameter is before the since parameter")
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date parameter is before the since parameter"})
