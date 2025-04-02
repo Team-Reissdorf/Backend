@@ -42,6 +42,7 @@ func EditPerformanceEntry(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
+	// Check if the date is given
 	if err1 := formatHelper.IsEmpty(body.Date); err1 != nil {
 		endpoints.Logger.Debug(ctx, err1)
 		err1 = errors.Wrap(err1, "Date is empty")
