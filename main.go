@@ -154,7 +154,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		{
 			performance.POST("/create", performanceManagement.CreatePerformance)
 			performance.GET("/get-latest/:AthleteId", performanceManagement.GetLatestPerformanceEntry)
-			performance.GET("/get-all/:AthleteId", performanceManagement.GetPerformanceEntries)
+			performance.GET("/get/:AthleteId", performanceManagement.GetPerformanceEntries)
 			performance.PUT("/edit", performanceManagement.EditPerformanceEntry)
 		}
 
