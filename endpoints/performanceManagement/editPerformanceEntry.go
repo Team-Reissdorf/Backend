@@ -79,20 +79,6 @@ func EditPerformanceEntry(c *gin.Context) {
 		return
 	}
 
-	// Check if the creation limit is reached
-	count, err3 := countPerformanceEntriesPerDisciplinePerDayEditMode(ctx, athlete.ID, body.ExerciseId, body.PerformanceId, body.Date)
-	if err3 != nil {
-		endpoints.Logger.Error(ctx, err3)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
-		return
-	}
-	if uint8(count) >= limitPerDisciplinePerDay {
-		err := errors.New("The athlete has reached the daily limit for this discipline")
-		endpoints.Logger.Debug(ctx, err)
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: err.Error()})
-		return
-	}
-
 	// Calculate the age of the athlete
 	birthDate, err4 := formatHelper.FormatDate(athlete.BirthDate)
 	if err4 != nil {
