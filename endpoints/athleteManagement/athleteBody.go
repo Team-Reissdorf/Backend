@@ -16,3 +16,8 @@ type AthleteBodyWithId struct {
 	BirthDate string `json:"birth_date" example:"YYYY-MM-DD"`
 	Sex       string `json:"sex" example:"<m|f|d>"`
 }
+
+type SwimCertificateWithID struct {
+	ID        uint `json:"cert_id" example:"1"`
+	AthleteId uint `json:"athlete_id" example:"1"`
+}
