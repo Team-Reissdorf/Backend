@@ -20,8 +20,8 @@ type AthletesResponse struct {
 }
 
 // GetAllAthletes returns all athletes
-// @Summary Returns all athlete profiles
-// @Description All athlete profiles of the given trainer are returned
+// @Summary Returns all athlete profiles and swim certificates
+// @Description All athlete profiles and swim certificates of the given trainer are returned
 // @Tags Athlete Management
 // @Produce json
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
