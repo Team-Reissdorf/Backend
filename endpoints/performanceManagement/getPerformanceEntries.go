@@ -88,7 +88,7 @@ func GetPerformanceEntries(c *gin.Context) {
 		if err3 != nil {
 			err3 = errors.Wrap(err3, "Date is in the future")
 			endpoints.Logger.Debug(ctx, err3)
-			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the Future"})
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
 			return
 		}
 	}
