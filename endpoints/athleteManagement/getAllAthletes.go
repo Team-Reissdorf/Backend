@@ -50,18 +50,33 @@ func GetAllAthletes(c *gin.Context) {
 		return
 	}
 
-	// get all swim certs for trainer
+	// get all swim certs for each athlete
 	var certs []databaseUtils.SwimCertificate
+
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-		err := tx.Where("trainer_email = ?", strings.ToLower(trainerEmail)).Find(&certs).Error
-		err = errors.Wrap(err, "Failed to get the certs")
-		return err
+		res := tx.Find(&certs)
+		return errors.Wrap(res.Error, "failed to get swim certificates")
 	})
+
 	if err2 != nil {
 		endpoints.Logger.Error(ctx, err2)
 		c.JSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the swim certs"})
 		c.Abort()
 		return
+	}
+
+	// convert into return type
+	cert_r := make([]SwimCertificateWithID, len(certs))
+	var i int
+
+	for i = 0; i < len(certs); i++ {
+
+		cert := certs[i]
+		cert_r = append(cert_r, SwimCertificateWithID{
+			ID:        cert.ID,
+			AthleteId: cert.Athlete.ID,
+		})
+
 	}
 
 	// Translate athletes to response type
@@ -77,16 +92,6 @@ func GetAllAthletes(c *gin.Context) {
 		}
 
 		athletesResponse[idx] = *athleteBody
-	}
-
-	// translate certs to response array
-	cert_r := make([]SwimCertificateWithID, len(certs))
-	for idx, cert := range certs {
-		cert_t := SwimCertificateWithID{
-			ID:        cert.ID,
-			AthleteId: cert.Athlete.ID,
-		}
-		cert_r[idx] = cert_t
 	}
 
 	// Send successful response
