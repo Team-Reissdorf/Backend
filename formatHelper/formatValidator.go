@@ -90,7 +90,7 @@ func IsBefore(date1 string, date2 string) error {
 		return errors.Wrap(err, "Fehler beim Parsen von date2")
 	}
 	if parsedDate1.Before(parsedDate2) {
-		return errors.New("date1 liegt nicht vor date2")
+		return errors.New("date1 is before date2")
 	}
 
 	return nil
