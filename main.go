@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/setup"
 	"os"
 	"strconv"
 
@@ -114,6 +115,9 @@ func main() {
 	defer keepAlive()
 
 	// ...
+
+	// Create standard disciplines in the database on startup
+	setup.CreateStandardDisciplines(ctx)
 }
 
 func defineRoutes(ctx context.Context, router *gin.Engine) {
