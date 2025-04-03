@@ -138,13 +138,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
 	if errors.Is(err4, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err4)
-		c.JSON(
-			http.StatusAccepted,
-			AlreadyExistingAthletesResponse{
-				Message:                 "Athletes already exist",
-				AlreadyExistingAthletes: alreadyExistingAthletes,
-			},
-		)
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
