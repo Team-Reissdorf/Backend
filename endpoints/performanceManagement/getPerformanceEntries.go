@@ -23,6 +23,7 @@ type PerformancesResponse struct {
 // @Produce json
 // @Param AthleteId path int true "Get all performance entries of the given athlete"
 // @Param since query string false "Date in YYYY-MM-DD format to get all entries since then (including the entries from that day)"
+// @Param date query string false "Date in YYYY-MM-DD format to get all entries from a specific day"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformancesResponse "Request successful"
 // @Failure 400 {object} endpoints.ErrorResponse "Date parameter is before the since parameter"
