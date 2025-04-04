@@ -81,23 +81,27 @@ func GetAllAthletes(c *gin.Context) {
 	for i = 0; i < len(certs); i++ {
 		cert := certs[i]
 
-		// make sure that the swim cert applies for an athlete created by the trainer
-		var i2 int
-		check := false
-		for i2 = 0; i2 < len(athletes); i2++ {
-			if cert.Athlete.ID == athletes[i].ID {
-				check = true
-				break
-			}
-		}
+		// // make sure that the swim cert applies for an athlete created by the trainer
+		// // var i2 int
+		// check := false
+		// for idx, _ := range athletes {
+		// 	if cert.Athlete.ID == athletes[idx].ID {
+		// 		check = true
+		// 		break
+		// 	}
+		// }
 
-		if !check {
-			continue
-		} else {
-			cert_r[i] = SwimCertificateWithID{
-				ID:        cert.ID,
-				AthleteId: cert.Athlete.ID,
-			}
+		// if !check {
+		// 	continue
+		// } else {
+		// 	cert_r[i] = SwimCertificateWithID{
+		// 		ID:        cert.ID,
+		// 		AthleteId: cert.Athlete.ID,
+		// 	}
+		// }
+		cert_r[i] = SwimCertificateWithID{
+			ID:        cert.ID,
+			AthleteId: cert.Athlete.ID,
 		}
 
 	}
