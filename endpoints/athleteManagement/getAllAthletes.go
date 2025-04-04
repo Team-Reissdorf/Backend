@@ -50,11 +50,20 @@ func GetAllAthletes(c *gin.Context) {
 		return
 	}
 
-	// get all swim certs for each athlete
+	// get all swim certs
+	// one could also create an sql query that only gets the swim certs related to the trainer
 	var certs []databaseUtils.SwimCertificate
 
 	err2 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+
+		// ids := make([]uint, len(athletes))
+		// for idx, athlete := range athletes {
+		// 	ids[idx] = athlete.ID
+		// }
+
 		res := tx.Find(&certs)
+		// Where("AthleteID IN ?", ids)
+
 		return errors.Wrap(res.Error, "failed to get swim certificates")
 	})
 
@@ -70,12 +79,26 @@ func GetAllAthletes(c *gin.Context) {
 	var i int
 
 	for i = 0; i < len(certs); i++ {
-
 		cert := certs[i]
-		cert_r = append(cert_r, SwimCertificateWithID{
-			ID:        cert.ID,
-			AthleteId: cert.Athlete.ID,
-		})
+
+		// make sure that the swim cert applies for an athlete created by the trainer
+		var i2 int
+		check := false
+		for i2 = 0; i2 < len(athletes); i2++ {
+			if cert.Athlete.ID == athletes[i].ID {
+				check = true
+				break
+			}
+		}
+
+		if !check {
+			continue
+		} else {
+			cert_r[i] = SwimCertificateWithID{
+				ID:        cert.ID,
+				AthleteId: cert.Athlete.ID,
+			}
+		}
 
 	}
 
