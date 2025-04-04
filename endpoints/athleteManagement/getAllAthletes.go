@@ -14,9 +14,9 @@ import (
 )
 
 type AthletesResponse struct {
-	Message   string                  `json:"message" example:"Request successful"`
-	Athletes  []AthleteBodyWithId     `json:"athletes"`
-	SwimCerts []SwimCertificateWithID `json:"swimcerts"`
+	Message  string              `json:"message" example:"Request successful"`
+	Athletes []AthleteBodyWithId `json:"athletes"`
+	// SwimCerts []SwimCertificateWithID `json:"swimcerts"`
 }
 
 // GetAllAthletes returns all athletes
@@ -75,42 +75,48 @@ func GetAllAthletes(c *gin.Context) {
 	}
 
 	// convert into return type
-	cert_r := make([]SwimCertificateWithID, len(certs))
-	var i int
+	// cert_r := make([]SwimCertificateWithID, len(certs))
+	// var i int
 
-	for i = 0; i < len(certs); i++ {
-		cert := certs[i]
+	// for i = 0; i < len(certs); i++ {
+	// 	cert := certs[i]
 
-		// make sure that the swim cert applies for an athlete created by the trainer
-		// var i2 int
-		check := false
-		for idx, _ := range athletes {
-			if cert.AthleteId == athletes[idx].ID {
-				check = true
-				break
-			}
-		}
+	// 	// make sure that the swim cert applies for an athlete created by the trainer
+	// 	// var i2 int
+	// 	check := false
+	// 	for idx, _ := range athletes {
+	// 		if cert.AthleteId == athletes[idx].ID {
+	// 			check = true
+	// 			break
+	// 		}
+	// 	}
 
-		if !check {
-			continue
-		} else {
-			cert_r[i] = SwimCertificateWithID{
-				ID:        cert.ID,
-				AthleteId: cert.AthleteId,
-			}
-		}
-		// cert_r[i] = SwimCertificateWithID{
-		// 	ID:        cert.ID,
-		// 	AthleteId: cert.AthleteId,
-		// }
+	// 	if !check {
+	// 		continue
+	// 	} else {
+	// 		cert_r[i] = SwimCertificateWithID{
+	// 			ID:        cert.ID,
+	// 			AthleteId: cert.AthleteId,
+	// 		}
+	// 	}
+	// 	// cert_r[i] = SwimCertificateWithID{
+	// 	// 	ID:        cert.ID,
+	// 	// 	AthleteId: cert.AthleteId,
+	// 	// }
 
-	}
+	// }
 
 	// Translate athletes to response type
 	athletesResponse := make([]AthleteBodyWithId, len(athletes))
 	for idx, athlete := range athletes {
 		// Translate athlete to response type
-		athleteBody, err2 := translateAthleteToResponse(ctx, athlete)
+		sc_flag := false
+		for _, cert := range certs {
+			if cert.AthleteId == athlete.ID {
+				sc_flag = true
+			}
+		}
+		athleteBody, err2 := translateAthleteToResponse(ctx, athlete, sc_flag)
 		if err2 != nil {
 			err2 = errors.Wrap(err2, "Failed to translate the athlete")
 			endpoints.Logger.Error(ctx, err2)
@@ -125,9 +131,9 @@ func GetAllAthletes(c *gin.Context) {
 	c.JSON(
 		http.StatusOK,
 		AthletesResponse{
-			Message:   "Request successful",
-			Athletes:  athletesResponse,
-			SwimCerts: cert_r,
+			Message:  "Request successful",
+			Athletes: athletesResponse,
+			// SwimCerts: cert_r,
 		},
 	)
 }

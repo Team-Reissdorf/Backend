@@ -2,14 +2,15 @@ package athleteManagement
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 var (
@@ -37,7 +38,7 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 }
 
 // translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete, swimcert bool) (*AthleteBodyWithId, error) {
 	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
@@ -54,6 +55,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 		Email:     athlete.Email,
 		BirthDate: birthDate,
 		Sex:       athlete.Sex,
+		SwimCert:  swimcert,
 	}
 
 	return &athleteResponse, nil
