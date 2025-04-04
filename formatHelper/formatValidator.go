@@ -79,6 +79,23 @@ func IsDate(date string) error {
 	return nil
 }
 
+func IsBefore(date1 string, date2 string) error {
+	parsedDate1, err := time.Parse("2006-01-02", date1)
+	if err != nil {
+		return errors.Wrap(err, "Fehler beim Parsen von date1")
+	}
+
+	parsedDate2, err := time.Parse("2006-01-02", date2)
+	if err != nil {
+		return errors.Wrap(err, "Fehler beim Parsen von date2")
+	}
+	if parsedDate1.Before(parsedDate2) {
+		return errors.New("date1 is before date2")
+	}
+
+	return nil
+}
+
 // IsFuture checks if the given date is in the future and throws an error if it is.
 func IsFuture(date string) error {
 	parsedDate, err := time.Parse("2006-01-02", date)

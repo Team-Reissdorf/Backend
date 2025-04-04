@@ -23,12 +23,14 @@ type PerformancesResponse struct {
 // @Produce json
 // @Param AthleteId path int true "Get all performance entries of the given athlete"
 // @Param since query string false "Date in YYYY-MM-DD format to get all entries since then (including the entries from that day)"
+// @Param date query string false "Date in YYYY-MM-DD format to get all entries from a specific day"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 200 {object} PerformancesResponse "Request successful"
+// @Failure 400 {object} endpoints.ErrorResponse "Date parameter is before the since parameter"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete does not exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/performance/get-all/{AthleteId} [get]
+// @Router /v1/performance/get/{AthleteId} [get]
 func GetPerformanceEntries(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetAllPerformanceEntries")
 	defer span.End()
@@ -70,6 +72,28 @@ func GetPerformanceEntries(c *gin.Context) {
 		}
 	}
 
+	// Get the date query parameter from the context
+	date := c.Query("date")
+	dateIsSet := date != ""
+	if dateIsSet {
+		//Check if the date is in the correct format
+		err2 := formatHelper.IsDate(date)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Invalid 'date' query parameter")
+			endpoints.Logger.Debug(ctx, err2)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'date' query parameter"})
+			return
+		}
+		//Check if date is in the past
+		err3 := formatHelper.IsFuture(date)
+		if err3 != nil {
+			err3 = errors.Wrap(err3, "Date is in the future")
+			endpoints.Logger.Debug(ctx, err3)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
+			return
+		}
+	}
+
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
@@ -88,7 +112,27 @@ func GetPerformanceEntries(c *gin.Context) {
 
 	// Get the performance body/bodies
 	var performanceBodies []PerformanceBodyWithId
-	if sinceIsSet {
+	if since != "" && date != "" {
+		if err := formatHelper.IsBefore(date, since); err != nil {
+			endpoints.Logger.Debug(ctx, "Date parameter is before the since parameter")
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date parameter is before the since parameter"})
+			return
+		}
+	}
+	if dateIsSet {
+		// Get all performance bodies date the specified date from the database
+		performanceBodiesDate, err := getPerformanceBodiesDate(ctx, uint(athleteId), date)
+		if err != nil {
+			endpoints.Logger.Error(ctx, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance bodies from " + date})
+			return
+		}
+		if performanceBodiesDate != nil {
+			performanceBodies = *performanceBodiesDate
+		} else {
+			performanceBodies = []PerformanceBodyWithId{}
+		}
+	} else if sinceIsSet {
 		// Get all performance bodies since the specified date from the database
 		performanceBodiesSince, err := getPerformanceBodiesSince(ctx, uint(athleteId), since)
 		if err != nil {
