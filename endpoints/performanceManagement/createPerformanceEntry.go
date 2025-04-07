@@ -1,6 +1,7 @@
 package performanceManagement
 
 import (
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
@@ -10,6 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type CreatePerformanceResponse struct {
@@ -117,6 +120,19 @@ func CreatePerformance(c *gin.Context) {
 		err6 = errors.Wrap(err6, "Failed to calculate the age of the athlete")
 		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
+		return
+	}
+	// Check if the exercise goal exists for the athlete's age
+	exists, err := exerciseGoalExistsForAge(ctx, DatabaseFlow.GetDB(ctx), body.ExerciseId, age, strconv.Itoa(time.Now().Year()))
+	if err != nil {
+		endpoints.Logger.Error(ctx, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check exercise goal"})
+		return
+	}
+	if !exists {
+		err := errors.New("No exercise goal found for the athlete's age")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: err.Error()})
 		return
 	}
 
