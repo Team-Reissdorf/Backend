@@ -44,7 +44,6 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "BulkCreatePerformanceEntries")
 	defer span.End()
 
-	// Get the CSV file from the request
 	file, err1 := c.FormFile("Performances")
 	if err1 != nil || file == nil {
 		err1 = errors.Wrap(err1, "Failed to get the file")
@@ -53,7 +52,6 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Check the MIME type
 	fileHeader := file.Header.Get("Content-Type")
 	if !strings.HasPrefix(fileHeader, "text/csv") && !strings.HasPrefix(fileHeader, "application/vnd.ms-excel") {
 		err := errors.New("Invalid file type, only CSV files are allowed")
@@ -62,10 +60,8 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Get the UserID (trainer) from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Open the file
 	fileContent, err2 := file.Open()
 	if err2 != nil {
 		err2 = errors.Wrap(err2, "Failed to open file")
@@ -75,7 +71,6 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 	}
 	defer fileContent.Close()
 
-	// Read the CSV file
 	reader := csv.NewReader(fileContent)
 	records, err3 := reader.ReadAll()
 	if err3 != nil {
@@ -90,39 +85,43 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 	var age int
 	var errF error
 
-	// Parse each row of the CSV file
 	for i, record := range records {
-		// Ensure the column count is correct
-		if len(record) != 4 {
+		// Ignore rows with fewer than 5 columns (first + three valid + last)
+		if len(record) < 5 {
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: i + 1, Reason: "Invalid column count"})
 			continue
 		}
 
-		// Parse CSV data
-		athleteID, errA := strconv.Atoi(record[0])
-		exerciseID, errB := strconv.Atoi(record[1])
-		points, errC := strconv.Atoi(record[2])
-		date := record[3]
+		// Trim whitespace and skip first and last columns
+		trimmed := []string{}
+		for _, cell := range record {
+			trimmed = append(trimmed, strings.TrimSpace(cell))
+		}
+		athleteIDStr := trimmed[1]
+		exerciseIDStr := trimmed[2]
+		pointsStr := trimmed[3]
+		date := trimmed[4]
+
+		athleteID, errA := strconv.Atoi(athleteIDStr)
+		exerciseID, errB := strconv.Atoi(exerciseIDStr)
+		points, errC := strconv.Atoi(pointsStr)
 
 		if errA != nil || errB != nil || errC != nil {
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: i + 1, Reason: "Invalid numeric values"})
 			continue
 		}
 
-		// Validate date format
 		if err := formatHelper.IsDate(date); err != nil {
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: i + 1, Reason: "Invalid date format"})
 			continue
 		}
 
-		// Check if the athlete exists
 		athlete, errD := athleteManagement.GetAthlete(ctx, uint(athleteID), trainerEmail)
 		if errD != nil {
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: i + 1, Reason: "Athlete does not exist"})
 			continue
 		}
 
-		// Calculate athlete age
 		birthDate, errE := formatHelper.FormatDate(athlete.BirthDate)
 		if errE != nil {
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: i + 1, Reason: "Failed to parse birth date"})
@@ -134,7 +133,6 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 			continue
 		}
 
-		// Conllect performance bodies
 		performanceBodies = append(performanceBodies, PerformanceBody{
 			Points:     uint64(points),
 			Date:       date,
@@ -143,21 +141,18 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		})
 	}
 
-	// cancel if no valid entries exist
 	if len(performanceBodies) == 0 {
 		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "All entries failed, none have been created"})
 		return
 	}
 
-	// Translate performance bodies to database entries
 	performanceEntries, err6 := translatePerformanceBodies(ctx, performanceBodies, age, "")
 	if err6 != nil {
 		endpoints.Logger.Error(ctx, err6)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to process performane entries"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to process performance entries"})
 		return
 	}
 
-	// Store performances in database
 	err7 := createNewPerformances(ctx, performanceEntries)
 	if err7 != nil {
 		err7 = errors.Wrap(err7, "Failed to create performance entries")
@@ -166,7 +161,6 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Return response with potential failed entries
 	c.JSON(http.StatusCreated, BulkCreatePerformanceResponse{
 		Message:       "Bulk creation successful",
 		FailedEntries: failedEntries,
