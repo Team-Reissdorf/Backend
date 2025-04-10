@@ -80,11 +80,11 @@ func GetAthleteByID(c *gin.Context) {
 	})
 
 	var flag bool
-	if err3 != gorm.ErrRecordNotFound {
-		flag = true
+	if err3 != nil {
+		flag = false
 	} else {
 		// kind of "silent fail" might want to change
-		flag = false
+		flag = true
 	}
 
 	// Translate athlete to response type
