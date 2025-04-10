@@ -74,8 +74,7 @@ func GetAthleteByID(c *gin.Context) {
 	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		id := athlete.ID
 
-		res := tx.First(&cert, id)
-
+		res := tx.Where("Athlete.ID = ?", id).Find(&cert)
 		return errors.Wrap(res.Error, "failed to get swim certificate for athlete")
 	})
 
