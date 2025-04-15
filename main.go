@@ -19,9 +19,10 @@ package main
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/setup"
 	"os"
 	"strconv"
+
+	"github.com/Team-Reissdorf/Backend/setup"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
@@ -176,6 +177,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
+			swimCert.GET("/download-all/:AthleteId", swimCertificate.DownloadAllSwimCertificates)
 		}
 
 	}
