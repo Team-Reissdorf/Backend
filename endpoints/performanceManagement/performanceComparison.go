@@ -79,10 +79,11 @@ func getExerciseGoal(ctx context.Context, exerciseId uint, performanceYear int, 
 
 // getBestPerformanceEntry returns the best performance entry of the given list.
 // This function requires that all performance entries of the list are of the same exercise, athlete and performance year!
-func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBodyWithId, athlete databaseUtils.Athlete) (*PerformanceBodyWithId, error) {
+func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBodyWithId) (*PerformanceBodyWithId, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "GetBestPerformanceEntry")
 	defer span.End()
 
+	// Check how many entries are in the list
 	if len(*performances) == 1 {
 		performance := (*performances)[0]
 		return &performance, nil
@@ -90,8 +91,15 @@ func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBod
 		return nil, errors.New("No performance entries found")
 	}
 
+	// Get the athlete
+	athlete, err0 := athleteManagement.GetAthleteDirectly(ctx, (*performances)[0].AthleteId)
+	if err0 != nil {
+		err0 = errors.Wrap(err0, "Failed to get the athlete")
+		return nil, err0
+	}
+
 	// Get the athletes age
-	age, err1 := athleteManagement.CalculateAge(ctx, athlete.BirthDate)
+	age, err1 := athleteManagement.CalculateAge(ctx, (*athlete).BirthDate)
 	if err1 != nil {
 		err1 = errors.New("Failed to calculate age for best performance entry")
 		return nil, err1
@@ -104,7 +112,7 @@ func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBod
 	}
 
 	// Get the exercise goal
-	exerciseGoal, err3 := getExerciseGoal(ctx, (*performances)[0].ExerciseId, performanceYear, age, athlete.Sex)
+	exerciseGoal, err3 := getExerciseGoal(ctx, (*performances)[0].ExerciseId, performanceYear, age, (*athlete).Sex)
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to get the exercise goal")
 		return nil, err3

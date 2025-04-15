@@ -230,6 +230,27 @@ func GetAthlete(ctx context.Context, athleteId uint, trainerEmail string) (*data
 	return &athlete, nil
 }
 
+// GetAthleteDirectly returns the athlete of the given id
+func GetAthleteDirectly(ctx context.Context, athleteId uint) (*databaseUtils.Athlete, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromDB")
+	defer span.End()
+
+	var athlete databaseUtils.Athlete
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Athlete{}).
+			Where("id = ?", athleteId).
+			First(&athlete).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the athlete")
+		return nil, err1
+	}
+
+	return &athlete, nil
+}
+
 // GetAthleteFromPerformanceId returns the athlete of the given performance entry
 func GetAthleteFromPerformanceId(ctx context.Context, performanceId uint, trainerEmail string) (*databaseUtils.Athlete, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromPerformanceEntryFromDB")
