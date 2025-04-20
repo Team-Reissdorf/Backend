@@ -99,7 +99,7 @@ func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBod
 	}
 
 	// Get the athletes age
-	age, err1 := athleteManagement.CalculateAge(ctx, (*athlete).BirthDate)
+	age, err1 := athleteManagement.CalculateAge(ctx, (*athlete).BirthDate[:10])
 	if err1 != nil {
 		err1 = errors.New("Failed to calculate age for best performance entry")
 		return nil, err1
