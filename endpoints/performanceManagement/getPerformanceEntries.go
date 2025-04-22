@@ -1,6 +1,7 @@
 package performanceManagement
 
 import (
+	"fmt"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
@@ -8,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"sort"
 	"strconv"
 )
 
@@ -132,6 +134,34 @@ func GetPerformanceEntries(c *gin.Context) {
 		} else {
 			performanceBodies = []PerformanceBodyWithId{}
 		}
+
+		// Group to exercise_id
+		groupedPerformances := make(map[int][]PerformanceBodyWithId)
+		for _, pb := range performanceBodies {
+			groupedPerformances[int(pb.ExerciseId)] = append(groupedPerformances[int(pb.ExerciseId)], pb)
+		}
+		var bestPerformances []PerformanceBodyWithId
+
+		// Get bestPerformance for every exercise_id group
+		for exerciseId, group := range groupedPerformances {
+			bestPerformance, err := getBestPerformanceEntry(ctx, &group)
+			if err != nil {
+				endpoints.Logger.Error(ctx, err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{
+					Error: "Failed to get best performance entry for exercise id " + strconv.Itoa(exerciseId),
+				})
+				return
+			}
+			bestPerformances = append(bestPerformances, *bestPerformance)
+		}
+
+		// Overwrite performanceBodies with bestPerformances
+		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	} else if sinceIsSet {
 		// Get all performance bodies since the specified date from the database
 		performanceBodiesSince, err := getPerformanceBodiesSince(ctx, uint(athleteId), since)
@@ -145,6 +175,39 @@ func GetPerformanceEntries(c *gin.Context) {
 		} else {
 			performanceBodies = []PerformanceBodyWithId{}
 		}
+
+		// Group entries to exercise_id and date
+		type groupKey struct {
+			exerciseId uint
+			date       string
+		}
+		groupedPerformances := make(map[groupKey][]PerformanceBodyWithId)
+		for _, pb := range performanceBodies {
+			key := groupKey{exerciseId: pb.ExerciseId, date: pb.Date}
+			groupedPerformances[key] = append(groupedPerformances[key], pb)
+		}
+
+		// Get the best entry for every group
+		var bestPerformances []PerformanceBodyWithId
+		for key, group := range groupedPerformances {
+			bestPerformance, err := getBestPerformanceEntry(ctx, &group)
+			if err != nil {
+				endpoints.Logger.Error(ctx, err)
+				idString := fmt.Sprintf("%d", key.exerciseId)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{
+					Error: "Failed to get best performance entry for exercise id " + idString + " on date " + key.date,
+				})
+				return
+			}
+			bestPerformances = append(bestPerformances, *bestPerformance)
+		}
+		// Overwrite performanceBodies with the best performances
+		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	} else {
 		// Get all performance bodies from the database
 		allPerformanceBodies, err := getAllPerformanceBodies(ctx, uint(athleteId))
@@ -158,6 +221,39 @@ func GetPerformanceEntries(c *gin.Context) {
 		} else {
 			performanceBodies = []PerformanceBodyWithId{}
 		}
+
+		// Group entries to exercise_id and date
+		type groupKey struct {
+			exerciseId uint
+			date       string
+		}
+		groupedPerformances := make(map[groupKey][]PerformanceBodyWithId)
+		for _, pb := range performanceBodies {
+			key := groupKey{exerciseId: pb.ExerciseId, date: pb.Date}
+			groupedPerformances[key] = append(groupedPerformances[key], pb)
+		}
+
+		// Get the best entry for every group
+		var bestPerformances []PerformanceBodyWithId
+		for key, group := range groupedPerformances {
+			bestPerformance, err := getBestPerformanceEntry(ctx, &group)
+			if err != nil {
+				endpoints.Logger.Error(ctx, err)
+				idString := fmt.Sprintf("%d", key.exerciseId)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{
+					Error: "Failed to get best performance entry for exercise id " + idString + " on date " + key.date,
+				})
+				return
+			}
+			bestPerformances = append(bestPerformances, *bestPerformance)
+		}
+		// Overwrite performanceBodies with the best performances
+		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	}
 
 	c.JSON(

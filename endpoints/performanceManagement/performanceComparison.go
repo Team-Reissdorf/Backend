@@ -98,8 +98,11 @@ func getBestPerformanceEntry(ctx context.Context, performances *[]PerformanceBod
 		return nil, err0
 	}
 
-	// Get the athletes age
-	age, err1 := athleteManagement.CalculateAge(ctx, (*athlete).BirthDate)
+	// Get the athlete's age
+	if len((*athlete).BirthDate) < 10 {
+		return nil, errors.New("Invalid BirthDate: must be at least 10 characters long")
+	}
+	age, err1 := athleteManagement.CalculateAge(ctx, (*athlete).BirthDate[:10])
 	if err1 != nil {
 		err1 = errors.New("Failed to calculate age for best performance entry")
 		return nil, err1
