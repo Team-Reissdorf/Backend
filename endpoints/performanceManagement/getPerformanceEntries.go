@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"sort"
 	"strconv"
 )
 
@@ -156,6 +157,11 @@ func GetPerformanceEntries(c *gin.Context) {
 
 		// Overwrite performanceBodies with bestPerformances
 		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	} else if sinceIsSet {
 		// Get all performance bodies since the specified date from the database
 		performanceBodiesSince, err := getPerformanceBodiesSince(ctx, uint(athleteId), since)
@@ -197,6 +203,11 @@ func GetPerformanceEntries(c *gin.Context) {
 		}
 		// Overwrite performanceBodies with the best performances
 		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	} else {
 		// Get all performance bodies from the database
 		allPerformanceBodies, err := getAllPerformanceBodies(ctx, uint(athleteId))
@@ -238,6 +249,11 @@ func GetPerformanceEntries(c *gin.Context) {
 		}
 		// Overwrite performanceBodies with the best performances
 		performanceBodies = bestPerformances
+
+		// Sort by date
+		sort.Slice(performanceBodies, func(i, j int) bool {
+			return performanceBodies[i].Date > performanceBodies[j].Date
+		})
 	}
 
 	c.JSON(
