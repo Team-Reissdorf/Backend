@@ -71,7 +71,7 @@ func GetAthleteByID(c *gin.Context) {
 
 	// get the swim cert for the specific athlete
 	var cert databaseUtils.SwimCertificate
-	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+	err_swimcert := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		id := athlete.ID
 
 		res := tx.Where("athlete_id = ?", id).First(&cert)
@@ -79,7 +79,7 @@ func GetAthleteByID(c *gin.Context) {
 	})
 
 	var flag bool
-	if err3 != nil {
+	if err_swimcert != nil {
 		flag = false
 	} else {
 		// kind of "silent fail" might want to change
