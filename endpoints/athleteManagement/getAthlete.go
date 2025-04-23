@@ -1,13 +1,16 @@
 package athleteManagement
 
 import (
+	"net/http"
+	"strconv"
+
+	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
+	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
 )
 
 type AthleteResponse struct {
@@ -66,8 +69,25 @@ func GetAthleteByID(c *gin.Context) {
 		return
 	}
 
+	// get the swim cert for the specific athlete
+	var cert databaseUtils.SwimCertificate
+	err_swimcert := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		id := athlete.ID
+
+		res := tx.Where("athlete_id = ?", id).First(&cert)
+		return errors.Wrap(res.Error, "failed to get swim certificate for athlete")
+	})
+
+	var flag bool
+	if err_swimcert != nil {
+		flag = false
+	} else {
+		// kind of "silent fail" might want to change
+		flag = true
+	}
+
 	// Translate athlete to response type
-	athleteBody, err3 := translateAthleteToResponse(ctx, *athlete)
+	athleteBody, err3 := translateAthleteToResponse(ctx, *athlete, flag)
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to translate the athlete")
 		endpoints.Logger.Error(ctx, err3)
