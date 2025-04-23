@@ -1,7 +1,6 @@
 package athleteManagement
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -75,12 +74,11 @@ func GetAthleteByID(c *gin.Context) {
 	err3 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		id := athlete.ID
 
-		res := tx.Where("Athlete.ID = ?", id).Find(&cert)
+		res := tx.Where("athlete_id = ?", id).First(&cert)
 		return errors.Wrap(res.Error, "failed to get swim certificate for athlete")
 	})
 
 	var flag bool
-	fmt.Println(err3)
 	if err3 != nil {
 		flag = false
 	} else {
