@@ -1,6 +1,7 @@
 package athleteManagement
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -79,6 +80,7 @@ func GetAthleteByID(c *gin.Context) {
 	})
 
 	var flag bool
+	fmt.Println(err3)
 	if err3 != nil {
 		flag = false
 	} else {
