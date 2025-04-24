@@ -2,14 +2,15 @@ package athleteManagement
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 var (
@@ -37,7 +38,7 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 }
 
 // translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete, swimcert bool) (*AthleteBodyWithId, error) {
 	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
@@ -54,6 +55,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 		Email:     athlete.Email,
 		BirthDate: birthDate,
 		Sex:       athlete.Sex,
+		SwimCert:  swimcert,
 	}
 
 	return &athleteResponse, nil
@@ -220,6 +222,27 @@ func GetAthlete(ctx context.Context, athleteId uint, trainerEmail string) (*data
 	var athlete databaseUtils.Athlete
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
 		err := tx.Model(&databaseUtils.Athlete{}).Where("trainer_email = ? AND id = ?", strings.ToLower(trainerEmail), athleteId).First(&athlete).Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the athlete")
+		return nil, err1
+	}
+
+	return &athlete, nil
+}
+
+// GetAthleteDirectly returns the athlete of the given id
+func GetAthleteDirectly(ctx context.Context, athleteId uint) (*databaseUtils.Athlete, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromDB")
+	defer span.End()
+
+	var athlete databaseUtils.Athlete
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Athlete{}).
+			Where("id = ?", athleteId).
+			First(&athlete).
+			Error
 		return err
 	})
 	if err1 != nil {
