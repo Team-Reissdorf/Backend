@@ -207,7 +207,7 @@ func CreateRuleset(c *gin.Context) {
 		// Ensure the exercise exists
 		var exerciseCount int64
 		errD := db.Model(&databaseUtils.Exercise{}).
-			Where("name = ? AND discipline_name = ?", ruleset.ExerciseName, ruleset.DisciplineName).
+			Where("name = ? AND discipline_name = ?", ruleset.ExerciseName, disciplineName).
 			Count(&exerciseCount).
 			Error
 		if errD != nil {
