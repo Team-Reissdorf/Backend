@@ -109,7 +109,7 @@ func CreateRuleset(c *gin.Context) {
 
 		ToAge, errB := strconv.Atoi(record[6])
 		if errB != nil {
-			errB = errors.Wrap(errB, "Failed to parse from age")
+			errB = errors.Wrap(errB, "Failed to parse to age")
 			FlowWatch.GetLogHelper().Debug(ctx, errB)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid to age value: %s", record[6])})
 			return
@@ -242,8 +242,7 @@ func CreateRuleset(c *gin.Context) {
 			if errE != nil {
 				errE = errors.Wrap(errE, "Failed to create the exercise")
 				FlowWatch.GetLogHelper().Error(ctx, errE)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.DisciplineName))
-				return
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.ExerciseName))
 			}
 
 			// Get the exercise id
