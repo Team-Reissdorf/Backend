@@ -23,6 +23,16 @@ services:
     networks:
       - competehub
 
+  frontend:
+    image: fch
+    restart: always
+    ports:
+      -   8081:80
+    depends_on:
+      - api
+    networks:
+      - competehub
+
 #  debug:
 #    image: alpine:latest
 #    command: sleep infinity

@@ -101,7 +101,7 @@ func main() {
 
 	// Set frontend url as accepted origin for cors
 	acceptedOrigins := []string{
-		frontendUrl,
+		"*",
 	}
 
 	// Initialize the server
