@@ -24,7 +24,9 @@ services:
       - competehub
 
   frontend:
-    image: 
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
     restart: always
     ports:
       -   8081:80
