@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"os"
 	"strconv"
 
@@ -173,5 +174,9 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
 		}
 
+		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			ruleset.POST("/create", rulesetManagement.CreateRuleset)
+		}
 	}
 }
