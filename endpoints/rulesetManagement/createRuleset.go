@@ -244,126 +244,126 @@ func CreateRuleset(c *gin.Context) {
 				FlowWatch.GetLogHelper().Error(ctx, errE)
 				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.ExerciseName))
 			}
+		}
 
-			// Get the exercise id
-			var exercise databaseUtils.Exercise
-			errF := db.Model(&databaseUtils.Exercise{}).
-				Where("name = ? AND discipline_name = ?", ruleset.ExerciseName, disciplineName).
-				First(&exercise).
-				Error
-			if errF != nil {
-				errF = errors.Wrap(errF, "Failed to check the exercise")
-				FlowWatch.GetLogHelper().Error(ctx, errF)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to get exercise: %s", ruleset.ExerciseName))
+		// Get the exercise id
+		var exercise databaseUtils.Exercise
+		errF := db.Model(&databaseUtils.Exercise{}).
+			Where("name = ? AND discipline_name = ?", ruleset.ExerciseName, disciplineName).
+			First(&exercise).
+			Error
+		if errF != nil {
+			errF = errors.Wrap(errF, "Failed to check the exercise")
+			FlowWatch.GetLogHelper().Error(ctx, errF)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to get exercise: %s", ruleset.ExerciseName))
+			return
+		}
+
+		// Ensure the exercise ruleset exists
+		var exerciseRulesetCount int64
+		errG := db.Model(&databaseUtils.ExerciseRuleset{}).
+			Where("ruleset_year = ? AND exercise_id = ?", ruleset.RulesetYear, exercise.ID).
+			Count(&exerciseRulesetCount).
+			Error
+		if errG != nil {
+			errG = errors.Wrap(errG, "Failed to check the ruleset")
+			FlowWatch.GetLogHelper().Debug(ctx, errG)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Failed to check the exercise ruleset"})
+			return
+		}
+
+		// Create the exercise ruleset if needed
+		if exerciseRulesetCount == 0 {
+			errH := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+				err := tx.Model(&databaseUtils.ExerciseRuleset{}).
+					Create(&databaseUtils.ExerciseRuleset{
+						RulesetYear: ruleset.RulesetYear,
+						ExerciseId:  exercise.ID,
+					}).
+					Error
+				return err
+			})
+			if errH != nil {
+				msg := fmt.Sprintf("Failed to create the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear)
+				errH = errors.Wrap(errH, msg)
+				FlowWatch.GetLogHelper().Debug(ctx, errH)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
 				return
 			}
+		}
 
-			// Ensure the exercise ruleset exists
-			var exerciseRulesetCount int64
-			errG := db.Model(&databaseUtils.ExerciseRuleset{}).
-				Where("ruleset_year = ? AND exercise_id = ?", ruleset.RulesetYear, exercise.ID).
-				Count(&exerciseRulesetCount).
-				Error
-			if errG != nil {
-				errG = errors.Wrap(errG, "Failed to check the ruleset")
-				FlowWatch.GetLogHelper().Debug(ctx, errG)
-				c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Failed to check the exercise ruleset"})
+		// Get the ruleset id
+		var exerciseRuleset databaseUtils.ExerciseRuleset
+		errI := db.Model(&databaseUtils.ExerciseRuleset{}).
+			Where("ruleset_year = ? AND exercise_id = ?", ruleset.RulesetYear, exercise.ID).
+			First(&exerciseRuleset).
+			Error
+		if errI != nil {
+			errI = errors.Wrap(errI, "Failed to get the ruleset")
+			FlowWatch.GetLogHelper().Error(ctx, errI)
+			c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Failed to get the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear))
+			return
+		}
+
+		// Check if the exercise goal already exists
+		var exerciseGoalCount int64
+		errJ := db.Model(&databaseUtils.ExerciseGoal{}).
+			Where("ruleset_id = ? AND from_age = ? AND to_age = ? AND sex = ?",
+				exerciseRuleset.ID, ruleset.FromAge, ruleset.ToAge, ruleset.Sex).
+			Count(&exerciseGoalCount).
+			Error
+		if errJ != nil {
+			errJ = errors.Wrap(errJ, "Failed to check the exercise goal")
+			FlowWatch.GetLogHelper().Debug(ctx, errJ)
+			c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Exercise goal is invalid: %s", ruleset.ExerciseName))
+			return
+		}
+
+		// Create exercise goal if needed
+		if exerciseGoalCount == 0 {
+			errK := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+				err := tx.Model(&databaseUtils.ExerciseGoal{}).
+					Create(&databaseUtils.ExerciseGoal{
+						RulesetId:   exerciseRuleset.ID,
+						FromAge:     ruleset.FromAge,
+						ToAge:       ruleset.ToAge,
+						Sex:         ruleset.Sex,
+						Bronze:      ruleset.Bronze,
+						Silver:      ruleset.Silver,
+						Gold:        ruleset.Gold,
+						Description: ruleset.Description,
+					}).
+					Error
+				return err
+			})
+			if errK != nil {
+				msg := fmt.Sprintf("Failed to create the exercise goal: %s - %s - %d - %d - %s",
+					ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
+				errK = errors.Wrap(errK, msg)
+				FlowWatch.GetLogHelper().Error(ctx, errK)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
 				return
 			}
-
-			// Create the exercise ruleset if needed
-			if exerciseRulesetCount == 0 {
-				errH := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-					err := tx.Model(&databaseUtils.ExerciseRuleset{}).
-						Create(&databaseUtils.ExerciseRuleset{
-							RulesetYear: ruleset.RulesetYear,
-							ExerciseId:  exercise.ID,
-						}).
-						Error
-					return err
-				})
-				if errH != nil {
-					msg := fmt.Sprintf("Failed to create the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear)
-					errH = errors.Wrap(errH, msg)
-					FlowWatch.GetLogHelper().Debug(ctx, errH)
-					c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-					return
-				}
-			}
-
-			// Get the ruleset id
-			var exerciseRuleset databaseUtils.ExerciseRuleset
-			errI := db.Model(&databaseUtils.ExerciseRuleset{}).
-				Where("ruleset_year = ? AND exercise_id = ?", ruleset.RulesetYear, exercise.ID).
-				First(&exerciseRuleset).
-				Error
-			if errI != nil {
-				errI = errors.Wrap(errI, "Failed to get the ruleset")
-				FlowWatch.GetLogHelper().Error(ctx, errI)
-				c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Failed to get the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear))
+		} else if exerciseGoalCount > 0 { // Update existing exercise goal
+			errL := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+				err := tx.Model(&databaseUtils.ExerciseGoal{}).
+					Where("ruleset_id = ? AND from_age = ? AND to_age = ? AND sex = ?",
+						exerciseRuleset.ID, ruleset.FromAge, ruleset.ToAge, ruleset.Sex).
+					Updates(map[string]interface{}{
+						"bronze":      ruleset.Bronze,
+						"silver":      ruleset.Silver,
+						"gold":        ruleset.Gold,
+						"description": ruleset.Description,
+					}).Error
+				return err
+			})
+			if errL != nil {
+				msg := fmt.Sprintf("Failed to update the exercise goal: %s - %s - %d - %d - %s",
+					ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
+				errL = errors.Wrap(errL, msg)
+				FlowWatch.GetLogHelper().Error(ctx, errL)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
 				return
-			}
-
-			// Check if the exercise goal already exists
-			var exerciseGoalCount int64
-			errJ := db.Model(&databaseUtils.ExerciseGoal{}).
-				Where("ruleset_id = ? AND from_age = ? AND to_age = ? AND sex = ?",
-					exerciseRuleset.ID, ruleset.FromAge, ruleset.ToAge, ruleset.Sex).
-				Count(&exerciseGoalCount).
-				Error
-			if errJ != nil {
-				errJ = errors.Wrap(errJ, "Failed to check the exercise goal")
-				FlowWatch.GetLogHelper().Debug(ctx, errJ)
-				c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Exercise goal is invalid: %s", ruleset.ExerciseName))
-				return
-			}
-
-			// Create exercise goal if needed
-			if exerciseGoalCount == 0 {
-				errK := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-					err := tx.Model(&databaseUtils.ExerciseGoal{}).
-						Create(&databaseUtils.ExerciseGoal{
-							RulesetId:   exerciseRuleset.ID,
-							FromAge:     ruleset.FromAge,
-							ToAge:       ruleset.ToAge,
-							Sex:         ruleset.Sex,
-							Bronze:      ruleset.Bronze,
-							Silver:      ruleset.Silver,
-							Gold:        ruleset.Gold,
-							Description: ruleset.Description,
-						}).
-						Error
-					return err
-				})
-				if errK != nil {
-					msg := fmt.Sprintf("Failed to create the exercise goal: %s - %s - %d - %d - %s",
-						ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
-					errK = errors.Wrap(errK, msg)
-					FlowWatch.GetLogHelper().Error(ctx, errK)
-					c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-					return
-				}
-			} else if exerciseGoalCount > 0 { // Update existing exercise goal
-				errL := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-					err := tx.Model(&databaseUtils.ExerciseGoal{}).
-						Where("ruleset_id = ? AND from_age = ? AND to_age = ? AND sex = ?",
-							exerciseRuleset.ID, ruleset.FromAge, ruleset.ToAge, ruleset.Sex).
-						Updates(map[string]interface{}{
-							"bronze":      ruleset.Bronze,
-							"silver":      ruleset.Silver,
-							"gold":        ruleset.Gold,
-							"description": ruleset.Description,
-						}).Error
-					return err
-				})
-				if errL != nil {
-					msg := fmt.Sprintf("Failed to update the exercise goal: %s - %s - %d - %d - %s",
-						ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
-					errL = errors.Wrap(errL, msg)
-					FlowWatch.GetLogHelper().Error(ctx, errL)
-					c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-					return
-				}
 			}
 		}
 	}
