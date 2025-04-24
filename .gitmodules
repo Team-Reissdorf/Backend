@@ -1,0 +1,4 @@
+[submodule "Frontend"]
+	path = Frontend
+	url = https://github.com/Team-Reissdorf/Frontend.git
+	branch = reconf-proxy

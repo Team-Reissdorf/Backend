@@ -24,7 +24,7 @@ services:
       - competehub
 
   frontend:
-    image: fch
+    image: 
     restart: always
     ports:
       -   8081:80
