@@ -2,8 +2,6 @@ module github.com/Team-Reissdorf/Backend
 
 go 1.23.4
 
-replace github.com/LucaSchmitz2003/FlowServer => ./FlowServer
-
 require (
 	github.com/LucaSchmitz2003/DatabaseFlow v0.0.1
 	github.com/LucaSchmitz2003/FlowServer v0.2.4
