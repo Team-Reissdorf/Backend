@@ -242,8 +242,7 @@ func CreateRuleset(c *gin.Context) {
 			if errE != nil {
 				errE = errors.Wrap(errE, "Failed to create the exercise")
 				FlowWatch.GetLogHelper().Error(ctx, errE)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.DisciplineName))
-				return
+				c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.ExerciseName))
 			}
 
 			// Get the exercise id
