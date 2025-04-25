@@ -42,7 +42,7 @@ func translatePerformanceBodies(ctx context.Context, performanceBodies []Perform
 	performances := make([]databaseUtils.Performance, len(performanceBodies))
 	for idx, performance := range performanceBodies {
 		// Get the correct medal status for the performance entry
-		medalStatus, err := evaluateMedalStatus(ctx, performance.ExerciseId, age, sex, performance.Points)
+		medalStatus, err := evaluateMedalStatus(ctx, performance.ExerciseId, performance.Date, age, sex, performance.Points)
 		if err != nil {
 			return nil, err
 		}
@@ -111,6 +111,41 @@ func getPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDate st
 	})
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Failed to get the performance entries since "+sinceDate)
+		return nil, err1
+	}
+
+	// Format the date fields of the performance bodies
+	for idx, performanceBody := range performanceBodies {
+		var err2 error
+		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
+			return nil, err2
+		}
+	}
+
+	return &performanceBodies, nil
+}
+
+// getPerformanceBodiesDate gets all performance entries of an athlete from the given date
+func getPerformanceBodiesDate(ctx context.Context, athleteId uint, date string) (*[]PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceBodiesSinceFromDB")
+	defer span.End()
+
+	var performanceBodies []PerformanceBodyWithId
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Performance{}).
+			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND date = ?", athleteId, date).
+			Order("date DESC").
+			Find(&performanceBodies).
+			Error
+
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the performance entries from "+date)
 		return nil, err1
 	}
 

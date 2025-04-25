@@ -1,7 +1,30 @@
+// @title          ComPeteHub API
+// @version        1.0
+// @description    This API allows managing athletes, disciplines and performances in the ComPeteHub system.
+// @contact.name   Team Reissdorf
+// @contact.url    https://github.com/Team-Reissdorf
+// @contact.email  david.clarafigueiredo@stud-provadis-hochschule.de
+// @license.name   MIT License
+// @license.url    https://mit-license.org/
+// @host           localhost:8080
+// @schemes        http https
+// @accept         json
+// @produce        json
+// @securityDefinitions.apikey BearerAuth
+// @name           Authorization
+// @in             header
+// @description    Bearer token-based authentication. Use "Bearer {your-token}"
+
 package main
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
+	"os"
+	"strconv"
+
+	"github.com/Team-Reissdorf/Backend/setup"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
 	"github.com/LucaSchmitz2003/FlowWatch"
@@ -14,13 +37,12 @@ import (
 	"github.com/Team-Reissdorf/Backend/endpoints/exerciseManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/ping"
+	"github.com/Team-Reissdorf/Backend/endpoints/swimCertificate"
 	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
-	"os"
-	"strconv"
 )
 
 var (
@@ -64,9 +86,11 @@ func init() {
 		databaseUtils.Athlete{},
 		databaseUtils.Discipline{},
 		databaseUtils.Exercise{},
-		databaseUtils.ExerciseSpecific{},
+		databaseUtils.ExerciseRuleset{},
+		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
+		databaseUtils.SwimCertificate{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
@@ -93,6 +117,9 @@ func main() {
 	defer keepAlive()
 
 	// ...
+
+	// Create standard disciplines in the database on startup
+	setup.CreateStandardDisciplines(ctx)
 }
 
 func defineRoutes(ctx context.Context, router *gin.Engine) {
@@ -132,8 +159,9 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		performance := v1.Group("/performance", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			performance.POST("/create", performanceManagement.CreatePerformance)
+			performance.POST("/export", performanceManagement.ExportPerformances)
 			performance.GET("/get-latest/:AthleteId", performanceManagement.GetLatestPerformanceEntry)
-			performance.GET("/get-all/:AthleteId", performanceManagement.GetPerformanceEntries)
+			performance.GET("/get/:AthleteId", performanceManagement.GetPerformanceEntries)
 			performance.PUT("/edit", performanceManagement.EditPerformanceEntry)
 		}
 
@@ -145,6 +173,17 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		exercise := v1.Group("/exercise", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
+		}
+
+		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
+			swimCert.GET("/download-all/:AthleteId", swimCertificate.DownloadAllSwimCertificates)
+		}
+
+		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			ruleset.POST("/create", rulesetManagement.CreateRuleset)
 		}
 	}
 }

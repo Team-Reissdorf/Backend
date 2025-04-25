@@ -7,6 +7,7 @@ import (
 	"net/mail"
 	"regexp"
 	"slices"
+	"time"
 )
 
 const (
@@ -25,6 +26,8 @@ var (
 	EmailAddressContainsNameError  = errors.New("Email address should not contain the name")
 	EmailAddressInvalidTldError    = errors.New("Email address TLD is invalid")
 	DateFormatInvalidError         = errors.New("Date format is invalid")
+	DateInFutureError              = errors.New("Date is in the future")
+	EmptyStringError               = errors.New("Empty String")
 )
 
 func init() {
@@ -73,7 +76,35 @@ func IsDate(date string) error {
 	if !dateFormatCheckRegex.MatchString(date) {
 		return DateFormatInvalidError
 	}
+	return nil
+}
 
+func IsBefore(date1 string, date2 string) error {
+	parsedDate1, err := time.Parse("2006-01-02", date1)
+	if err != nil {
+		return errors.Wrap(err, "Fehler beim Parsen von date1")
+	}
+
+	parsedDate2, err := time.Parse("2006-01-02", date2)
+	if err != nil {
+		return errors.Wrap(err, "Fehler beim Parsen von date2")
+	}
+	if parsedDate1.Before(parsedDate2) {
+		return errors.New("date1 is before date2")
+	}
+
+	return nil
+}
+
+// IsFuture checks if the given date is in the future and throws an error if it is.
+func IsFuture(date string) error {
+	parsedDate, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return errors.Wrap(err, "Failed to parse date")
+	}
+	if !parsedDate.Before(time.Now()) {
+		return DateInFutureError
+	}
 	return nil
 }
 
@@ -87,5 +118,12 @@ func IsSex(sex string) error {
 		return InvalidSexValue
 	}
 
+	return nil
+}
+
+func IsEmpty(bodyPart string) error {
+	if len(bodyPart) == 0 {
+		return EmptyStringError
+	}
 	return nil
 }

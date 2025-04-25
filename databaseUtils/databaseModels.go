@@ -13,7 +13,7 @@ type Athlete struct {
 	FirstName string `json:"first_name" gorm:"uniqueIndex:unique_combination_athletes"`
 	LastName  string `json:"last_name"`
 	BirthDate string `json:"birth_date" gorm:"type:date;uniqueIndex:unique_combination_athletes"`
-	Sex       string `json:"sex"`
+	Sex       string `json:"sex" gorm:"type:char(1);not null"`
 	Email     string `json:"email" gorm:"uniqueIndex:unique_combination_athletes"`
 
 	TrainerEmail string `json:"trainer_email" gorm:"index"`
@@ -52,19 +52,27 @@ type Exercise struct {
 	Discipline Discipline `json:"-" gorm:"foreignKey:DisciplineName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
-type ExerciseSpecific struct {
+type Ruleset struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"index"`
+
+	Year string `gorm:"primaryKey" json:"year"`
+}
+
+type ExerciseRuleset struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_specifics"`
-	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
-	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	RulesetYear string `gorm:"uniqueIndex:unique_combination_exercise_ruleset"`
+	// BelongsTo Ruleset (FK: RulesetYear -> Ruleset.Year)
+	Ruleset Ruleset `json:"-" gorm:"foreignKey:RulesetYear;references:Year;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
-	FromAge     uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_specifics"`
-	ToAge       uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_specifics"`
-	Description string `json:"description"`
+	ExerciseId uint `gorm:"uniqueIndex:unique_combination_exercise_ruleset"`
+	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
+	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 }
 
 type ExerciseGoal struct {
@@ -73,16 +81,17 @@ type ExerciseGoal struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 
-	ExerciseId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
-	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
-	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	RulesetId uint `gorm:"index;uniqueIndex:unique_combination_exercise_goals"`
+	// BelongsTo ExerciseRuleset (FK: RulesetId -> ExerciseRuleset.Id)
+	ExerciseRuleset ExerciseRuleset `json:"-" gorm:"foreignKey:RulesetId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
-	FromAge uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	ToAge   uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	Sex     string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals"`
-	Bronze  uint64 `json:"bronze"`
-	Silver  uint64 `json:"silver"`
-	Gold    uint64 `json:"gold"`
+	FromAge     uint   `json:"from_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	ToAge       uint   `json:"to_age" gorm:"uniqueIndex:unique_combination_exercise_goals"`
+	Sex         string `json:"sex" gorm:"uniqueIndex:unique_combination_exercise_goals;type:char(1);not null"`
+	Bronze      uint64 `json:"bronze"` // Time: ms; Distance: cm; Points; Bool: <0|1>
+	Silver      uint64 `json:"silver"` // Time: ms; Distance: cm; Points; Bool: <0|1>
+	Gold        uint64 `json:"gold"`   // Time: ms; Distance: cm; Points; Bool: <0|1>
+	Description string `json:"description"`
 }
 
 type Performance struct {
@@ -96,10 +105,25 @@ type Performance struct {
 	Date   string `json:"date" gorm:"type:date"`
 
 	ExerciseId uint `gorm:"index"`
-	// BelongsTo Exercise (FK: ExerciseId -> Exercise.ExerciseId)
+	// BelongsTo Exercise (FK: ExerciseId -> Exercise.Id)
 	Exercise Exercise `json:"-" gorm:"foreignKey:ExerciseId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
 	AthleteId uint `gorm:"index"`
-	// BelongsTo Athlete (FK: AthleteId -> Athlete.AthleteId)
+	// BelongsTo Athlete (FK: AthleteId -> Athlete.Id)
+	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+type SwimCertificate struct {
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time 
+	UpdatedAt time.Time 
+	DeletedAt *time.Time `gorm:"index"`
+
+	Date time.Time	
+	DocumentPath string 	
+	OriginalFileName string
+
+	AthleteId uint `gorm:"index"`
+	// BelongsTo Athlete (FK: AthleteId -> Athlete.Id)
 	Athlete Athlete `json:"-" gorm:"foreignKey:AthleteId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

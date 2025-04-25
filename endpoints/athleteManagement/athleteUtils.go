@@ -2,23 +2,24 @@ package athleteManagement
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 var (
 	NoNewAthletesError = errors.New("No new Athletes found")
 )
 
-// translateAthleteBodies translates the athlete body to an athlete db entry
+// translateAthleteBodies translates the athlete body to an athlete db entry.
 func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, trainerEmail string) []databaseUtils.Athlete {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
+	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteBodies")
 	defer span.End()
 
 	athletes := make([]databaseUtils.Athlete, len(athleteBodies))
@@ -37,8 +38,8 @@ func translateAthleteBodies(ctx context.Context, athleteBodies []AthleteBody, tr
 }
 
 // translateAthleteToResponse converts an athlete database object to response type
-func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete) (*AthleteBodyWithId, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
+func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athlete, swimcert bool) (*AthleteBodyWithId, error) {
+	_, span := endpoints.Tracer.Start(ctx, "TranslateAthleteToResponse")
 	defer span.End()
 
 	// Reformat the date to the correct format
@@ -54,6 +55,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 		Email:     athlete.Email,
 		BirthDate: birthDate,
 		Sex:       athlete.Sex,
+		SwimCert:  swimcert,
 	}
 
 	return &athleteResponse, nil
@@ -62,21 +64,40 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 // validateAthlete checks if all values of an athlete are valid
 // Throws: Forwards errors of the formatHelper
 func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
-	ctx, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
+	_, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
 	defer span.End()
+	if err := formatHelper.IsEmpty(athlete.FirstName); err != nil {
+		return errors.Wrap(err, "First Name")
+	}
+
+	if err := formatHelper.IsEmpty(athlete.LastName); err != nil {
+		return errors.Wrap(err, "Last Name")
+	}
 
 	// Capitalize the first letter of the name
 	athlete.FirstName = strings.ToUpper(string(athlete.FirstName[0])) + athlete.FirstName[1:]
 	athlete.LastName = strings.ToUpper(string(athlete.LastName[0])) + athlete.LastName[1:]
 
 	athlete.Email = strings.ToLower(athlete.Email)
-	if err := formatHelper.IsEmail(athlete.Email); err != nil {
+	if err := formatHelper.IsEmpty(athlete.Email); err != nil {
+		return errors.Wrap(err, "Email address")
+	} else if err = formatHelper.IsEmail(athlete.Email); err != nil {
 		err = errors.Wrap(err, "Invalid email address")
 		return err
 	}
 
-	if err := formatHelper.IsDate(athlete.BirthDate); err != nil {
+	if err := formatHelper.IsEmpty(athlete.BirthDate); err != nil {
+		return errors.Wrap(err, "Birthdate")
+	} else if err = formatHelper.IsDate(athlete.BirthDate); err != nil {
 		err = errors.Wrap(err, "Invalid date")
+		return err
+	}
+
+	if err := formatHelper.IsEmpty(athlete.Sex); err != nil {
+		return errors.Wrap(err, "Sex")
+	}
+	if err := formatHelper.IsFuture(athlete.BirthDate); err != nil {
+		err = errors.Wrap(err, "Date is in the future")
 		return err
 	}
 
@@ -211,6 +232,27 @@ func GetAthlete(ctx context.Context, athleteId uint, trainerEmail string) (*data
 	return &athlete, nil
 }
 
+// GetAthleteDirectly returns the athlete of the given id
+func GetAthleteDirectly(ctx context.Context, athleteId uint) (*databaseUtils.Athlete, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromDB")
+	defer span.End()
+
+	var athlete databaseUtils.Athlete
+	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		err := tx.Model(&databaseUtils.Athlete{}).
+			Where("id = ?", athleteId).
+			First(&athlete).
+			Error
+		return err
+	})
+	if err1 != nil {
+		err1 = errors.Wrap(err1, "Failed to get the athlete")
+		return nil, err1
+	}
+
+	return &athlete, nil
+}
+
 // GetAthleteFromPerformanceId returns the athlete of the given performance entry
 func GetAthleteFromPerformanceId(ctx context.Context, performanceId uint, trainerEmail string) (*databaseUtils.Athlete, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "GetAthleteFromPerformanceEntryFromDB")
@@ -235,7 +277,7 @@ func GetAthleteFromPerformanceId(ctx context.Context, performanceId uint, traine
 
 // CalculateAge parses the birthDate string and returns the age
 func CalculateAge(ctx context.Context, birthDate string) (int, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "CalculateAge")
+	_, span := endpoints.Tracer.Start(ctx, "CalculateAge")
 	defer span.End()
 
 	birthDay, err1 := time.Parse("2006-01-02", birthDate)

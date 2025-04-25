@@ -42,6 +42,13 @@ func EditPerformanceEntry(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
+	if err1 := formatHelper.IsEmpty(body.Date); err1 != nil {
+		endpoints.Logger.Debug(ctx, err1)
+		err1 = errors.Wrap(err1, "Date is empty")
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err1.Error()})
+		return
+	}
+
 	// Check if the given performance entry is for an athlete of the given trainer
 	exists, err1 := performanceExistsForTrainer(ctx, body.PerformanceId, trainerEmail)
 	if err1 != nil {
@@ -103,7 +110,7 @@ func EditPerformanceEntry(c *gin.Context) {
 	}
 
 	// Get the corresponding medal status
-	medal, err6 := evaluateMedalStatus(ctx, body.ExerciseId, age, athlete.Sex, body.Points)
+	medal, err6 := evaluateMedalStatus(ctx, body.ExerciseId, body.Date, age, athlete.Sex, body.Points)
 	if errors.Is(err6, gorm.ErrRecordNotFound) {
 		err6 = errors.Wrap(err6, "No exercise goals for this athlete found")
 		endpoints.Logger.Debug(ctx, err6)
@@ -113,6 +120,28 @@ func EditPerformanceEntry(c *gin.Context) {
 		err6 = errors.Wrap(err6, "Failed to calculate the medal status")
 		endpoints.Logger.Error(ctx, err6)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
+		return
+	}
+
+	//Check if the Date is in Correct Format
+	err7 := formatHelper.IsDate(body.Date)
+	if errors.Is(err7, formatHelper.DateFormatInvalidError) {
+		endpoints.Logger.Debug(ctx, err7)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid date format"})
+		return
+	}
+
+	//Check if the Date is in the Past
+	err8 := formatHelper.IsFuture(body.Date)
+	if errors.Is(err8, formatHelper.DateInFutureError) {
+		err8 = errors.Wrap(err8, "Date is in the future")
+		endpoints.Logger.Debug(ctx, err8)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date is in the future"})
+		return
+	} else if err8 != nil {
+		err8 = errors.Wrap(err8, "Failed to check the date")
+		endpoints.Logger.Error(ctx, err8)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check the date"})
 		return
 	}
 
@@ -126,10 +155,10 @@ func EditPerformanceEntry(c *gin.Context) {
 	}
 
 	// Update the performance entry in the database
-	err7 := updatePerformanceEntry(ctx, performanceEntry)
-	if err7 != nil {
-		err7 = errors.Wrap(err7, "Failed to update the performance entry")
-		endpoints.Logger.Error(ctx, err7)
+	err9 := updatePerformanceEntry(ctx, performanceEntry)
+	if err9 != nil {
+		err9 = errors.Wrap(err9, "Failed to update the performance entry")
+		endpoints.Logger.Error(ctx, err9)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to update the performance entry"})
 		return
 	}
