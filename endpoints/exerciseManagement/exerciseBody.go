@@ -7,7 +7,3 @@ type ExerciseBodyWithId struct {
 	DisciplineName string `json:"discipline_name" example:"Discipline"`
 	AgeSpecifics   string `json:"age_specifics" example:"Age specific description"`
 }
-type ExerciseRulesetBody struct {
-	ExerciseId  uint   `json:"exercise_id" example:"1"`
-	RulesetYear string `json:"ruleset_year" example:"2023"`
-}
