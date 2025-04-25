@@ -19,8 +19,11 @@ package main
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"os"
 	"strconv"
+
+	"github.com/Team-Reissdorf/Backend/setup"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
@@ -114,6 +117,9 @@ func main() {
 	defer keepAlive()
 
 	// ...
+
+	// Create standard disciplines in the database on startup
+	setup.CreateStandardDisciplines(ctx)
 }
 
 func defineRoutes(ctx context.Context, router *gin.Engine) {
@@ -155,7 +161,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 			performance.POST("/create", performanceManagement.CreatePerformance)
 			performance.POST("/export", performanceManagement.ExportPerformances)
 			performance.GET("/get-latest/:AthleteId", performanceManagement.GetLatestPerformanceEntry)
-			performance.GET("/get-all/:AthleteId", performanceManagement.GetPerformanceEntries)
+			performance.GET("/get/:AthleteId", performanceManagement.GetPerformanceEntries)
 			performance.PUT("/edit", performanceManagement.EditPerformanceEntry)
 		}
 
@@ -173,7 +179,12 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
+			swimCert.GET("/download-all/:AthleteId", swimCertificate.DownloadAllSwimCertificates)
 		}
 
+		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			ruleset.POST("/create", rulesetManagement.CreateRuleset)
+		}
 	}
 }
