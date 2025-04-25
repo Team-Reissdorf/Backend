@@ -184,6 +184,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			ruleset.POST("/create", rulesetManagement.CreateRuleset)
+			ruleset.GET("/get", rulesetManagement.GetRulesets)
 		}
 	}
 }
