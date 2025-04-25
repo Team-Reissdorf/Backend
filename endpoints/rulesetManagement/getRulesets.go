@@ -14,7 +14,7 @@ import (
 
 type RulesetResponse struct {
 	Message      string                       `json:"message" example:"Request successful"`
-	RulesetGoals []databaseUtils.ExerciseGoal `json:"rulesets"`
+	RulesetGoals []databaseUtils.ExerciseGoal `json:"ruleset_goals"`
 }
 
 // GetRulesets returns the rulesets of a specific exercise with the given exercise_id and year.
