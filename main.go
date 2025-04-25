@@ -167,6 +167,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		exercise := v1.Group("/exercise", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
+			exercise.GET("/ruleset/get", exerciseManagement.GetExerciseGoals)
 		}
 
 		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
