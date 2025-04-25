@@ -173,7 +173,6 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		exercise := v1.Group("/exercise", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
-			exercise.GET("/ruleset/get", exerciseManagement.GetExerciseGoals)
 		}
 
 		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
@@ -185,6 +184,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			ruleset.POST("/create", rulesetManagement.CreateRuleset)
+			ruleset.GET("/get", rulesetManagement.GetRulesets)
 		}
 	}
 }

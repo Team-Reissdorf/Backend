@@ -1,7 +1,6 @@
 package exerciseManagement
 
 import (
-	"fmt"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -195,87 +194,6 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		ExercisesResponse{
 			Message:   "Request successful",
 			Exercises: results,
-		},
-	)
-}
-
-type ExerciseGoalsResponse struct {
-	Message       string                       `json:"message" example:"Request successful"`
-	ExerciseGoals []databaseUtils.ExerciseGoal `json:"exercise_goals"`
-}
-
-// GetExerciseGoals returns the exercise goals of a specific exercise with the given discipline, exercise, and year.
-// @Summary Returns the exercise goals
-// @Description Retrieves the exercise goals of a specific exercise with the given discipline, exercise, and year.
-// @Tags Exercise Management
-// @Produce json
-// @Param year query uint true "Year of the ruleset"
-// @Param exercise_id query uint true "ID of the exercise"
-// @Success 200 {object} ExerciseGoalsResponse "Request successful"
-// @Failure 400 {object} endpoints.ErrorResponse "Invalid query parameters"
-// @Failure 404 {object} endpoints.ErrorResponse "Exercise goals not found"
-// @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
-// @Router /v1/exercise/ruleset/get/ [get]
-func GetExerciseGoals(c *gin.Context) {
-	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "GetExerciseGoals")
-	defer span.End()
-
-	// Get the year query parameter
-	yearString := c.Query("year")
-	if yearString == "" {
-		endpoints.Logger.Debug(ctx, "Missing or invalid year")
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Missing or invalid year"})
-		return
-	}
-
-	year, err := strconv.ParseUint(yearString, 10, 32)
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse 'year' query parameter")
-		endpoints.Logger.Debug(ctx, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'year' query parameter"})
-		return
-	}
-
-	// Get the exercise_id query parameter
-	exerciseIdString := c.Query("exercise_id")
-	if exerciseIdString == "" {
-		endpoints.Logger.Debug(ctx, "Missing or invalid exercise_id")
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Missing or invalid exercise_id"})
-		return
-	}
-	exerciseId, err := strconv.ParseUint(exerciseIdString, 10, 32)
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse 'exercise_id' query parameter")
-		endpoints.Logger.Debug(ctx, err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'exercise_id' query parameter"})
-		return
-	}
-
-	// Query the database for the exercise goals
-	var exerciseGoals []databaseUtils.ExerciseGoal
-	err = DatabaseFlow.GetDB(ctx).
-		Model(&databaseUtils.ExerciseGoal{}).
-		Joins("JOIN exercise_rulesets ON exercise_goals.ruleset_id = exercise_rulesets.id").
-		Joins("JOIN exercises ON exercise_rulesets.exercise_id = exercises.id").
-		Where("exercise_rulesets.ruleset_year = ? AND exercise_rulesets.exercise_id = ?", strconv.Itoa(int(year)), strconv.Itoa(int(exerciseId))).
-		Find(&exerciseGoals).
-		Error
-	if errors.Is(err, gorm.ErrRecordNotFound) || len(exerciseGoals) == 0 {
-		endpoints.Logger.Debug(ctx, "Exercise goals not found")
-		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: fmt.Sprintf("Exercise goals not found for year: %d and exercise Id: %d", year, exerciseId)})
-		return
-	} else if err != nil {
-		err = errors.Wrap(err, "Failed to retrieve exercise goals")
-		endpoints.Logger.Error(ctx, err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to retrieve exercise goals"})
-		return
-	}
-
-	c.JSON(
-		http.StatusOK,
-		ExerciseGoalsResponse{
-			Message:       "Request successful",
-			ExerciseGoals: exerciseGoals,
 		},
 	)
 }
