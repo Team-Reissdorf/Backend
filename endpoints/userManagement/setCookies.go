@@ -1,9 +1,10 @@
 package userManagement
 
 import (
+	"net/http"
+
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // SetCookies sets access and refresh tokens as cookies.
@@ -34,7 +35,7 @@ func createCookie(cookieTokenType authHelper.TokenType, cookieJwt, cookiePath st
 		Name:     string(cookieTokenType),
 		Value:    cookieJwt,
 		Path:     cookiePath,
-		Domain:   domain,
+		Domain:   "localhost",
 		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
