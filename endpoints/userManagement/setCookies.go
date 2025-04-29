@@ -35,7 +35,7 @@ func createCookie(cookieTokenType authHelper.TokenType, cookieJwt, cookiePath st
 		Name:     string(cookieTokenType),
 		Value:    cookieJwt,
 		Path:     cookiePath,
-		Domain:   "localhost",
+		Domain:   domain,
 		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
