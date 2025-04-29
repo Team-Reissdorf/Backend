@@ -23,10 +23,10 @@ func init() {
 		endpoints.Logger.Fatal(ctx, "Failed to load environment variables")
 	}
 
-	// Get the domain name for the cookies
-	domain = os.Getenv("DOMAIN")
+	// Get the COOKIE_SOURCE_DOMAIN name
+	domain = os.Getenv("COOKIE_SOURCE_DOMAIN")
 	if domain == "" {
-		err := errors.New("DOMAIN not set, using default")
+		err := errors.New("COOKIE_SOURCE_DOMAIN not set, using default")
 		endpoints.Logger.Error(ctx, err)
 		domain = "localhost"
 	}
