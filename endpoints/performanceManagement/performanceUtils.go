@@ -20,9 +20,12 @@ const (
 )
 
 // Checks if an exercise goal exists for a given athlete's age and exercise in a specific year
-func exerciseGoalExistsForAge(ctx context.Context, tx *gorm.DB, exerciseId uint, age int, year string) (bool, error) {
+func exerciseGoalExistsForAge(ctx context.Context, exerciseId uint, age int, year string) (bool, error) {
+	// Call Singleton-Database
+	db := DatabaseFlow.GetDB(ctx)
+
 	var count int64
-	err := tx.Model(&databaseUtils.ExerciseGoal{}).
+	err := db.Model(&databaseUtils.ExerciseGoal{}).
 		Joins("JOIN exercise_rulesets ON exercise_goals.ruleset_id = exercise_rulesets.id").
 		Where("exercise_rulesets.exercise_id = ? AND exercise_rulesets.ruleset_year = ? AND exercise_goals.from_age <= ? AND exercise_goals.to_age >= ?", exerciseId, year, age, age).
 		Count(&count).
@@ -242,10 +245,10 @@ func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.
 	defer span.End()
 
 	// Calculate the age of the athlete
-	birthDate, err := formatHelper.FormatDate(performanceEntry.Athlete.BirthDate)
-	if err != nil {
-		err = errors.Wrap(err, "Failed to parse the birth date")
-		return err
+	birthDate, err3 := formatHelper.FormatDate(performanceEntry.Athlete.BirthDate)
+	if err3 != nil {
+		err3 = errors.Wrap(err3, "Failed to parse the birth date")
+		return err3
 	}
 	age, err := athleteManagement.CalculateAge(ctx, birthDate)
 	if err != nil {
@@ -253,13 +256,20 @@ func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.
 		return err
 	}
 
+	// Extract the date from the performance entry
+	performanceDate, err := time.Parse("2006-01-02", birthDate)
+	if err != nil {
+		err = errors.Wrap(err, "Failed to parse the date")
+		return err
+	}
+	performanceYear := strconv.Itoa(performanceDate.Year())
 	// Check if the exercise goal exists for the athlete's age
-	exists, err := exerciseGoalExistsForAge(ctx, DatabaseFlow.GetDB(ctx), performanceEntry.ExerciseId, age, strconv.Itoa(time.Now().Year()))
+	exists, err := exerciseGoalExistsForAge(ctx, performanceEntry.ExerciseId, age, performanceYear)
 	if err != nil {
 		return errors.Wrap(err, "Failed to check exercise goal")
 	}
 	if !exists {
-		return errors.New("No exercise goal found for the athlete's age")
+		return errors.New("Failed to find the exercise goal for the age of the athlete. Possible reasons: no matching goal exists, data inconsistency, or invalid Input.")
 	}
 
 	err1 := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
