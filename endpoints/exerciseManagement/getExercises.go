@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
@@ -15,12 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-<<<<<<< Updated upstream
-	"net/http"
-	"strconv"
-	"time"
-=======
->>>>>>> Stashed changes
 )
 
 type ExercisesResponse struct {

@@ -2,16 +2,15 @@ package athleteManagement
 
 import (
 	"encoding/csv"
-	"mime/multipart"
-	"net/http"
-	"strings"
-
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"mime/multipart"
+	"net/http"
+	"strings"
 )
 
 type AlreadyExistingAthletesResponse struct {
@@ -21,8 +20,8 @@ type AlreadyExistingAthletesResponse struct {
 
 var csvColumnCount = 5
 
-// CreateAthleteCSV bulk creates new athletes in the db from a cvs file
-// @Summary Bulk creates new athletes from cvs file
+// CreateAthleteCSV bulk creates new athletes in the db from a csv file
+// @Summary Bulk creates new athletes from CSV file
 // @Description Upload a CSV file to create multiple athlete profiles. If an athlete already exists, the process will continue, and the response will indicate which athletes already exist.
 // @Tags Athlete Management
 // @Accept multipart/form-data
@@ -30,6 +29,7 @@ var csvColumnCount = 5
 // @Param Athletes formData file true "CSV file containing details of multiple athletes to create profiles"
 // @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
 // @Success 201 {object} AlreadyExistingAthletesResponse "Creation successful"
+// @Success 202 {object} AlreadyExistingAthletesResponse "Athletes already exist"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
@@ -136,8 +136,8 @@ func CreateAthleteCSV(c *gin.Context) {
 
 	// Write athletes to the db
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
-	if errors.Is(err1, NoNewAthletesError) {
-		endpoints.Logger.Debug(ctx, err1)
+	if errors.Is(err4, NoNewAthletesError) {
+		endpoints.Logger.Debug(ctx, err4)
 		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
 	} else if err4 != nil {

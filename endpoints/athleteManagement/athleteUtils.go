@@ -2,6 +2,7 @@ package athleteManagement
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -291,19 +292,6 @@ func CalculateAge(ctx context.Context, birthDate string) (int, error) {
 	}
 	return age, nil
 }
-
-package athleteManagement
-
-import (
-    "context"
-    "fmt"
-    "strings"
-
-    "github.com/Team-Reissdorf/Backend/databaseUtils"
-    "github.com/Team-Reissdorf/Backend/endpoints"
-    "github.com/LucaSchmitz2003/DatabaseFlow"
-    "gorm.io/gorm"
-)
 
 // GetAthleteByDetails sucht einen Athleten per Vorname, Nachname, Geburtsdatum („YYYY-MM-DD“) 
 // und Trainer-Email. Gibt (*Athlete, nil) oder (nil, Err) zurück.
