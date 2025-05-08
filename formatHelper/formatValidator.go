@@ -2,12 +2,16 @@ package formatHelper
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/endpoints"
-	"github.com/pkg/errors"
+	"fmt"
 	"net/mail"
 	"regexp"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -125,5 +129,44 @@ func IsEmpty(bodyPart string) error {
 	if len(bodyPart) == 0 {
 		return EmptyStringError
 	}
+	return nil
+}
+
+// IsDuration prüft, ob s eine gültige Zeitdauer im Format MM:SS oder HH:MM:SS ist.
+// Beispiele gültig: "03:25", "3:5", "01:03:25", "1:3:5"
+// Minuten und Sekunden müssen dabei 0–59 sein.
+func IsDuration(s string) error {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return fmt.Errorf("empty duration")
+	}
+
+	parts := strings.Split(s, ":")
+	if len(parts) < 2 || len(parts) > 3 {
+		return fmt.Errorf("duration must be MM:SS or HH:MM:SS")
+	}
+
+	// Überprüfe jedes Segment
+	for i, seg := range parts {
+		if seg == "" {
+			return fmt.Errorf("empty segment in duration")
+		}
+		n, err := strconv.Atoi(seg)
+		if err != nil {
+			return fmt.Errorf("duration contains non-numeric segment: %q", seg)
+		}
+		// Nur die letzten beiden Segmente (Minuten, Sekunden) brauchen 0–59-Range
+		if i >= len(parts)-2 {
+			if n < 0 || n > 59 {
+				return fmt.Errorf("minutes/seconds out of range: %d", n)
+			}
+		} else {
+			// Stunden dürfen >= 0 sein (kein Upper-Bound)
+			if n < 0 {
+				return fmt.Errorf("hours cannot be negative: %d", n)
+			}
+		}
+	}
+
 	return nil
 }

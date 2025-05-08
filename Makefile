@@ -3,7 +3,6 @@ BUILD_DIR=./build/
 SWAG_BIN=$(shell go env GOPATH)/bin/swag
 
 build_run: build swag start
-build_with_swag: build swag
 
 start:
 	./build/${BINARY_NAME}
@@ -15,12 +14,12 @@ swag: swag-install
 	$(SWAG_BIN) init
 
 swag-install:
-	@if ! [ -x "$(SWAG_BIN)" ]; then \
-		echo "swag not found, installing..."; \
-		go install github.com/swaggo/swag/cmd/swag@latest; \
-	fi
+	if not exist "$(SWAG_BIN)" ( \
+		echo swag not found, installing... & \
+		go install github.com/swaggo/swag/cmd/swag@latest \
+	)
 
 clean:
 	go clean
-	-rm -rf ./docs
-	-rm -rf ./build
+	-if exist docs rmdir /S /Q docs
+	-if exist build rmdir /S /Q build

@@ -291,3 +291,49 @@ func CalculateAge(ctx context.Context, birthDate string) (int, error) {
 	}
 	return age, nil
 }
+
+package athleteManagement
+
+import (
+    "context"
+    "fmt"
+    "strings"
+
+    "github.com/Team-Reissdorf/Backend/databaseUtils"
+    "github.com/Team-Reissdorf/Backend/endpoints"
+    "github.com/LucaSchmitz2003/DatabaseFlow"
+    "gorm.io/gorm"
+)
+
+// GetAthleteByDetails sucht einen Athleten per Vorname, Nachname, Geburtsdatum („YYYY-MM-DD“) 
+// und Trainer-Email. Gibt (*Athlete, nil) oder (nil, Err) zurück.
+func GetAthleteByDetails(
+    ctx context.Context,
+    firstName, lastName, birthDate, trainerEmail string,
+) (*databaseUtils.Athlete, error) {
+    _, span := endpoints.Tracer.Start(ctx, "GetAthleteByDetails")
+    defer span.End()
+
+    // normalize inputs
+    fn := strings.ToLower(strings.TrimSpace(firstName))
+    ln := strings.ToLower(strings.TrimSpace(lastName))
+    te := strings.ToLower(strings.TrimSpace(trainerEmail))
+
+    var athlete databaseUtils.Athlete
+    err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+        return tx.
+            Where("lower(first_name) = ? AND lower(last_name) = ? AND birth_date = ? AND trainer_email = ?", fn, ln, birthDate, te).
+            First(&athlete).
+            Error
+    })
+
+    if err != nil {
+        if err == gorm.ErrRecordNotFound {
+            return nil, fmt.Errorf("athlete not found")
+        }
+        return nil, err
+    }
+
+    return &athlete, nil
+}
+
