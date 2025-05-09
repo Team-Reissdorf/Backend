@@ -2,15 +2,16 @@ package athleteManagement
 
 import (
 	"encoding/csv"
+	"mime/multipart"
+	"net/http"
+	"strings"
+
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"mime/multipart"
-	"net/http"
-	"strings"
 )
 
 type AlreadyExistingAthletesResponse struct {
@@ -78,6 +79,7 @@ func CreateAthleteCVS(c *gin.Context) {
 
 	// Read the CSV file
 	reader := csv.NewReader(fileContent)
+	reader.Comma = ';'
 	records, err3 := reader.ReadAll()
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to read csv. Invalid CSV format?")
@@ -106,6 +108,15 @@ func CreateAthleteCVS(c *gin.Context) {
 			Email:        record[2],
 			TrainerEmail: trainerEmail,
 		}
+		// This is for a design issue revolving the date format in the csv file
+		// The date format in the csv file is dd.mm.yyyy
+		// The date format in the db is yyyy-mm-dd
+		// So we need to convert the date format from dd.mm.yyyy to yyyy-mm-dd
+		// Instead of using strings, we should use a date format library like time which we already use in the rest of the code
+		if formatHelper.IsDate(athlete.BirthDate) == formatHelper.DateFormatInvalidError {
+			athlete.BirthDate = athlete.BirthDate[6:10] + "-" + athlete.BirthDate[3:5] + "-" + athlete.BirthDate[0:2]
+		}
+
 		athleteEntries = append(athleteEntries, athlete)
 
 		// Validate the athlete body

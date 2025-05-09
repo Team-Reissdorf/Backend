@@ -2,17 +2,19 @@ package formatHelper
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/endpoints"
-	"github.com/pkg/errors"
+	"log"
 	"net/mail"
 	"regexp"
 	"slices"
 	"time"
+
+	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/pkg/errors"
 )
 
 const (
 	localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
-	dateFormatCheckRegexString = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+	dateFormatCheckRegexString = "^\\d{4}\\-[0-1][0-9]\\-[0-3][0-9]$"
 )
 
 var (
@@ -73,6 +75,7 @@ func IsEmail(email string) error {
 // Throws: DateFormatInvalidError
 func IsDate(date string) error {
 	// Check if the date format matches
+	log.Println("Parsed date:", date)
 	if !dateFormatCheckRegex.MatchString(date) {
 		return DateFormatInvalidError
 	}
