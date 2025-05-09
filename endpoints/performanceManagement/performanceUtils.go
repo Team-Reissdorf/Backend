@@ -247,17 +247,19 @@ func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.
 	// Calculate the age of the athlete
 	birthDate, err3 := formatHelper.FormatDate(performanceEntry.Athlete.BirthDate)
 	if err3 != nil {
+		endpoints.Logger.Debug(ctx, "Date Formatter not working..."+err3.Error())
 		err3 = errors.Wrap(err3, "Failed to parse the birth date")
 		return err3
 	}
 	age, err := athleteManagement.CalculateAge(ctx, birthDate)
 	if err != nil {
+		endpoints.Logger.Debug(ctx, "Age Calculator not working...")
 		err = errors.Wrap(err, "Failed to calculate the age of the athlete")
 		return err
 	}
 
 	// Extract the date from the performance entry
-	performanceDate, err := time.Parse("2006-01-02", birthDate)
+	performanceDate, err := time.Parse("2006-01-02", performanceEntry.Date)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to parse the date")
 		return err
