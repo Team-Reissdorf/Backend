@@ -1,9 +1,10 @@
 package userManagement
 
 import (
+	"net/http"
+
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // SetCookies sets access and refresh tokens as cookies.
