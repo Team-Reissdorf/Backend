@@ -2,7 +2,7 @@ package formatHelper
 
 import (
 	"context"
-	"errors"
+
 	"fmt"
 	"net/mail"
 	"regexp"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Team-Reissdorf/Backend/endpoints"
+	"github.com/pkg/errors"
 )
 
 const (
