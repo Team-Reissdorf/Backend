@@ -114,7 +114,9 @@ func CreateAthleteCVS(c *gin.Context) {
 		// So we need to convert the date format from dd.mm.yyyy to yyyy-mm-dd
 		// Instead of using strings, we should use a date format library like time which we already use in the rest of the code
 		if formatHelper.IsDate(athlete.BirthDate) == formatHelper.DateFormatInvalidError {
-			athlete.BirthDate = athlete.BirthDate[6:10] + "-" + athlete.BirthDate[3:5] + "-" + athlete.BirthDate[0:2]
+			if len(athlete.BirthDate) == 10 {
+				athlete.BirthDate = athlete.BirthDate[6:10] + "-" + athlete.BirthDate[3:5] + "-" + athlete.BirthDate[0:2]
+			}
 		}
 
 		athleteEntries = append(athleteEntries, athlete)
