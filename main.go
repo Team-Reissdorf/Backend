@@ -19,8 +19,11 @@ package main
 
 import (
 	"context"
+	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"os"
 	"strconv"
+
+	"github.com/Team-Reissdorf/Backend/setup"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowServer"
@@ -34,6 +37,7 @@ import (
 	"github.com/Team-Reissdorf/Backend/endpoints/exerciseManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/performanceManagement"
 	"github.com/Team-Reissdorf/Backend/endpoints/ping"
+	"github.com/Team-Reissdorf/Backend/endpoints/swimCertificate"
 	"github.com/Team-Reissdorf/Backend/endpoints/userManagement"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -86,6 +90,7 @@ func init() {
 		databaseUtils.Ruleset{},
 		databaseUtils.ExerciseGoal{},
 		databaseUtils.Performance{},
+		databaseUtils.SwimCertificate{},
 	)
 	DatabaseFlow.GetDB(ctx) // Initialize the database connection
 
@@ -112,6 +117,9 @@ func main() {
 	defer keepAlive()
 
 	// ...
+
+	// Create standard disciplines in the database on startup
+	setup.CreateStandardDisciplines(ctx)
 }
 
 func defineRoutes(ctx context.Context, router *gin.Engine) {
@@ -151,8 +159,10 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		performance := v1.Group("/performance", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			performance.POST("/create", performanceManagement.CreatePerformance)
+			performance.POST("/export", performanceManagement.ExportPerformances)
+			performance.POST("/bulk-create", performanceManagement.BulkCreatePerformanceEntries)
 			performance.GET("/get-latest/:AthleteId", performanceManagement.GetLatestPerformanceEntry)
-			performance.GET("/get-all/:AthleteId", performanceManagement.GetPerformanceEntries)
+			performance.GET("/get/:AthleteId", performanceManagement.GetPerformanceEntries)
 			performance.PUT("/edit", performanceManagement.EditPerformanceEntry)
 		}
 
@@ -164,6 +174,18 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		exercise := v1.Group("/exercise", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			exercise.GET("/get/:DisciplineName", exerciseManagement.GetExercisesOfDiscipline)
+		}
+
+		swimCert := v1.Group("/swimCertificate", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			swimCert.POST("/create/:AthleteId", swimCertificate.CreateSwimCertificate)
+			swimCert.GET("/download-all/:AthleteId", swimCertificate.DownloadAllSwimCertificates)
+		}
+
+		ruleset := v1.Group("/ruleset", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
+		{
+			ruleset.POST("/create", rulesetManagement.CreateRuleset)
+			ruleset.GET("/get", rulesetManagement.GetRulesets)
 		}
 	}
 }
