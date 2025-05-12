@@ -2,7 +2,6 @@ package formatHelper
 
 import (
 	"context"
-	"log"
 	"net/mail"
 	"regexp"
 	"slices"
@@ -75,7 +74,6 @@ func IsEmail(email string) error {
 // Throws: DateFormatInvalidError
 func IsDate(date string) error {
 	// Check if the date format matches
-	log.Println("Parsed date:", date)
 	if !dateFormatCheckRegex.MatchString(date) {
 		return DateFormatInvalidError
 	}
