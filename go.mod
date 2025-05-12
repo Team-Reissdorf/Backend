@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
-	github.com/swaggo/swag v1.16.4 // indirect
+	github.com/swaggo/swag v1.16.4 
 	go.opentelemetry.io/otel v1.35.0
 	golang.org/x/crypto v0.37.0
 	gorm.io/gorm v1.25.12
