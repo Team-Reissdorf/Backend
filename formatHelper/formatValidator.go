@@ -2,6 +2,7 @@ package formatHelper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/mail"
 	"regexp"
@@ -11,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Team-Reissdorf/Backend/endpoints"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -169,4 +169,115 @@ func IsDuration(s string) error {
 	}
 
 	return nil
+}
+
+// FormatToMilliseconds converts a time string like "03:25" or "1:02:30" into milliseconds.
+func FormatToMilliseconds(input string) (int, error) {
+	parts := strings.Split(input, ":")
+	var totalMs int
+
+	switch len(parts) {
+	case 2: // mm:ss
+		min, err1 := strconv.Atoi(parts[0])
+		sec, err2 := strconv.Atoi(parts[1])
+		if err1 != nil || err2 != nil {
+			return -1, errors.New("invalid time format (mm:ss)")
+		}
+		totalMs = (min*60 + sec) * 1000
+
+	case 3: // hh:mm:ss
+		hour, err1 := strconv.Atoi(parts[0])
+		min, err2 := strconv.Atoi(parts[1])
+		sec, err3 := strconv.Atoi(parts[2])
+		if err1 != nil || err2 != nil || err3 != nil {
+			return -1, errors.New("invalid time format (hh:mm:ss)")
+		}
+		totalMs = (hour*3600 + min*60 + sec) * 1000
+
+	default:
+		return -1, errors.New("unsupported time format")
+	}
+
+	return totalMs, nil
+}
+
+// FormatToCentimeters converts inputs like "2.40 m" or "800 m" into centimeters as string.
+func FormatToCentimeters(input string) (int, error) {
+	input = strings.TrimSpace(strings.ToLower(input))
+
+	// Match format: "<value> m" (z. B. "2.40 m" oder "800 m")
+	re := regexp.MustCompile(`^([\d.,]+)\s*m$`)
+	matches := re.FindStringSubmatch(input)
+	if len(matches) != 2 {
+		return -1, errors.New("invalid format: expected number followed by 'm'")
+	}
+
+	// Replace , with .
+	numericPart := strings.ReplaceAll(matches[1], ",", ".")
+
+	// Parse float meters -> int centimeters
+	meters, err := strconv.ParseFloat(numericPart, 64)
+	if err != nil {
+		return -1, errors.New("invalid number format for meters")
+	}
+	cm := int(meters * 100)
+	return cm, nil
+}
+
+// NormalizeResult standardizes the result into ms or cm depending on the unit.
+func NormalizeResult(raw string, unit string) (int, error) {
+	unit = strings.ToLower(strings.TrimSpace(unit))
+
+	switch unit {
+	case "sekunden", "s", "second", "seconds":
+		ms, err := FormatToMilliseconds(raw)
+		if err != nil {
+			return 0, errors.New("failed to normalize time")
+		}
+		return ms, nil
+
+	case "minute", "minuten", "min":
+		ms, err := FormatToMilliseconds(raw)
+		if err != nil {
+			return 0, errors.New("failed to normalize time")
+		}
+		return ms, nil
+
+	case "meter", "m":
+		cm, err := FormatToCentimeters(raw)
+		if err != nil {
+			return 0, errors.New("failed to normalize distance")
+		}
+		return cm, nil
+
+	case "zentimeter", "cm":
+		val, err := strconv.Atoi(raw)
+		if err != nil {
+			return 0, errors.New("invalid centimeter value")
+		}
+		return val, nil
+
+	case "bool", "boolean":
+		normalized := strings.ToLower(strings.TrimSpace(raw))
+		if normalized == "ja" || normalized == "true" || normalized == "yes" {
+			return 1, nil
+		} else if normalized == "nein" || normalized == "false" || normalized == "no" {
+			return 0, nil
+		}
+		return 0, errors.New("invalid boolean value")
+
+	case "punkte", "points", "int":
+		val, err := strconv.Atoi(raw)
+		if err != nil {
+			return 0, errors.New("invalid points value")
+		}
+		return val, nil
+
+	default:
+		val, err := strconv.Atoi(raw)
+		if err != nil {
+			return 0, errors.New("unknown unit and failed to parse as int")
+		}
+		return val, nil
+	}
 }
