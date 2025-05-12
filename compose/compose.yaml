@@ -23,18 +23,6 @@ services:
     networks:
       - competehub
 
-  frontend:
-    build:
-      context: ../Frontend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "8081:8081"
-    depends_on:
-      - api
-    networks:
-      - competehub
-
 networks:
   competehub:
     driver: bridge
