@@ -150,7 +150,7 @@ func defineRoutes(ctx context.Context, router *gin.Engine) {
 		athlete := v1.Group("/athlete", authHelper.GetAuthMiddlewareFor(authHelper.AccessToken))
 		{
 			athlete.POST("/create", athleteManagement.CreateAthlete)
-			athlete.POST("/bulk-create", athleteManagement.CreateAthleteCVS)
+			athlete.POST("/bulk-create", athleteManagement.CreateAthleteCSV)
 			athlete.GET("/get-all", athleteManagement.GetAllAthletes)
 			athlete.GET("/get/:AthleteId", athleteManagement.GetAthleteByID)
 			athlete.PUT("/edit", athleteManagement.EditAthlete)
