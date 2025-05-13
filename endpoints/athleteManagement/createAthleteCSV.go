@@ -33,7 +33,6 @@ var csvColumnCount = 5
 // @Success 202 {object} AlreadyExistingAthletesResponse "Athletes already exist"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
-// @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/bulk-create [post]
 func CreateAthleteCSV(c *gin.Context) {
