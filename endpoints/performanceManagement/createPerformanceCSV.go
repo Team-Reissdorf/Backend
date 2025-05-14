@@ -2,10 +2,11 @@ package performanceManagement
 
 import (
 	"encoding/csv"
-	"github.com/LucaSchmitz2003/FlowWatch"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/LucaSchmitz2003/FlowWatch"
 
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -29,7 +30,7 @@ type FailedPerformanceEntry struct {
 	Reason string `json:"reason" example:"Invalid athlete ID"`
 }
 
-var csvColumnCount = 12
+var csvColumnCount = 10
 
 // BulkCreatePerformanceEntries allows bulk creation of performance entries from a CSV file
 // @Summary      Bulk create performance entries from CSV
@@ -127,6 +128,17 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		}
 
 		// validate date
+		// This is for a design issue revolving the date format in the csv file
+		// The date format in the csv file is dd.mm.yyyy
+		// The date format in the db is yyyy-mm-dd
+		// So we need to convert the date format from dd.mm.yyyy to yyyy-mm-dd
+		// Instead of using strings, we should use a date format library like time which we already use in the rest of the code
+		if errors.Is(formatHelper.IsDate(performanceDate), formatHelper.DateFormatInvalidError) {
+			if len(performanceDate) == 10 {
+				performanceDate = performanceDate[6:10] + "-" + performanceDate[3:5] + "-" + performanceDate[0:2]
+			}
+		}
+
 		if err6 := formatHelper.IsDate(performanceDate); err6 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse date", err6)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid date"})
@@ -146,6 +158,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 			continue
 		}
 
+		// TODO: Check
 		// validate result   -> ...
 		if err9 := formatHelper.IsDuration(resultRaw); err9 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to validate result", err9)
@@ -203,7 +216,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 
 	//  error: no entries
 	if len(performanceEntries) == 0 {
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "All entries failed"})
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No entries found"})
 		return
 	}
 
