@@ -2,6 +2,7 @@ package performanceManagement
 
 import (
 	"encoding/csv"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"net/http"
 	"strconv"
 	"strings"
@@ -112,6 +113,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// parse birthYear
 		_, err4 := strconv.Atoi(birthYearStr)
 		if err4 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse birth year", err4)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid birthyear"})
 			continue
 		}
@@ -119,29 +121,34 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// find exercise
 		exercise, err5 := exerciseManagement.GetExerciseByNameAndDiscipline(ctx, exerciseName, category)
 		if err5 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to get exercise", err5)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Exercise not found"})
 			continue
 		}
 
 		// validate date
 		if err6 := formatHelper.IsDate(performanceDate); err6 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse date", err6)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid date"})
 			continue
 		}
 
 		if err7 := formatHelper.IsFuture(performanceDate); err7 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to check future", err7)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid date. Date is in the future"})
 			continue
 		}
 
 		// validate gender
 		if err8 := formatHelper.IsSex(gender); err8 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse gender", err8)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid gender"})
 			continue
 		}
 
 		// validate result   -> ...
 		if err9 := formatHelper.IsDuration(resultRaw); err9 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to validate result", err9)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid result format"})
 			continue
 		}
@@ -149,6 +156,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// normalize units
 		normalizedResult, err10 := formatHelper.NormalizeResult(resultRaw, exercise.Unit)
 		if err10 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to normalize result", err10)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Failed to normalize result"})
 			continue
 		}
@@ -156,6 +164,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// parse points
 		_, err11 := strconv.Atoi(pointsStr)
 		if err11 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse points", err11)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid points"})
 			continue
 		}
@@ -163,6 +172,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// find athlete
 		athlete, err12 := athleteManagement.GetAthleteByDetails(ctx, firstName, lastName, birthDateRaw, trainerEmail)
 		if err12 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to get athlete by details", err12)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Athlete not found"})
 			continue
 		}
@@ -170,12 +180,14 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// calculate age
 		age, err13 := athleteManagement.CalculateAge(ctx, birthDateRaw)
 		if err13 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to calculate age", err13)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Age could not be calculated"})
 			continue
 		}
 
 		medalStatus, err14 := evaluateMedalStatus(ctx, exercise.ID, performanceDate, age, athlete.Sex, uint64(normalizedResult))
 		if err14 != nil {
+			FlowWatch.GetLogHelper().Debug(ctx, "Failed to evaluate result", err14)
 			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Could not evaluate medal status"})
 			continue
 		}
