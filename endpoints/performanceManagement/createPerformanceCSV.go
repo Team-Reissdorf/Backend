@@ -56,13 +56,13 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		return
 	}
 	// Check MIME type
-    fileHeader := f.Header.Get("Content-Type")
-    if !strings.HasPrefix(fileHeader, "text/csv") && !strings.HasPrefix(fileHeader, "application/vnd.ms-excel") {
-        err := errors.New("Invalid file type, only CSV files are allowed")
-        endpoints.Logger.Debug(ctx, err)
-        c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-        return
-    }
+	fileHeader := f.Header.Get("Content-Type")
+	if !strings.HasPrefix(fileHeader, "text/csv") && !strings.HasPrefix(fileHeader, "application/vnd.ms-excel") {
+		err := errors.New("Invalid file type, only CSV files are allowed")
+		endpoints.Logger.Debug(ctx, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
+		return
+	}
 
 	infile, err2 := f.Open()
 	if err2 != nil {
@@ -98,18 +98,16 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		}
 
 		// read all fields
-		_ = strings.TrimSpace(rec[0]) // External ID (ignored)
-		lastName := strings.TrimSpace(rec[1])
-		firstName := strings.TrimSpace(rec[2])
-		gender := strings.TrimSpace(rec[3])
-		birthYearStr := strings.TrimSpace(rec[4])
-		birthDateRaw := strings.TrimSpace(rec[5])
-		exerciseName := strings.TrimSpace(rec[6])
-		category := strings.TrimSpace(rec[7])
-		performanceDate := strings.TrimSpace(rec[8])
-		resultRaw := strings.TrimSpace(rec[9])
-		pointsStr := strings.TrimSpace(rec[10])
-		_ = strings.TrimSpace(rec[11]) // DBS (ignored)
+		lastName := strings.TrimSpace(rec[0])
+		firstName := strings.TrimSpace(rec[1])
+		gender := strings.TrimSpace(rec[2])
+		birthYearStr := strings.TrimSpace(rec[3])
+		birthDateRaw := strings.TrimSpace(rec[4])
+		exerciseName := strings.TrimSpace(rec[5])
+		category := strings.TrimSpace(rec[6])
+		performanceDate := strings.TrimSpace(rec[7])
+		resultRaw := strings.TrimSpace(rec[8])
+		pointsStr := strings.TrimSpace(rec[9])
 
 		// parse birthYear
 		_, err4 := strconv.Atoi(birthYearStr)
