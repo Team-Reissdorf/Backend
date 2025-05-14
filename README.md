@@ -8,7 +8,7 @@
 docker run -d \
   --name ComPeteHub \
   -e POSTGRES_USER=Speimanes \
-  -e POSTGRES_PASSWORD='H8^e8jBuiJj3kZxJ4$M8s6r9GLsLRk*F^mEVv!QpcQgkjU%6w6NXHVq@WiRBdxM4H8Qq56tvY!L4C%KT7FAZ3z^w62qbQPhtjLC%ujUHeaDo8UrXcQAu2w9246RciduA' \
+  -e POSTGRES_PASSWORD='awadoihap9dz929PZIGDAWHDPWAIU6wad' \
   -e POSTGRES_DB=ComPeteHub \
   -p 5432:5432 \
   docker.io/postgres:latest
@@ -19,7 +19,7 @@ docker run -d \
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_USERNAME=Speimanes
-DB_PASSWORD='H8^e8jBuiJj3kZxJ4$M8s6r9GLsLRk*F^mEVv!QpcQgkjU%6w6NXHVq@WiRBdxM4H8Qq56tvY!L4C%KT7FAZ3z^w62qbQPhtjLC%ujUHeaDo8UrXcQAu2w9246RciduA'
+DB_PASSWORD='awadoihap9dz929PZIGDAWHDPWAIU6wad'
 DB_NAME=ComPeteHub
 TZ=Europe/Berlin
 DB_SSL_MODE=false
