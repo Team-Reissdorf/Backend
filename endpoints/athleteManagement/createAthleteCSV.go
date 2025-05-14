@@ -21,8 +21,8 @@ type AlreadyExistingAthletesResponse struct {
 
 var csvColumnCount = 5
 
-// CreateAthleteCVS bulk creates new athletes in the db from a csv file
-// @Summary Bulk creates new athletes from cvs file
+// CreateAthleteCSV bulk creates new athletes in the db from a csv file
+// @Summary Bulk creates new athletes from csv file
 // @Description Upload a CSV file to create multiple athlete profiles. If an athlete already exists, the process will continue, and the response will indicate which athletes already exist.
 // @Tags Athlete Management
 // @Accept multipart/form-data
@@ -36,7 +36,7 @@ var csvColumnCount = 5
 // @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/bulk-create [post]
-func CreateAthleteCVS(c *gin.Context) {
+func CreateAthleteCSV(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "CreateMultipleAthletes")
 	defer span.End()
 
@@ -151,7 +151,7 @@ func CreateAthleteCVS(c *gin.Context) {
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
 	if errors.Is(err4, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err4)
-		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
+		c.AbortWithStatusJSON(http.StatusConflict, AlreadyExistingAthletesResponse{Message: "No new Athletes", AlreadyExistingAthletes: athleteEntries})
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
