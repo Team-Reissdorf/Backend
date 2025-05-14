@@ -21,8 +21,8 @@ type AlreadyExistingAthletesResponse struct {
 
 var csvColumnCount = 5
 
-// CreateAthleteCSV bulk creates new athletes in the db from a csv file
-// @Summary Bulk creates new athletes from csv file
+// CreateAthleteCVS bulk creates new athletes in the db from a csv file
+// @Summary Bulk creates new athletes from cvs file
 // @Description Upload a CSV file to create multiple athlete profiles. If an athlete already exists, the process will continue, and the response will indicate which athletes already exist.
 // @Tags Athlete Management
 // @Accept multipart/form-data
@@ -33,9 +33,10 @@ var csvColumnCount = 5
 // @Success 202 {object} AlreadyExistingAthletesResponse "Athletes already exist"
 // @Failure 400 {object} endpoints.ErrorResponse "Invalid request body"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
+// @Failure 409 {object} endpoints.ErrorResponse "All athletes already exist; none have been created"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
 // @Router /v1/athlete/bulk-create [post]
-func CreateAthleteCSV(c *gin.Context) {
+func CreateAthleteCVS(c *gin.Context) {
 	ctx, span := endpoints.Tracer.Start(c.Request.Context(), "CreateMultipleAthletes")
 	defer span.End()
 
@@ -150,7 +151,7 @@ func CreateAthleteCSV(c *gin.Context) {
 	err4, alreadyExistingAthletes := createNewAthletes(ctx, athleteEntries)
 	if errors.Is(err4, NoNewAthletesError) {
 		endpoints.Logger.Debug(ctx, err4)
-		c.JSON(http.StatusAccepted, AlreadyExistingAthletesResponse{Message: "No new Athletes.", AlreadyExistingAthletes: nil})
+		c.AbortWithStatusJSON(http.StatusConflict, endpoints.ErrorResponse{Error: "No new Athletes"})
 		return
 	} else if err4 != nil {
 		err4 = errors.Wrap(err4, "Failed to create the athletes")
