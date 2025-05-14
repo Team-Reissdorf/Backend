@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
       - db
     networks:
@@ -19,15 +19,10 @@ services:
       - POSTGRES_PASSWORD=test123
       - POSTGRES_DB=ComPeteHub
     ports:
-      - 5432:5432
+      - "5432:5432"
     networks:
       - competehub
 
-#  debug:
-#    image: alpine:latest
-#    command: sleep infinity
-#    networks:
-#      - competehub
 networks:
   competehub:
     driver: bridge

@@ -3,6 +3,12 @@ package rulesetManagement
 import (
 	"encoding/csv"
 	"fmt"
+	"mime/multipart"
+	"net/http"
+	"strconv"
+	"strings"
+	"unicode"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -10,11 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"mime/multipart"
-	"net/http"
-	"strconv"
-	"strings"
-	"unicode"
 )
 
 var (
@@ -79,6 +80,7 @@ func CreateRuleset(c *gin.Context) {
 
 	// Read the CSV file
 	reader := csv.NewReader(fileContent)
+	reader.Comma = ';'
 	records, err3 := reader.ReadAll()
 	if err3 != nil {
 		err3 = errors.Wrap(err3, "Failed to read csv. Invalid CSV format?")

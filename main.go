@@ -19,9 +19,10 @@ package main
 
 import (
 	"context"
-	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"os"
 	"strconv"
+
+	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 
 	"github.com/Team-Reissdorf/Backend/setup"
 
@@ -106,7 +107,7 @@ func main() {
 
 	// Set frontend url as accepted origin for cors
 	acceptedOrigins := []string{
-		frontendUrl,
+		frontendUrl, "http://localhost:8080",
 	}
 
 	// Initialize the server

@@ -2,7 +2,6 @@ package formatHelper
 
 import (
 	"context"
-
 	"fmt"
 	"net/mail"
 	"regexp"
@@ -17,7 +16,7 @@ import (
 
 const (
 	localEmailCheckRegexString = ".*\\.[a-zA-Z]{2,}(\\.)?$"
-	dateFormatCheckRegexString = "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+	dateFormatCheckRegexString = "^\\d{4}\\-[0-1][0-9]\\-[0-3][0-9]$"
 )
 
 var (

@@ -2,6 +2,10 @@ package performanceManagement
 
 import (
 	"encoding/csv"
+	"net/http"
+	"sort"
+	"strconv"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -10,9 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"net/http"
-	"sort"
-	"strconv"
 )
 
 // ExportRequest defines the athlete IDs to be exported.
@@ -74,6 +75,7 @@ func ExportPerformances(c *gin.Context) {
 	c.Header("Content-Type", "text/csv")
 	c.Header("Content-Disposition", "attachment; filename=performances.csv")
 	w := csv.NewWriter(c.Writer)
+	w.Comma = ';'
 	defer w.Flush()
 
 	// Get the user id from the context
