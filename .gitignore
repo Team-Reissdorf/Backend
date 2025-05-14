@@ -1,0 +1,6 @@
+.env
+build
+docs
+.idea
+.vscode
+uploads
