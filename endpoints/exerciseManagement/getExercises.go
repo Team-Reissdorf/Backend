@@ -1,6 +1,11 @@
 package exerciseManagement
 
 import (
+	"context"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -11,9 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type ExercisesResponse struct {
@@ -196,4 +198,19 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 			Exercises: results,
 		},
 	)
+}
+
+func GetExerciseByNameAndDiscipline(ctx context.Context, name string, discipline string) (databaseUtils.Exercise, error) {
+	var exercise databaseUtils.Exercise
+
+	err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		return tx.Model(&databaseUtils.Exercise{}).
+			Where("name = ? AND discipline_name = ?", name, discipline).
+			First(&exercise).Error
+	})
+
+	if err != nil {
+		return databaseUtils.Exercise{}, errors.Wrap(err, "Exercise not found or DB error")
+	}
+	return exercise, nil
 }
