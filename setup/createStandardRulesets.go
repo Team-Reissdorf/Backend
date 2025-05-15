@@ -6,16 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
-	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
-	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"gorm.io/gorm"
 )
@@ -40,7 +37,7 @@ func CreateStandardRulesets(ctx context.Context) {
 		}
 
 		for _, set := range rulesets {
-			err := write_db(set)
+			err := write_db(set, ctx)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -113,7 +110,6 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		Count(&rulesetYearCount).
 		Error
 	if errA != nil {
-		errA := errors.Wrap(errA, "Failed to check the ruleset year")
 		return errA
 	}
 
@@ -126,10 +122,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 			return err
 		})
 		if errB != nil {
-			errB = errors.Wrap(errB, "Failed to create the ruleset year")
-			FlowWatch.GetLogHelper().Error(ctx, errB)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create the ruleset year: %s", ruleset.RulesetYear))
-			return
+			return errB
 		}
 	}
 
@@ -141,10 +134,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		Count(&disciplineCount).
 		Error
 	if errC != nil {
-		errC = errors.Wrap(errC, "Failed to check the discipline")
-		FlowWatch.GetLogHelper().Debug(ctx, errC)
-		c.AbortWithStatusJSON(http.StatusNotFound, fmt.Sprintf("Discipline does not exist: %s", disciplineName))
-		return
+		return errC
 	}
 
 	// Ensure the exercise exists
@@ -154,21 +144,16 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		Count(&exerciseCount).
 		Error
 	if errD != nil {
-		errD = errors.Wrap(errD, "Failed to check the exercise")
-		FlowWatch.GetLogHelper().Debug(ctx, errD)
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Exercise is invalid: %s", ruleset.ExerciseName))
-		return
+		return errD
 	}
 
 	// Create the exercise if needed
 	if exerciseCount == 0 {
 		// Validate the unit field
 		unit := strings.ToLower(ruleset.Unit)
-		if !contains(possibleUnits, unit) {
-			err := errors.New(fmt.Sprintf("Invalid unit in dataset %d", idx))
-			FlowWatch.GetLogHelper().Debug(ctx, err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
-			return
+		if !rulesetManagement.Contains(rulesetManagement.POSSIBLEUNITS, unit) {
+			err := errors.New(fmt.Sprintf("Invalid unit in dataset"))
+			return err
 		}
 
 		// Write exerciseCount to the database
@@ -183,9 +168,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 			return err
 		})
 		if errE != nil {
-			errE = errors.Wrap(errE, "Failed to create the exercise")
-			FlowWatch.GetLogHelper().Error(ctx, errE)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create exercise: %s", ruleset.ExerciseName))
+			return errE
 		}
 	}
 
@@ -196,10 +179,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		First(&exercise).
 		Error
 	if errF != nil {
-		errF = errors.Wrap(errF, "Failed to check the exercise")
-		FlowWatch.GetLogHelper().Error(ctx, errF)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Failed to get exercise: %s", ruleset.ExerciseName))
-		return
+		return errF
 	}
 
 	// Ensure the exercise ruleset exists
@@ -209,10 +189,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		Count(&exerciseRulesetCount).
 		Error
 	if errG != nil {
-		errG = errors.Wrap(errG, "Failed to check the ruleset")
-		FlowWatch.GetLogHelper().Debug(ctx, errG)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Failed to check the exercise ruleset"})
-		return
+		return errG
 	}
 
 	// Create the exercise ruleset if needed
@@ -228,10 +205,8 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		})
 		if errH != nil {
 			msg := fmt.Sprintf("Failed to create the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear)
-			errH = errors.Wrap(errH, msg)
-			FlowWatch.GetLogHelper().Debug(ctx, errH)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-			return
+			log.Println(msg)
+			return errH
 		}
 	}
 
@@ -242,10 +217,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		First(&exerciseRuleset).
 		Error
 	if errI != nil {
-		errI = errors.Wrap(errI, "Failed to get the ruleset")
-		FlowWatch.GetLogHelper().Error(ctx, errI)
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Failed to get the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear))
-		return
+		return errI
 	}
 
 	// Check if the exercise goal already exists
@@ -256,10 +228,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		Count(&exerciseGoalCount).
 		Error
 	if errJ != nil {
-		errJ = errors.Wrap(errJ, "Failed to check the exercise goal")
-		FlowWatch.GetLogHelper().Debug(ctx, errJ)
-		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Exercise goal is invalid: %s", ruleset.ExerciseName))
-		return
+		return errJ
 	}
 
 	// Create exercise goal if needed
@@ -282,10 +251,10 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		if errK != nil {
 			msg := fmt.Sprintf("Failed to create the exercise goal: %s - %s - %d - %d - %s",
 				ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
-			errK = errors.Wrap(errK, msg)
-			FlowWatch.GetLogHelper().Error(ctx, errK)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-			return
+
+			log.Println(msg)
+
+			return errK
 		}
 	} else if exerciseGoalCount > 0 { // Update existing exercise goal
 		errL := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
@@ -303,10 +272,12 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		if errL != nil {
 			msg := fmt.Sprintf("Failed to update the exercise goal: %s - %s - %d - %d - %s",
 				ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
-			errL = errors.Wrap(errL, msg)
-			FlowWatch.GetLogHelper().Error(ctx, errL)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: msg})
-			return
+
+			log.Println(msg)
+			return errL
 		}
 	}
+
+	// yup it all worked :)
+	return nil
 }

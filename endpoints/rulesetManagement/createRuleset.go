@@ -18,10 +18,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	possibleUnits = []string{"centimeter", "meter", "second", "minute", "bool", "point"}
-)
-
 // CreateRuleset creates new ruleset entries in the db from a csv file
 // @Summary Creates new ruleset entries from csv file
 // @Description Upload a CSV file to create multiple ruleset entries. Needs to contain 11 columns.
@@ -222,7 +218,7 @@ func CreateRuleset(c *gin.Context) {
 		if exerciseCount == 0 {
 			// Validate the unit field
 			unit := strings.ToLower(ruleset.Unit)
-			if !contains(possibleUnits, unit) {
+			if !contains(POSSIBLEUNITS, unit) {
 				err := errors.New(fmt.Sprintf("Invalid unit in dataset %d", idx))
 				FlowWatch.GetLogHelper().Debug(ctx, err)
 				c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
@@ -378,7 +374,7 @@ func CreateRuleset(c *gin.Context) {
 	)
 }
 
-func contains(slice []string, str string) bool {
+func Contains(slice []string, str string) bool {
 	for _, s := range slice {
 		if s == str {
 			return true
