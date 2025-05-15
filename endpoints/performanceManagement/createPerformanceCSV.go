@@ -38,7 +38,7 @@ var csvColumnCount = 10
 // @Tags         Performance
 // @Accept       multipart/form-data
 // @Produce      json
-// @Param        file  formData  file  true  "CSV file; must have extension .csv; columns: lastName;firstName;gender;birthYear;birthDate;exercise;category;date;result;points"
+// @Param        Performances  formData  file  true  "CSV file; must have extension .csv; columns: lastName;firstName;gender;birthYear;birthDate;exercise;category;date;result;points"
 // @Param        Authorization  header  string  false  "Bearer JWT token"
 // @Success      201  {object}  BulkCreatePerformanceResponse  "Bulk creation successful"
 // @Failure      400  {object}  endpoints.ErrorResponse  "Bad request: missing file / invalid CSV / wrong extension"
@@ -54,7 +54,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 	f, err1 := c.FormFile("Performances")
 	if err1 != nil {
 		endpoints.Logger.Debug(ctx, err1)
-		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File Field `file` in Request is missing"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "File Field `Performances` in Request is missing"})
 		return
 	}
 	// Check MIME type
@@ -111,7 +111,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		resultRaw := strings.TrimSpace(rec[8])
 		pointsStr := strings.TrimSpace(rec[9])
 
-		// parse birthYear
+		// parse birthYear 
 		_, err4 := strconv.Atoi(birthYearStr)
 		if err4 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse birth year", err4)
