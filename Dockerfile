@@ -16,6 +16,8 @@ COPY --from=builder /app/build/. /app/build/
 COPY .env.example .env
 COPY --from=builder /app/docs /app/docs
 
+COPY ./rulesets/*.csv /rulesets/
+
 EXPOSE 8080
 
 CMD ["./build/backend"]

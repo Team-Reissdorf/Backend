@@ -19,8 +19,7 @@ import (
 )
 
 var (
-	csvColumnCount = 11
-	possibleUnits  = []string{"centimeter", "meter", "second", "minute", "bool", "point"}
+	possibleUnits = []string{"centimeter", "meter", "second", "minute", "bool", "point"}
 )
 
 // CreateRuleset creates new ruleset entries in the db from a csv file
@@ -93,7 +92,7 @@ func CreateRuleset(c *gin.Context) {
 	var rulesets []RulesetBody
 	for _, record := range records {
 		// Ensure the column count is correct
-		if len(record) != csvColumnCount {
+		if len(record) != CSVCOLUMNCOUNT {
 			err := errors.New("Inconsistent number of columns in the CSV file")
 			endpoints.Logger.Debug(ctx, err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
@@ -193,7 +192,7 @@ func CreateRuleset(c *gin.Context) {
 		}
 
 		// Ensure the discipline exists
-		disciplineName := capitalizeFirst(ruleset.DisciplineName)
+		disciplineName := CapitalizeFirst(ruleset.DisciplineName)
 		var disciplineCount int64
 		errC := db.Model(&databaseUtils.Discipline{}).
 			Where("name = ?", disciplineName).
@@ -388,7 +387,7 @@ func contains(slice []string, str string) bool {
 	return false
 }
 
-func capitalizeFirst(s string) string {
+func CapitalizeFirst(s string) string {
 	if s == "" {
 		return s
 	}

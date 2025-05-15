@@ -1,5 +1,7 @@
 package rulesetManagement
 
+const CSVCOLUMNCOUNT = 11
+
 type RulesetBody struct {
 	RulesetYear    string `json:"ruleset_year"`
 	DisciplineName string `json:"discipline_name"`
