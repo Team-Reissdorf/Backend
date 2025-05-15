@@ -35,7 +35,7 @@ var csvColumnCount = 10
 // BulkCreatePerformanceEntries allows bulk creation of performance entries from a CSV file
 // @Summary      Bulk create performance entries from CSV
 // @Description  Upload a .csv file to bulk-create performance entries.
-// @Tags         Performance
+// @Tags         Performance Management
 // @Accept       multipart/form-data
 // @Produce      json
 // @Param        Performances  formData  file  true  "CSV file; must have extension .csv; columns: lastName;firstName;gender;birthYear;birthDate;exercise;category;date;result;points"
@@ -111,7 +111,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		resultRaw := strings.TrimSpace(rec[8])
 		pointsStr := strings.TrimSpace(rec[9])
 
-		// parse birthYear 
+		// parse birthYear
 		_, err4 := strconv.Atoi(birthYearStr)
 		if err4 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse birth year", err4)
