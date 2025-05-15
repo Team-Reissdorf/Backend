@@ -218,7 +218,7 @@ func CreateRuleset(c *gin.Context) {
 		if exerciseCount == 0 {
 			// Validate the unit field
 			unit := strings.ToLower(ruleset.Unit)
-			if !contains(POSSIBLEUNITS, unit) {
+			if !Contains(POSSIBLEUNITS, unit) {
 				err := errors.New(fmt.Sprintf("Invalid unit in dataset %d", idx))
 				FlowWatch.GetLogHelper().Debug(ctx, err)
 				c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
