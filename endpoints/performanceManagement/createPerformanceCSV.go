@@ -3,6 +3,7 @@ package performanceManagement
 import (
 	"encoding/csv"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -111,6 +112,8 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		resultRaw := strings.TrimSpace(rec[8])
 		pointsStr := strings.TrimSpace(rec[9])
 
+		FlowWatch.GetLogHelper().Debug(ctx, "Results are ", resultRaw)
+
 		// parse birthYear
 		_, err4 := strconv.Atoi(birthYearStr)
 		if err4 != nil {
@@ -160,10 +163,13 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 
 		// TODO: Check
 		// validate result   -> ...
-		if err9 := formatHelper.IsDuration(resultRaw); err9 != nil {
-			FlowWatch.GetLogHelper().Debug(ctx, "Failed to validate result", err9)
-			failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid result format"})
-			continue
+		time_units := []string{"second", "minute"}
+		if slices.Contains(time_units, exercise.Unit) {
+			if err9 := formatHelper.IsDuration(resultRaw); err9 != nil {
+				FlowWatch.GetLogHelper().Debug(ctx, "Failed to validate result", err9)
+				failedEntries = append(failedEntries, FailedPerformanceEntry{Row: rowNum, Reason: "Invalid result format"})
+				continue
+			}
 		}
 
 		// normalize units
@@ -190,6 +196,18 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 			continue
 		}
 
+		// validate date
+		// This is for a design issue revolving the date format in the csv file
+		// The date format in the csv file is dd.mm.yyyy
+		// The date format in the db is yyyy-mm-dd
+		// So we need to convert the date format from dd.mm.yyyy to yyyy-mm-dd
+		// Instead of using strings, we should use a date format library like time which we already use in the rest of the code
+		if errors.Is(formatHelper.IsDate(birthDateRaw), formatHelper.DateFormatInvalidError) {
+			if len(birthDateRaw) == 10 {
+				birthDateRaw = birthDateRaw[6:10] + "-" + birthDateRaw[3:5] + "-" + birthDateRaw[0:2]
+			}
+		}
+
 		// calculate age
 		age, err13 := athleteManagement.CalculateAge(ctx, birthDateRaw)
 		if err13 != nil {
@@ -212,6 +230,8 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 			Points:     uint64(normalizedResult),
 			Medal:      medalStatus,
 		})
+
+		FlowWatch.GetLogHelper().Debug(ctx, "Performance entry created", performanceEntries)
 	}
 
 	//  error: no entries

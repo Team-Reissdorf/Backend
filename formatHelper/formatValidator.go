@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/pkg/errors"
 )
@@ -137,6 +138,7 @@ func IsEmpty(bodyPart string) error {
 // Minuten und Sekunden müssen dabei 0–59 sein.
 func IsDuration(s string) error {
 	s = strings.TrimSpace(s)
+
 	if s == "" {
 		return fmt.Errorf("empty duration")
 	}
@@ -203,17 +205,17 @@ func FormatToMilliseconds(input string) (int, error) {
 
 // FormatToCentimeters converts inputs like "2.40 m" or "800 m" into centimeters as string.
 func FormatToCentimeters(input string) (int, error) {
-	input = strings.TrimSpace(strings.ToLower(input))
+	input = strings.TrimSpace(input)
 
 	// Match format: "<value> m" (z. B. "2.40 m" oder "800 m")
-	re := regexp.MustCompile(`^([\d.,]+)\s*m$`)
-	matches := re.FindStringSubmatch(input)
-	if len(matches) != 2 {
+	//re := regexp.MustCompile(`^([\d.,]+)\s*m$`)
+	//matches := re.FindStringSubmatch(input)
+	/*if len(matches) != 2 {
 		return -1, errors.New("invalid format: expected number followed by 'm'")
-	}
+	}*/
 
 	// Replace , with .
-	numericPart := strings.ReplaceAll(matches[1], ",", ".")
+	numericPart := strings.ReplaceAll(input, ",", ".")
 
 	// Parse float meters -> int centimeters
 	meters, err := strconv.ParseFloat(numericPart, 64)
@@ -226,38 +228,38 @@ func FormatToCentimeters(input string) (int, error) {
 
 // NormalizeResult standardizes the result into ms or cm depending on the unit.
 func NormalizeResult(raw string, unit string) (int, error) {
-	unit = strings.ToLower(strings.TrimSpace(unit))
+	FlowWatch.GetLogHelper().Debug(context.Background(), "Normal input", raw, unit)
 
 	switch unit {
-	case "sekunden", "s", "second", "seconds":
+	case "second":
 		ms, err := FormatToMilliseconds(raw)
 		if err != nil {
 			return 0, errors.New("failed to normalize time")
 		}
 		return ms, nil
 
-	case "minute", "minuten", "min":
+	case "minute":
 		ms, err := FormatToMilliseconds(raw)
 		if err != nil {
 			return 0, errors.New("failed to normalize time")
 		}
 		return ms, nil
 
-	case "meter", "m":
+	case "meter":
 		cm, err := FormatToCentimeters(raw)
 		if err != nil {
 			return 0, errors.New("failed to normalize distance")
 		}
 		return cm, nil
 
-	case "zentimeter", "cm":
+	case "centimeter":
 		val, err := strconv.Atoi(raw)
 		if err != nil {
 			return 0, errors.New("invalid centimeter value")
 		}
 		return val, nil
 
-	case "bool", "boolean":
+	case "bool":
 		normalized := strings.ToLower(strings.TrimSpace(raw))
 		if normalized == "ja" || normalized == "true" || normalized == "yes" {
 			return 1, nil
@@ -266,7 +268,7 @@ func NormalizeResult(raw string, unit string) (int, error) {
 		}
 		return 0, errors.New("invalid boolean value")
 
-	case "punkte", "points", "int":
+	case "points":
 		val, err := strconv.Atoi(raw)
 		if err != nil {
 			return 0, errors.New("invalid points value")
