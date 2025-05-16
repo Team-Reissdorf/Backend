@@ -189,6 +189,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		}
 
 		// find athlete
+		// TODO: check if the athlete exists bzw. if the function works
 		athlete, err12 := athleteManagement.GetAthleteByDetails(ctx, firstName, lastName, birthDateRaw, trainerEmail)
 		if err12 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to get athlete by details", err12)
