@@ -95,7 +95,7 @@ func getLatestPerformanceBody(ctx context.Context, athleteId uint) (*Performance
 
 // getBestPerformanceBodiesSince gets the best performance entries of each discipline of an athlete since the given date
 func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]PerformanceBodyWithId, error) {
-	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceBodiesSinceFromDB")
+	ctx, span := endpoints.Tracer.Start(ctx, "GetBestPerformanceBodiesSinceFromDB")
 	defer span.End()
 
 	db := DatabaseFlow.GetDB(ctx)
