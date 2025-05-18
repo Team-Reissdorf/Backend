@@ -101,15 +101,17 @@ func CreateAthleteCSV(c *gin.Context) {
 		}
 
 		// Normalize the sex attribute
-		sex := record[4][:1]
+		sex := record[4]
 		sex = strings.ToLower(sex)
+		sex = strings.TrimSpace(sex)
+		sex = sex[:1]
 		switch sex {
 		case "m", "f", "d":
 
 		case "w":
 			sex = "f"
 		default:
-			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", sex)
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", record[4][:1])
 			c.AbortWithStatusJSON(http.StatusBadRequest,
 				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", sex)})
 			return
