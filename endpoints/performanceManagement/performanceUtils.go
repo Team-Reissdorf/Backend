@@ -3,6 +3,7 @@ package performanceManagement
 import (
 	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -116,7 +117,7 @@ func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDat
 	for _, discipline := range disciplines {
 		var performanceBody PerformanceBodyWithId
 		err1 = db.Model(&databaseUtils.Performance{}).
-			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Select("performances.id AS performance_id, performances.points, exercises.unit AS unit, performances.medal, performances.date, performances.exercise_id, performances.athlete_id").
 			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
 			Where("athlete_id = ? AND exercises.discipline_name = ? AND performances.date > ?",
 				athleteId, discipline.Name, sinceDate).
@@ -130,7 +131,10 @@ func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDat
 			Limit(1).
 			First(&performanceBody).
 			Error
-		if err1 != nil {
+		if errors.Is(err1, gorm.ErrRecordNotFound) {
+			// Skip if no entry could be found for this discipline
+			continue
+		} else if err1 != nil {
 			err1 = errors.Wrap(err1, "Failed to get the performance entries since "+sinceDate)
 			return nil, err1
 		}
@@ -143,6 +147,7 @@ func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDat
 		var err2 error
 		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
 		if err2 != nil {
+			FlowWatch.GetLogHelper().Fatal(ctx, performanceBody, idx)
 			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
 			return nil, err2
 		}
