@@ -100,11 +100,18 @@ func CreateAthleteCSV(c *gin.Context) {
 			return
 		}
 
-		// Normalize the sex attribute
-		sex := record[4]
-		sex = strings.ToLower(sex)
+		sex := strings.ToLower(record[4])
 		sex = strings.TrimSpace(sex)
+
+		if len(sex) == 0 {
+			FlowWatch.GetLogHelper().Debug(ctx, "Empty sex attribute in record: ", record)
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: "Sex attribute cannot be empty"})
+			return
+		}
 		sex = sex[:1]
+
+		// Normalize the sex attribute
 		switch sex {
 		case "m", "f", "d":
 
