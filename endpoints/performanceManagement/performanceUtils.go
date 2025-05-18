@@ -3,7 +3,6 @@ package performanceManagement
 import (
 	"context"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
-	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -147,7 +146,6 @@ func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDat
 		var err2 error
 		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
 		if err2 != nil {
-			FlowWatch.GetLogHelper().Fatal(ctx, performanceBody, idx)
 			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
 			return nil, err2
 		}
