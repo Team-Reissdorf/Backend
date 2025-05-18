@@ -92,6 +92,65 @@ func getLatestPerformanceBody(ctx context.Context, athleteId uint) (*Performance
 	return &performanceBody, nil
 }
 
+// getBestPerformanceBodiesSince gets the best performance entries of each discipline of an athlete since the given date
+func getBestPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]PerformanceBodyWithId, error) {
+	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceBodiesSinceFromDB")
+	defer span.End()
+
+	db := DatabaseFlow.GetDB(ctx)
+
+	// Get all disciplines from the database
+	var disciplines []databaseUtils.Discipline
+	err1 := db.Model(databaseUtils.Discipline{}).
+		Find(&disciplines).
+		Error
+	if err1 != nil {
+		return nil, err1
+	} else if len(disciplines) == 0 {
+		err1 = errors.New("No disciplines found in the database")
+		return nil, err1
+	}
+
+	// Get the best performance entry of each discipline
+	var performanceBodies []PerformanceBodyWithId
+	for _, discipline := range disciplines {
+		var performanceBody PerformanceBodyWithId
+		err1 = db.Model(&databaseUtils.Performance{}).
+			Select("performances.id AS performance_id, points, exercises.unit AS unit, medal, date, exercise_id, athlete_id").
+			Joins("LEFT JOIN exercises ON performances.exercise_id = exercises.id").
+			Where("athlete_id = ? AND exercises.discipline_name = ? AND performances.date > ?",
+				athleteId, discipline.Name, sinceDate).
+			Order("CASE performances.medal " +
+				"WHEN 'gold' THEN 1 " +
+				"WHEN 'silver' THEN 2 " +
+				"WHEN 'bronze' THEN 3 " +
+				"WHEN '' THEN 4 " +
+				"ELSE 5 END ASC, " +
+				"performances.date DESC").
+			Limit(1).
+			First(&performanceBody).
+			Error
+		if err1 != nil {
+			err1 = errors.Wrap(err1, "Failed to get the performance entries since "+sinceDate)
+			return nil, err1
+		}
+
+		performanceBodies = append(performanceBodies, performanceBody)
+	}
+
+	// Format the date fields of the performance bodies
+	for idx, performanceBody := range performanceBodies {
+		var err2 error
+		performanceBodies[idx].Date, err2 = formatHelper.FormatDate(performanceBody.Date)
+		if err2 != nil {
+			err2 = errors.Wrap(err2, "Failed to format the date of a performance entry")
+			return nil, err2
+		}
+	}
+
+	return &performanceBodies, nil
+}
+
 // getPerformanceBodiesSince gets all performance entries of an athlete since the given date
 func getPerformanceBodiesSince(ctx context.Context, athleteId uint, sinceDate string) (*[]PerformanceBodyWithId, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "GetPerformanceBodiesSinceFromDB")
