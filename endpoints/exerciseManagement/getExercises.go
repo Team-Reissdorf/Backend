@@ -2,6 +2,7 @@ package exerciseManagement
 
 import (
 	"context"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"net/http"
 	"strconv"
 	"time"
@@ -82,7 +83,7 @@ func GetExercisesOfDiscipline(c *gin.Context) {
 		// Check if date is in the past
 		if err := formatHelper.IsFuture(performanceDateString); err != nil {
 			err = errors.Wrap(err, "'performance-date' is in the future")
-			endpoints.Logger.Debug(ctx, err)
+			FlowWatch.GetLogHelper().Debug(ctx, err, ": ", performanceDateString, " - Now: ", time.Now())
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "'performance-date' is in the Future"})
 			return
 		}

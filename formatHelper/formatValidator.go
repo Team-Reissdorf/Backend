@@ -102,13 +102,22 @@ func IsBefore(date1 string, date2 string) error {
 
 // IsFuture checks if the given date is in the future and throws an error if it is.
 func IsFuture(date string) error {
-	parsedDate, err := time.Parse("2006-01-02", date)
+	// Parse the date in local timezone
+	parsedDate, err := time.ParseInLocation("2006-01-02", date, time.Local)
 	if err != nil {
 		return errors.Wrap(err, "Failed to parse date")
 	}
-	if !parsedDate.Before(time.Now()) {
+
+	// Get current time and normalize both dates to start of day
+	now := time.Now()
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+	dateStart := time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.Local)
+
+	// Simple comparison - is the normalized date after today?
+	if dateStart.After(todayStart) {
 		return DateInFutureError
 	}
+
 	return nil
 }
 
@@ -132,9 +141,9 @@ func IsEmpty(bodyPart string) error {
 	return nil
 }
 
-// IsDuration prüft, ob s eine gültige Zeitdauer im Format MM:SS oder HH:MM:SS ist.
-// Beispiele gültig: "03:25", "3:5", "01:03:25", "1:3:5"
-// Minuten und Sekunden müssen dabei 0–59 sein.
+// IsDuration checks if s is a valid time duration in the format MM:SS or HH:MM:SS.
+// Valid examples: "03:25", "3:5", "01:03:25", "1:3:5"
+// Minutes and seconds must be in the range 0-59.
 func IsDuration(s string) error {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -146,22 +155,24 @@ func IsDuration(s string) error {
 		return fmt.Errorf("duration must be MM:SS or HH:MM:SS")
 	}
 
-	// Überprüfe jedes Segment
+	// Check each segment
 	for i, seg := range parts {
 		if seg == "" {
 			return fmt.Errorf("empty segment in duration")
 		}
+
 		n, err := strconv.Atoi(seg)
 		if err != nil {
 			return fmt.Errorf("duration contains non-numeric segment: %q", seg)
 		}
-		// Nur die letzten beiden Segmente (Minuten, Sekunden) brauchen 0–59-Range
+
+		// Only the last two segments (minutes, seconds) need 0-59 range
 		if i >= len(parts)-2 {
 			if n < 0 || n > 59 {
 				return fmt.Errorf("minutes/seconds out of range: %d", n)
 			}
 		} else {
-			// Stunden dürfen >= 0 sein (kein Upper-Bound)
+			// Hours can be >= 0 (no upper bound)
 			if n < 0 {
 				return fmt.Errorf("hours cannot be negative: %d", n)
 			}
