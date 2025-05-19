@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints/rulesetManagement"
 	"gorm.io/gorm"
@@ -24,41 +25,40 @@ func CreateStandardRulesets(ctx context.Context) {
 	if path == "" {
 		log.Fatal("ruleset dir unset")
 	}
-	println("got ruleset dir " + path)
+	FlowWatch.GetLogHelper().Info(ctx, "got ruleset dir "+path)
 
 	rulesCSVpath, err := filepath.Glob(path + "*.csv")
 	if err != nil {
-		log.Fatal(err)
+		FlowWatch.GetLogHelper().Fatal(ctx, err)
 	}
 
 	for _, f := range rulesCSVpath {
 		file, err := os.Open(f)
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
-		println("writing file " + file.Name() + " to db")
+		FlowWatch.GetLogHelper().Info(ctx, "writing ruleset "+file.Name()+" to db")
 
-		rulesets, errRS := read_csv_to_struct(file)
+		rulesets, errRS := read_csv_to_struct(ctx, file)
 		if errRS != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		for _, set := range rulesets {
 			err := write_db(set, ctx)
 			if err != nil {
-				log.Fatal(err)
+				FlowWatch.GetLogHelper().Fatal(ctx, err)
 			}
 		}
 
 	}
 
-	println("done creating default rulesets.")
+	FlowWatch.GetLogHelper().Info(ctx, "done creating default rulesets.")
 
 }
 
-func read_csv_to_struct(file *os.File) ([]rulesetManagement.RulesetBody, error) {
-	println(file.Name())
+func read_csv_to_struct(ctx context.Context, file *os.File) ([]rulesetManagement.RulesetBody, error) {
 	reader := csv.NewReader(file)
 	reader.Comma = ','
 
@@ -80,29 +80,29 @@ func read_csv_to_struct(file *os.File) ([]rulesetManagement.RulesetBody, error) 
 		// Parse age values
 		FromAge, err := strconv.Atoi(entry[5])
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		ToAge, err := strconv.Atoi(entry[6])
 
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		// Parse goal values
 		Bronze, err := strconv.Atoi(entry[7])
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		Silver, err := strconv.Atoi(entry[8])
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		Gold, err := strconv.Atoi(entry[9])
 		if err != nil {
-			log.Fatal(err)
+			FlowWatch.GetLogHelper().Fatal(ctx, err)
 		}
 
 		rulesets = append(rulesets, rulesetManagement.RulesetBody{
