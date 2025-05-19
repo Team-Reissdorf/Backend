@@ -103,13 +103,22 @@ func IsBefore(date1 string, date2 string) error {
 
 // IsFuture checks if the given date is in the future and throws an error if it is.
 func IsFuture(date string) error {
-	parsedDate, err := time.Parse("2006-01-02", date)
+	// Parse the date in local timezone
+	parsedDate, err := time.ParseInLocation("2006-01-02", date, time.Local)
 	if err != nil {
 		return errors.Wrap(err, "Failed to parse date")
 	}
-	if !parsedDate.Before(time.Now()) {
+
+	// Get current time and normalize both dates to start of day
+	now := time.Now()
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+	dateStart := time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.Local)
+
+	// Simple comparison - is the normalized date after today?
+	if dateStart.After(todayStart) {
 		return DateInFutureError
 	}
+
 	return nil
 }
 
