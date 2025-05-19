@@ -137,13 +137,37 @@ func CreateRuleset(c *gin.Context) {
 			return
 		}
 
+		sex := strings.ToLower(record[4])
+		sex = strings.TrimSpace(sex)
+
+		if len(sex) == 0 {
+			FlowWatch.GetLogHelper().Debug(ctx, "Empty sex attribute in record: ", record)
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: "Sex attribute cannot be empty"})
+			return
+		}
+		sex = sex[:1]
+
+		// Normalize the sex attribute
+		switch sex {
+		case "m", "f", "d":
+
+		case "w":
+			sex = "f"
+		default:
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", record[4][:1])
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", sex)})
+			return
+		}
+
 		// Parse the ruleset record
 		rulesetBody := RulesetBody{
 			RulesetYear:    record[0],
 			DisciplineName: record[1],
 			ExerciseName:   record[2],
 			Unit:           record[3],
-			Sex:            record[4],
+			Sex:            sex,
 			FromAge:        uint(FromAge),
 			ToAge:          uint(ToAge),
 			Bronze:         uint64(Bronze),
