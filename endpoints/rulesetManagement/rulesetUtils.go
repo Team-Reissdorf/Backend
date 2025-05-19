@@ -1,5 +1,9 @@
 package rulesetManagement
 
+const CSVCOLUMNCOUNT = 11
+
+var POSSIBLEUNITS = []string{"centimeter", "meter", "second", "minute", "bool", "point"}
+
 type RulesetBody struct {
 	RulesetYear    string `json:"ruleset_year"`
 	DisciplineName string `json:"discipline_name"`
