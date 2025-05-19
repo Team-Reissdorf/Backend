@@ -18,18 +18,26 @@ import (
 )
 
 func CreateStandardRulesets(ctx context.Context) {
+
 	// read files in
 	path := os.Getenv("RULESET_DIR")
+	if path == "" {
+		log.Fatal("ruleset dir unset")
+	}
+	println("got ruleset dir " + path)
+
 	rulesCSVpath, err := filepath.Glob(path + "*.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, f := range rulesCSVpath {
-		file, err := os.Open(path + f)
+		file, err := os.Open(f)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		println("writing file " + file.Name() + " to db")
 
 		rulesets, errRS := read_csv_to_struct(file)
 		if errRS != nil {
@@ -45,38 +53,54 @@ func CreateStandardRulesets(ctx context.Context) {
 
 	}
 
+	println("done creating default rulesets.")
+
 }
 
 func read_csv_to_struct(file *os.File) ([]rulesetManagement.RulesetBody, error) {
+	println(file.Name())
 	reader := csv.NewReader(file)
-	reader.Comma = ';'
+	reader.Comma = ','
 
-	entries, err := reader.ReadAll()
-	if err != nil {
+	entries, errread := reader.ReadAll()
+	if errread != nil {
+		log.Fatal(errread)
 		// holy cancer
-		return []rulesetManagement.RulesetBody{}, err
+		return []rulesetManagement.RulesetBody{}, errread
 	}
 
 	var rulesets []rulesetManagement.RulesetBody
 
 	for _, entry := range entries {
 		if len(entry) != rulesetManagement.CSVCOLUMNCOUNT {
+
 			return []rulesetManagement.RulesetBody{}, errors.New("inconsistent number of columns in the CSV file (setup)")
 		}
 
 		// Parse age values
 		FromAge, err := strconv.Atoi(entry[5])
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		ToAge, err := strconv.Atoi(entry[6])
 
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Parse goal values
 		Bronze, err := strconv.Atoi(entry[7])
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		Silver, err := strconv.Atoi(entry[8])
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		Gold, err := strconv.Atoi(entry[9])
-
-		// just check here, idc where it failed
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -152,7 +176,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		// Validate the unit field
 		unit := strings.ToLower(ruleset.Unit)
 		if !rulesetManagement.Contains(rulesetManagement.POSSIBLEUNITS, unit) {
-			err := errors.New(fmt.Sprintf("Invalid unit in dataset"))
+			err := fmt.Errorf("invalid unit in dataset")
 			return err
 		}
 
