@@ -23,7 +23,7 @@ func CreateStandardRulesets(ctx context.Context) {
 	// read files in
 	path := os.Getenv("RULESET_DIR")
 	if path == "" {
-		log.Fatal("ruleset dir unset")
+		FlowWatch.GetLogHelper().Fatal(ctx, "ruleset dir unset")
 	}
 	FlowWatch.GetLogHelper().Info(ctx, "got ruleset dir "+path)
 
@@ -64,7 +64,7 @@ func read_csv_to_struct(ctx context.Context, file *os.File) ([]rulesetManagement
 
 	entries, errread := reader.ReadAll()
 	if errread != nil {
-		log.Fatal(errread)
+		FlowWatch.GetLogHelper().Fatal(ctx, errread)
 		// holy cancer
 		return []rulesetManagement.RulesetBody{}, errread
 	}
