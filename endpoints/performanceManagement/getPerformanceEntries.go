@@ -2,6 +2,7 @@ package performanceManagement
 
 import (
 	"fmt"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/endpoints/athleteManagement"
@@ -26,9 +27,10 @@ type PerformancesResponse struct {
 // @Param AthleteId path int true "Get all performance entries of the given athlete"
 // @Param since query string false "Date in YYYY-MM-DD format to get all entries since then (including the entries from that day)"
 // @Param date query string false "Date in YYYY-MM-DD format to get all entries from a specific day"
-// @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as a http-only cookie"
+// @Param best query boolean false "If true, only the latest best performance entries for each discipline will be returned"
+// @Param Authorization  header  string  false  "Access JWT is sent in the Authorization header or set as an http-only cookie"
 // @Success 200 {object} PerformancesResponse "Request successful"
-// @Failure 400 {object} endpoints.ErrorResponse "Date parameter is before the since parameter"
+// @Failure 400 {object} endpoints.ErrorResponse "Date parameter is before the since-parameter"
 // @Failure 401 {object} endpoints.ErrorResponse "The token is invalid"
 // @Failure 404 {object} endpoints.ErrorResponse "Athlete does not exist"
 // @Failure 500 {object} endpoints.ErrorResponse "Internal server error"
@@ -96,6 +98,32 @@ func GetPerformanceEntries(c *gin.Context) {
 		}
 	}
 
+	// Get the best query parameter from the context
+	bestString := c.Query("best")
+	best := false
+	if bestString != "" {
+		var err3A error
+		best, err3A = strconv.ParseBool(bestString)
+		if err3A != nil {
+			err3A = errors.Wrap(err3A, "Invalid 'best' query parameter")
+			FlowWatch.GetLogHelper().Debug(ctx, err3A)
+			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Invalid 'best' query parameter"})
+			return
+		}
+	}
+	// Check if the since and date parameters are set at the same time since this is the only case where the best parameter is allowed
+	if best && !sinceIsSet {
+		err3B := errors.New("The 'best' query parameter can only be used with the 'since' query parameter")
+		FlowWatch.GetLogHelper().Debug(ctx, err3B)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "The 'best' query parameter can only be used with the 'since' query parameter"})
+		return
+	} else if best && dateIsSet {
+		err3C := errors.New("The 'best' query parameter can not be used with the 'date' query parameter")
+		FlowWatch.GetLogHelper().Debug(ctx, err3C)
+		c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "The 'best' query parameter can not be used with the 'date' query parameter"})
+		return
+	}
+
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
@@ -112,16 +140,27 @@ func GetPerformanceEntries(c *gin.Context) {
 		return
 	}
 
-	// Get the performance body/bodies
-	var performanceBodies []PerformanceBodyWithId
-	if since != "" && date != "" {
+	// Check if the date-parameter is before the since-parameter
+	if sinceIsSet && dateIsSet {
 		if err := formatHelper.IsBefore(date, since); err != nil {
 			endpoints.Logger.Debug(ctx, "Date parameter is before the since parameter")
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: "Date parameter is before the since parameter"})
 			return
 		}
 	}
-	if dateIsSet {
+
+	// Get the performance body/bodies
+	var performanceBodies []PerformanceBodyWithId
+	if best { // It can be assumed that the since-parameter is set, since it is checked earlier
+		performanceBodiesSince, err := getBestPerformanceBodiesSince(ctx, uint(athleteId), since)
+		if err != nil {
+			err = errors.Wrap(err, "Failed to get all performance bodies")
+			FlowWatch.GetLogHelper().Debug(ctx, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get all performance bodies"})
+			return
+		}
+		performanceBodies = *performanceBodiesSince
+	} else if dateIsSet {
 		// Get all performance bodies date the specified date from the database
 		performanceBodiesDate, err := getPerformanceBodiesDate(ctx, uint(athleteId), date)
 		if err != nil {
@@ -254,6 +293,10 @@ func GetPerformanceEntries(c *gin.Context) {
 		sort.Slice(performanceBodies, func(i, j int) bool {
 			return performanceBodies[i].Date > performanceBodies[j].Date
 		})
+	}
+
+	if performanceBodies == nil {
+		performanceBodies = []PerformanceBodyWithId{}
 	}
 
 	c.JSON(
