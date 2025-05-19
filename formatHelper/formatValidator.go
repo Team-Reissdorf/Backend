@@ -258,6 +258,7 @@ func FormatToCentimeters(input string) (int, error) {
 // NormalizeResult standardizes the result into ms or cm depending on the unit.
 // For "second" and "minute", accepts S, SS, M:SS or MM:SS and converts to milliseconds.
 func NormalizeResult(raw string, unit string) (int, error) {
+	unit = strings.ToLower(strings.TrimSpace(unit))
 	FlowWatch.GetLogHelper().Debug(context.Background(), "Normal input", raw, unit)
 
 	switch unit {
