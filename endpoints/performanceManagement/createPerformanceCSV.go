@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/LucaSchmitz2003/FlowWatch"
 
@@ -106,6 +107,9 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		gender := strings.TrimSpace(rec[2])
 		birthYearStr := strings.TrimSpace(rec[3])
 		birthDateRaw := strings.TrimSpace(rec[4])
+		if t, err := time.Parse("02.01.2006", birthDateRaw); err == nil {
+			birthDateRaw = t.Format("2006-01-02")
+		}
 		exerciseName := strings.TrimSpace(rec[5])
 		category := strings.TrimSpace(rec[6])
 		performanceDate := strings.TrimSpace(rec[7])
