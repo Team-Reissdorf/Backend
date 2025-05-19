@@ -121,6 +121,8 @@ func main() {
 
 	// Create standard disciplines in the database on startup
 	setup.CreateStandardDisciplines(ctx)
+
+	go setup.CreateStandardRulesets(ctx)
 }
 
 func defineRoutes(ctx context.Context, router *gin.Engine) {

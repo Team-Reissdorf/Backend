@@ -2,6 +2,7 @@ package performanceManagement
 
 import (
 	"context"
+
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/pkg/errors"
 )
@@ -10,7 +11,7 @@ import (
 func evaluateMedalStatus(ctx context.Context, exerciseId uint, performanceDateString string, age int, sex string, points uint64) (string, error) {
 	ctx, span := endpoints.Tracer.Start(ctx, "EvaluateMedalStatus")
 	defer span.End()
-
+	
 	performanceYear, err1 := getPerformanceYear(ctx, performanceDateString)
 	if err1 != nil {
 		err1 = errors.Wrap(err1, "Error parsing performance year")

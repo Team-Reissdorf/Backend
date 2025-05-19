@@ -18,11 +18,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	csvColumnCount = 11
-	possibleUnits  = []string{"centimeter", "meter", "second", "minute", "bool", "point"}
-)
-
 // CreateRuleset creates new ruleset entries in the db from a csv file
 // @Summary Creates new ruleset entries from csv file
 // @Description Upload a CSV file to create multiple ruleset entries. Needs to contain 11 columns.
@@ -93,7 +88,7 @@ func CreateRuleset(c *gin.Context) {
 	var rulesets []RulesetBody
 	for _, record := range records {
 		// Ensure the column count is correct
-		if len(record) != csvColumnCount {
+		if len(record) != CSVCOLUMNCOUNT {
 			err := errors.New("Inconsistent number of columns in the CSV file")
 			endpoints.Logger.Debug(ctx, err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
@@ -142,13 +137,37 @@ func CreateRuleset(c *gin.Context) {
 			return
 		}
 
+		sex := strings.ToLower(record[4])
+		sex = strings.TrimSpace(sex)
+
+		if len(sex) == 0 {
+			FlowWatch.GetLogHelper().Debug(ctx, "Empty sex attribute in record: ", record)
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: "Sex attribute cannot be empty"})
+			return
+		}
+		sex = sex[:1]
+
+		// Normalize the sex attribute
+		switch sex {
+		case "m", "f", "d":
+
+		case "w":
+			sex = "f"
+		default:
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", record[4][:1])
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", sex)})
+			return
+		}
+
 		// Parse the ruleset record
 		rulesetBody := RulesetBody{
 			RulesetYear:    record[0],
 			DisciplineName: record[1],
 			ExerciseName:   record[2],
 			Unit:           record[3],
-			Sex:            record[4],
+			Sex:            sex,
 			FromAge:        uint(FromAge),
 			ToAge:          uint(ToAge),
 			Bronze:         uint64(Bronze),
@@ -193,7 +212,7 @@ func CreateRuleset(c *gin.Context) {
 		}
 
 		// Ensure the discipline exists
-		disciplineName := capitalizeFirst(ruleset.DisciplineName)
+		disciplineName := CapitalizeFirst(ruleset.DisciplineName)
 		var disciplineCount int64
 		errC := db.Model(&databaseUtils.Discipline{}).
 			Where("name = ?", disciplineName).
@@ -223,7 +242,7 @@ func CreateRuleset(c *gin.Context) {
 		if exerciseCount == 0 {
 			// Validate the unit field
 			unit := strings.ToLower(ruleset.Unit)
-			if !contains(possibleUnits, unit) {
+			if !Contains(POSSIBLEUNITS, unit) {
 				err := errors.New(fmt.Sprintf("Invalid unit in dataset %d", idx))
 				FlowWatch.GetLogHelper().Debug(ctx, err)
 				c.AbortWithStatusJSON(http.StatusBadRequest, endpoints.ErrorResponse{Error: err.Error()})
@@ -379,7 +398,7 @@ func CreateRuleset(c *gin.Context) {
 	)
 }
 
-func contains(slice []string, str string) bool {
+func Contains(slice []string, str string) bool {
 	for _, s := range slice {
 		if s == str {
 			return true
@@ -388,7 +407,7 @@ func contains(slice []string, str string) bool {
 	return false
 }
 
-func capitalizeFirst(s string) string {
+func CapitalizeFirst(s string) string {
 	if s == "" {
 		return s
 	}

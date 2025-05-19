@@ -2,6 +2,7 @@ package athleteManagement
 
 import (
 	"encoding/csv"
+	"fmt"
 	"github.com/LucaSchmitz2003/FlowWatch"
 	"mime/multipart"
 	"net/http"
@@ -99,15 +100,40 @@ func CreateAthleteCSV(c *gin.Context) {
 			return
 		}
 
+		sex := strings.ToLower(record[4])
+		sex = strings.TrimSpace(sex)
+
+		if len(sex) == 0 {
+			FlowWatch.GetLogHelper().Debug(ctx, "Empty sex attribute in record: ", record)
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: "Sex attribute cannot be empty"})
+			return
+		}
+		sex = sex[:1]
+
+		// Normalize the sex attribute
+		switch sex {
+		case "m", "f", "d":
+
+		case "w":
+			sex = "f"
+		default:
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", record[4][:1])
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", sex)})
+			return
+		}
+
 		// Map CSV data to an athlete object
 		athlete := databaseUtils.Athlete{
 			FirstName:    record[0],
 			LastName:     record[1],
 			BirthDate:    record[3],
-			Sex:          record[4],
+			Sex:          sex,
 			Email:        record[2],
 			TrainerEmail: trainerEmail,
 		}
+
 		// This is for a design issue revolving the date format in the csv file
 		// The date format in the csv file is dd.mm.yyyy
 		// The date format in the db is yyyy-mm-dd
