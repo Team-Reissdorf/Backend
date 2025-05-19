@@ -133,44 +133,64 @@ func IsEmpty(bodyPart string) error {
 	return nil
 }
 
-// IsDuration prüft, ob s eine gültige Zeitdauer im Format MM:SS oder HH:MM:SS ist.
-// Beispiele gültig: "03:25", "3:5", "01:03:25", "1:3:5"
-// Minuten und Sekunden müssen dabei 0–59 sein.
+// IsDuration checks whether s is a valid duration in the format S, SS, M:SS or MM:SS.
+// Seconds must be 0-59; any non-negative number can be used for minutes,
+// but only 1 or 2 digits in the string.
 func IsDuration(s string) error {
 	s = strings.TrimSpace(s)
-
 	if s == "" {
 		return fmt.Errorf("empty duration")
 	}
 
 	parts := strings.Split(s, ":")
-	if len(parts) < 2 || len(parts) > 3 {
-		return fmt.Errorf("duration must be MM:SS or HH:MM:SS")
-	}
-
-	// Überprüfe jedes Segment
-	for i, seg := range parts {
-		if seg == "" {
-			return fmt.Errorf("empty segment in duration")
+	switch len(parts) {
+	case 1:
+		// "S" or "SS"
+		seg := parts[0]
+		if len(seg) < 1 || len(seg) > 2 {
+			return fmt.Errorf("seconds must be 1 or 2 digits")
 		}
-		n, err := strconv.Atoi(seg)
+		sec, err := strconv.Atoi(seg)
 		if err != nil {
-			return fmt.Errorf("duration contains non-numeric segment: %q", seg)
+			return fmt.Errorf("seconds must be numeric: %q", seg)
 		}
-		// Nur die letzten beiden Segmente (Minuten, Sekunden) brauchen 0–59-Range
-		if i >= len(parts)-2 {
-			if n < 0 || n > 59 {
-				return fmt.Errorf("minutes/seconds out of range: %d", n)
-			}
-		} else {
-			// Stunden dürfen >= 0 sein (kein Upper-Bound)
-			if n < 0 {
-				return fmt.Errorf("hours cannot be negative: %d", n)
-			}
+		if sec < 0 || sec > 59 {
+			return fmt.Errorf("seconds must be between 0 and 59: %d", sec)
 		}
-	}
+		return nil
 
-	return nil
+	case 2:
+		// "M:SS" or "MM:SS"
+		minSeg, secSeg := parts[0], parts[1]
+
+		// Minutes: 1–2 digits, >=0
+		if len(minSeg) < 1 || len(minSeg) > 2 {
+			return fmt.Errorf("minutes must be 1 or 2 digits")
+		}
+		min, errM := strconv.Atoi(minSeg)
+		if errM != nil {
+			return fmt.Errorf("minutes must be numeric: %q", minSeg)
+		}
+		if min < 0 {
+			return fmt.Errorf("minutes cannot be negative: %d", min)
+		}
+
+		// Seconds: **exact** 2 digits, between 0–59
+		if len(secSeg) != 2 {
+			return fmt.Errorf("seconds must be exactly 2 digits: %q", secSeg)
+		}
+		sec, errS := strconv.Atoi(secSeg)
+		if errS != nil {
+			return fmt.Errorf("seconds must be numeric: %q", secSeg)
+		}
+		if sec < 0 || sec > 59 {
+			return fmt.Errorf("seconds must be between 0 and 59: %d", sec)
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("duration must be S, SS, M:SS or MM:SS")
+	}
 }
 
 // FormatToMilliseconds converts a time string like "03:25" or "1:02:30" into milliseconds.
@@ -227,19 +247,13 @@ func FormatToCentimeters(input string) (int, error) {
 }
 
 // NormalizeResult standardizes the result into ms or cm depending on the unit.
+// For "second" and "minute", accepts S, SS, M:SS or MM:SS and converts to milliseconds.
 func NormalizeResult(raw string, unit string) (int, error) {
 	FlowWatch.GetLogHelper().Debug(context.Background(), "Normal input", raw, unit)
 
 	switch unit {
-	case "second":
-		ms, err := FormatToMilliseconds(raw)
-		if err != nil {
-			return 0, errors.New("failed to normalize time")
-		}
-		return ms, nil
-
-	case "minute":
-		ms, err := FormatToMilliseconds(raw)
+	case "second", "minute":
+		ms, err := parseToMilliseconds(raw)
 		if err != nil {
 			return 0, errors.New("failed to normalize time")
 		}
@@ -253,7 +267,7 @@ func NormalizeResult(raw string, unit string) (int, error) {
 		return cm, nil
 
 	case "centimeter":
-		val, err := strconv.Atoi(raw)
+		val, err := strconv.Atoi(strings.TrimSpace(raw))
 		if err != nil {
 			return 0, errors.New("invalid centimeter value")
 		}
@@ -269,17 +283,56 @@ func NormalizeResult(raw string, unit string) (int, error) {
 		return 0, errors.New("invalid boolean value")
 
 	case "points":
-		val, err := strconv.Atoi(raw)
+		p, err := strconv.Atoi(strings.TrimSpace(raw))
 		if err != nil {
 			return 0, errors.New("invalid points value")
 		}
-		return val, nil
+		return p, nil
 
 	default:
-		val, err := strconv.Atoi(raw)
+		// Fallback: try int parse
+		v, err := strconv.Atoi(strings.TrimSpace(raw))
 		if err != nil {
 			return 0, errors.New("unknown unit and failed to parse as int")
 		}
-		return val, nil
+		return v, nil
+	}
+}
+
+// parseToMilliseconds converts "S", "SS", "M:SS" or "MM:SS" into milliseconds.
+func parseToMilliseconds(raw string) (int, error) {
+	seg := strings.Split(strings.TrimSpace(raw), ":")
+	switch len(seg) {
+	case 1:
+		// "S" or "SS"
+		sec, err := strconv.Atoi(seg[0])
+		if err != nil {
+			return 0, fmt.Errorf("invalid seconds: %q", seg[0])
+		}
+		if sec < 0 || sec > 59 {
+			return 0, fmt.Errorf("seconds must be 0-59: %d", sec)
+		}
+		return sec * 1000, nil
+
+	case 2:
+		// "M:SS" or "MM:SS"
+		min, errMin := strconv.Atoi(seg[0])
+		sec, errSec := strconv.Atoi(seg[1])
+		if errMin != nil {
+			return 0, fmt.Errorf("invalid minutes: %q", seg[0])
+		}
+		if errSec != nil {
+			return 0, fmt.Errorf("invalid seconds: %q", seg[1])
+		}
+		if min < 0 {
+			return 0, fmt.Errorf("minutes cannot be negative: %d", min)
+		}
+		if sec < 0 || sec > 59 {
+			return 0, fmt.Errorf("seconds must be 0-59: %d", sec)
+		}
+		return (min*60 + sec) * 1000, nil
+
+	default:
+		return 0, fmt.Errorf("invalid time format, use S, SS, M:SS or MM:SS: %q", raw)
 	}
 }

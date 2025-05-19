@@ -2,6 +2,7 @@ package performanceManagement
 
 import (
 	"encoding/csv"
+	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
@@ -104,7 +105,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		// read all fields
 		lastName := strings.TrimSpace(rec[0])
 		firstName := strings.TrimSpace(rec[1])
-		gender := strings.TrimSpace(rec[2])
+		gender := strings.ToLower(rec[2])
 		birthYearStr := strings.TrimSpace(rec[3])
 		birthDateRaw := strings.TrimSpace(rec[4])
 		if t, err := time.Parse("02.01.2006", birthDateRaw); err == nil {
@@ -158,6 +159,29 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 			continue
 		}
 
+		gender = strings.TrimSpace(gender)
+
+		if len(gender) == 0 {
+			FlowWatch.GetLogHelper().Debug(ctx, "Empty sex attribute in record: ", rec)
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: "Sex attribute cannot be empty"})
+			return
+		}
+		gender = gender[:1]
+
+		// Normalize the sex attribute
+		switch gender {
+		case "m", "f", "d":
+
+		case "w":
+			gender = "f"
+		default:
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", rec[4][:1])
+			c.AbortWithStatusJSON(http.StatusBadRequest,
+				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", gender)})
+			return
+		}
+		
 		// validate gender
 		if err8 := formatHelper.IsSex(gender); err8 != nil {
 			FlowWatch.GetLogHelper().Debug(ctx, "Failed to parse gender", err8)
