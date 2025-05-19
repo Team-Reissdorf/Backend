@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -229,7 +228,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 		})
 		if errH != nil {
 			msg := fmt.Sprintf("Failed to create the exercise ruleset: %s - %s", ruleset.ExerciseName, ruleset.RulesetYear)
-			log.Println(msg)
+			FlowWatch.GetLogHelper().Info(ctx, msg)
 			return errH
 		}
 	}
@@ -276,7 +275,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 			msg := fmt.Sprintf("Failed to create the exercise goal: %s - %s - %d - %d - %s",
 				ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
 
-			log.Println(msg)
+			FlowWatch.GetLogHelper().Info(ctx, msg)
 
 			return errK
 		}
@@ -297,7 +296,7 @@ func write_db(ruleset rulesetManagement.RulesetBody, ctx context.Context) error 
 			msg := fmt.Sprintf("Failed to update the exercise goal: %s - %s - %d - %d - %s",
 				ruleset.ExerciseName, ruleset.RulesetYear, ruleset.FromAge, ruleset.ToAge, ruleset.Sex)
 
-			log.Println(msg)
+			FlowWatch.GetLogHelper().Info(ctx, msg)
 			return errL
 		}
 	}
