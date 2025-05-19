@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/LucaSchmitz2003/DatabaseFlow"
+	"github.com/LucaSchmitz2003/FlowWatch"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
 	"github.com/Team-Reissdorf/Backend/endpoints"
 	"github.com/Team-Reissdorf/Backend/formatHelper"
@@ -66,6 +67,7 @@ func translateAthleteToResponse(ctx context.Context, athlete databaseUtils.Athle
 // Throws: Forwards errors of the formatHelper
 func validateAthlete(ctx context.Context, athlete *databaseUtils.Athlete) error {
 	_, span := endpoints.Tracer.Start(ctx, "ValidateAthlete")
+	FlowWatch.GetLogHelper().Debug(ctx, "Validating athlete", athlete)
 	defer span.End()
 	if err := formatHelper.IsEmpty(athlete.FirstName); err != nil {
 		return errors.Wrap(err, "First Name")
@@ -293,35 +295,34 @@ func CalculateAge(ctx context.Context, birthDate string) (int, error) {
 	return age, nil
 }
 
-// GetAthleteByDetails sucht einen Athleten per Vorname, Nachname, Geburtsdatum („YYYY-MM-DD“) 
+// GetAthleteByDetails sucht einen Athleten per Vorname, Nachname, Geburtsdatum („YYYY-MM-DD“)
 // und Trainer-Email. Gibt (*Athlete, nil) oder (nil, Err) zurück.
 func GetAthleteByDetails(
-    ctx context.Context,
-    firstName, lastName, birthDate, trainerEmail string,
+	ctx context.Context,
+	firstName, lastName, birthDate, trainerEmail string,
 ) (*databaseUtils.Athlete, error) {
-    _, span := endpoints.Tracer.Start(ctx, "GetAthleteByDetails")
-    defer span.End()
+	_, span := endpoints.Tracer.Start(ctx, "GetAthleteByDetails")
+	defer span.End()
 
-    // normalize inputs
-    fn := strings.ToLower(strings.TrimSpace(firstName))
-    ln := strings.ToLower(strings.TrimSpace(lastName))
-    te := strings.ToLower(strings.TrimSpace(trainerEmail))
+	// normalize inputs
+	fn := strings.ToLower(strings.TrimSpace(firstName))
+	ln := strings.ToLower(strings.TrimSpace(lastName))
+	te := strings.ToLower(strings.TrimSpace(trainerEmail))
 
-    var athlete databaseUtils.Athlete
-    err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-        return tx.
-            Where("lower(first_name) = ? AND lower(last_name) = ? AND birth_date = ? AND trainer_email = ?", fn, ln, birthDate, te).
-            First(&athlete).
-            Error
-    })
+	var athlete databaseUtils.Athlete
+	err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+		return tx.
+			Where("lower(first_name) = ? AND lower(last_name) = ? AND birth_date = ? AND trainer_email = ?", fn, ln, birthDate, te).
+			First(&athlete).
+			Error
+	})
 
-    if err != nil {
-        if err == gorm.ErrRecordNotFound {
-            return nil, fmt.Errorf("athlete not found")
-        }
-        return nil, err
-    }
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("athlete not found")
+		}
+		return nil, err
+	}
 
-    return &athlete, nil
+	return &athlete, nil
 }
-
