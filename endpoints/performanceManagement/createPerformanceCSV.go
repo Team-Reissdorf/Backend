@@ -176,7 +176,7 @@ func BulkCreatePerformanceEntries(c *gin.Context) {
 		case "w":
 			gender = "f"
 		default:
-			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", rec[4][:1])
+			FlowWatch.GetLogHelper().Debug(ctx, "Invalid sex attribute: ", gender)
 			c.AbortWithStatusJSON(http.StatusBadRequest,
 				endpoints.ErrorResponse{Error: fmt.Sprintf("Invalid sex attribute: %s", gender)})
 			return
