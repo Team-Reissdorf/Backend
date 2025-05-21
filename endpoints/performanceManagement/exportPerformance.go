@@ -2,10 +2,7 @@ package performanceManagement
 
 import (
 	"encoding/csv"
-	"net/http"
-	"sort"
-	"strconv"
-
+	"fmt"
 	"github.com/LucaSchmitz2003/DatabaseFlow"
 	"github.com/Team-Reissdorf/Backend/authHelper"
 	"github.com/Team-Reissdorf/Backend/databaseUtils"
@@ -14,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"net/http"
+	"sort"
+	"strconv"
 )
 
 // ExportRequest defines the athlete IDs to be exported.
@@ -168,6 +168,24 @@ func ExportPerformances(c *gin.Context) {
 				sex = "w"
 			}
 
+			// Convert Points to right format
+			var formattedPoints string
+			switch exercise.Unit {
+			case "second":
+				secs := p.Points / 1_000
+				formattedPoints = strconv.FormatUint(secs, 10)
+			case "minute":
+				totalSec := p.Points / 1_000
+				mins := totalSec / 60
+				secs := totalSec % 60
+				formattedPoints = fmt.Sprintf("%d:%02d", mins, secs)
+			case "meter":
+				meters := float64(p.Points) / 100
+				formattedPoints = fmt.Sprintf("%.2f", meters)
+			default:
+				formattedPoints = strconv.FormatUint(p.Points, 10)
+			}
+
 			// Write a CSV line
 			_ = w.Write([]string{
 				athlete.LastName,
@@ -178,8 +196,8 @@ func ExportPerformances(c *gin.Context) {
 				exercise.Name,
 				exercise.DisciplineName,
 				formattedDate,
+				formattedPoints,
 				p.Medal,
-				strconv.FormatUint(p.Points, 10),
 			})
 		}
 	}
