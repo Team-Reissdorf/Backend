@@ -81,123 +81,128 @@ func ExportPerformances(c *gin.Context) {
 	// Get the user id from the context
 	trainerEmail := authHelper.GetUserIdFromContext(ctx, c)
 
-	// Help function for rating the medals (gold > silver > bronze)
-	medalRank := func(medal string) int {
-		switch medal {
-		case "gold":
-			return 3
-		case "silver":
-			return 2
-		case "bronze":
-			return 1
-		default:
-			return 0
-		}
-	}
-
-	// Iterate over all athlete IDs
+	// iterate over each athlete ID
 	for _, athleteID := range req.AthleteIDs {
-		// Retrieve athlete information
+		// fetch athlete information
 		athlete, err := athleteManagement.GetAthlete(ctx, uint(athleteID), trainerEmail)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = errors.Wrap(err, "Could not find athlete")
-			endpoints.Logger.Debug(ctx, err)
-			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Could not find athlete"})
+			endpoints.Logger.Debug(ctx, errors.Wrap(err, "athlete not found"))
+			c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete not found"})
 			return
 		} else if err != nil {
-			err = errors.Wrap(err, "Failed to fetch athlete data")
-			endpoints.Logger.Debug(ctx, err)
+			endpoints.Logger.Debug(ctx, errors.Wrap(err, "failed to fetch athlete data"))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch athlete data"})
 			return
 		}
 
-		// Retrieve all performance entries
+		// retrieve all performance entries for this athlete
 		performances, err := getAllPerformanceBodies(ctx, uint(athleteID))
 		if err != nil {
-			err = errors.Wrap(err, "Failed to fetch performances")
-			endpoints.Logger.Debug(ctx, err)
+			endpoints.Logger.Debug(ctx, errors.Wrap(err, "failed to fetch performances"))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch performances"})
 			return
 		}
 
-		//Group the performances per day (assuming p.Date has the format “YYYY-MM-DD”) only
-		//the entry with the best medal (based on medalRank) is saved per day.
-		bestPerformanceByDate := make(map[string]PerformanceBodyWithId)
+		// group performances by exercise ID and day
+		type groupKey struct {
+			ExerciseID uint
+			Day        string
+		}
+		grouped := make(map[groupKey][]PerformanceBodyWithId)
 		for _, p := range *performances {
 			day := p.Date[:10]
-			if existing, ok := bestPerformanceByDate[day]; !ok {
-				bestPerformanceByDate[day] = p
-			} else {
-				if medalRank(p.Medal) > medalRank(existing.Medal) {
-					bestPerformanceByDate[day] = p
-				}
+			key := groupKey{ExerciseID: p.ExerciseId, Day: day}
+			grouped[key] = append(grouped[key], p)
+		}
+
+		// extract and sort group keys for stable output
+		var keys []groupKey
+		for k := range grouped {
+			keys = append(keys, k)
+		}
+		sort.Slice(keys, func(i, j int) bool {
+			if keys[i].ExerciseID != keys[j].ExerciseID {
+				return keys[i].ExerciseID < keys[j].ExerciseID
 			}
-		}
+			return keys[i].Day < keys[j].Day
+		})
 
-		// The days are sorted for consistent output
-		var days []string
-		for day := range bestPerformanceByDate {
-			days = append(days, day)
-		}
-		sort.Strings(days)
+		// process each group: select best performance and write to CSV
+		for _, k := range keys {
+			entries := grouped[k]
 
-		// Write the best entry for each day in the CSV
-		for _, day := range days {
-			p := bestPerformanceByDate[day]
-
-			// Retrieve exercise for the respective performance entry
-			var exercise databaseUtils.Exercise
-			err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
-				return tx.First(&exercise, p.ExerciseId).Error
-			})
+			// determine the best performance entry using goal-based logic
+			bestEntry, err := getBestPerformanceEntry(ctx, &entries)
 			if err != nil {
-				err = errors.Wrap(err, "Failed to get the exercise")
-				endpoints.Logger.Debug(ctx, err)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the exercise"})
+				endpoints.Logger.Debug(ctx, errors.Wrap(err, "failed to determine best performance"))
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to determine best performance"})
 				return
 			}
 
-			// Formatting of date and birthday
-			birthday := athlete.BirthDate
-			birthyear := birthday[:4]
-			birthdate := birthday[8:10] + "." + birthday[5:7] + "." + birthday[:4]
-			formattedDate := p.Date[8:10] + "." + p.Date[5:7] + "." + p.Date[:4]
+			// fetch exercise metadata
+			var exercise databaseUtils.Exercise
+			if err := DatabaseFlow.TransactionHandler(ctx, func(tx *gorm.DB) error {
+				return tx.First(&exercise, k.ExerciseID).Error
+			}); err != nil {
+				endpoints.Logger.Debug(ctx, errors.Wrap(err, "failed to fetch exercise metadata"))
+				c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to fetch exercise metadata"})
+				return
+			}
+
+			// prepare athlete and date fields
+			birthRaw := athlete.BirthDate // "YYYY-MM-DD"
+			birthYear := birthRaw[:4]
+			birthDate := birthRaw[8:10] + "." + birthRaw[5:7] + "." + birthRaw[:4]
 
 			sex := athlete.Sex
 			if sex == "f" {
 				sex = "w"
 			}
 
-			// Convert Points to right format
+			formattedDate := k.Day[8:10] + "." + k.Day[5:7] + "." + k.Day[:4]
+
+			// format points according to exercise unit
 			var formattedPoints string
 			switch exercise.Unit {
 			case "second":
-				secs := p.Points / 1_000
+				secs := bestEntry.Points / 1_000
 				formattedPoints = strconv.FormatUint(secs, 10)
 			case "minute":
-				totalSec := p.Points / 1_000
+				totalSec := bestEntry.Points / 1_000
 				mins := totalSec / 60
 				secs := totalSec % 60
 				formattedPoints = fmt.Sprintf("%d:%02d", mins, secs)
 			case "meter":
-				meters := float64(p.Points) / 100
+				meters := float64(bestEntry.Points) / 100
 				formattedPoints = fmt.Sprintf("%.2f", meters)
 			default:
-				formattedPoints = strconv.FormatUint(p.Points, 10)
+				formattedPoints = strconv.FormatUint(bestEntry.Points, 10)
 			}
 
-			// Write a CSV line
+			var medal string
+			switch bestEntry.Medal {
+			case "gold":
+				medal = "3"
+			case "silver":
+				medal = "2"
+			case "bronze":
+				medal = "1"
+			default:
+				medal = "0"
+			}
+
+			// write CSV record for this best performance
 			_ = w.Write([]string{
 				athlete.LastName,
 				athlete.FirstName,
 				sex,
-				birthyear,
-				birthdate,
+				birthYear,
+				birthDate,
 				exercise.Name,
 				exercise.DisciplineName,
 				formattedDate,
 				formattedPoints,
-				p.Medal,
+				medal,
 			})
 		}
 	}
