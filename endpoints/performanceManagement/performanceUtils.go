@@ -251,6 +251,7 @@ func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.
 		err3 = errors.Wrap(err3, "Failed to parse the birth date")
 		return err3
 	}
+
 	age, err := athleteManagement.CalculateAge(ctx, birthDate)
 	if err != nil {
 		endpoints.Logger.Debug(ctx, "Age Calculator not working...")
@@ -264,6 +265,7 @@ func updatePerformanceEntry(ctx context.Context, performanceEntry databaseUtils.
 		err = errors.Wrap(err, "Failed to parse the date")
 		return err
 	}
+
 	performanceYear := strconv.Itoa(performanceDate.Year())
 	// Check if the exercise goal exists for the athlete's age
 	exists, err := exerciseGoalExistsForAge(ctx, performanceEntry.ExerciseId, age, performanceYear)

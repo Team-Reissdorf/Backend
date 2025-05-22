@@ -152,6 +152,7 @@ func EditPerformanceEntry(c *gin.Context) {
 		Date:       body.Date,
 		ExerciseId: body.ExerciseId,
 		Medal:      medal,
+		Athlete:    *athlete,
 	}
 
 	// Update the performance entry in the database
