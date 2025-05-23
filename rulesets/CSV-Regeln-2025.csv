@@ -1,196 +1,294 @@
-2025,AUSDAUER,800 m Lauf,minute,f,6,7,340000,300000,255000,““
-2025,AUSDAUER,800 m Lauf,minute,f,8,9,325000,290000,250000,““
-2025,AUSDAUER,800 m Lauf,minute,f,10,11,320000,280000,240000,““
-2025,AUSDAUER,800 m Lauf,minute,f,12,13,310000,265000,225000,““
-2025,AUSDAUER,800 m Lauf,minute,f,14,15,300000,260000,215000,““
-2025,AUSDAUER,800 m Lauf,minute,f,16,17,290000,245000,205000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,6,7,480000,720000,1020000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,8,9,600000,900000,1200000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,10,11,900000,1200000,1800000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,12,13,1200000,1800000,2400000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,14,15,1800000,2400000,3000000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,f,16,17,2700000,3600000,4500000,““
-2025,AUSDAUER,Schwimmen,minute,f,6,7,540000,460000,380000,200m
-2025,AUSDAUER,Schwimmen,minute,f,8,9,480000,420000,355000,200m
-2025,AUSDAUER,Schwimmen,minute,f,10,11,440000,385000,330000,200m
-2025,AUSDAUER,Schwimmen,minute,f,12,13,890000,775000,660000,400m
-2025,AUSDAUER,Schwimmen,minute,f,14,15,785000,700000,600000,400m
-2025,AUSDAUER,Schwimmen,minute,f,16,17,710000,630000,545000,400m
-2025,AUSDAUER,Radfahren,minute,f,8,9,1620000,1440000,1260000,5km
-2025,AUSDAUER,Radfahren,minute,f,10,11,3030000,2580000,1080000,10km
-2025,AUSDAUER,Radfahren,minute,f,12,13,2700000,2370000,2010000,10km
-2025,AUSDAUER,Radfahren,minute,f,14,15,2280000,1950,1710000,10km
-2025,AUSDAUER,Radfahren,minute,f,16,17,1950000,1710000,1500000,10km
-2025,KRAFT,Werfen,meter,f,6,7,600,900,1200,Schlagball(80g)
-2025,KRAFT,Werfen,meter,f,8,9,900,1200,1500,Schlagball(80g)
-2025,KRAFT,Werfen,meter,f,10,11,1100,1500,1800,Schlagball(80g)
-2025,KRAFT,Werfen,meter,f,12,13,1500,1800,2200,Schlagball(80g)
-2025,KRAFT,Werfen,meter,f,14,15,2000,2400,2700,Wurfball(200g)
-2025,KRAFT,Werfen,meter,f,16,17,2400,2700,3100,Wurfball(200g)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,6,7,250,350,450,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,8,9,300,400,500,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,10,11,500,600,700,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,12,13,475,525,575,Kugelstoßen(3kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,14,15,550,600,650,Kugelstoßen(4kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,f,16,17,575,625,675,Kugelstoßen(5kg)
-2025,KRAFT,Standweitsprung,meter,f,6,7,105,125,140,““
-2025,KRAFT,Standweitsprung,meter,f,8,9,115,130,150,““
-2025,KRAFT,Standweitsprung,meter,f,10,11,130,145,165,““
-2025,KRAFT,Standweitsprung,meter,f,12,13,140,160,180,““
-2025,KRAFT,Standweitsprung,meter,f,14,15,155,170,190,““
-2025,KRAFT,Standweitsprung,meter,f,16,17,165,180,200,““
-2025,KRAFT,Gerätturnen,bool,f,6,7,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,f,8,9,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,f,10,11,1,1,1,Barren
-2025,KRAFT,Gerätturnen,bool,f,12,13,1,1,1,Reck
-2025,KRAFT,Gerätturnen,bool,f,14,15,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,f,16,17,1,1,1,Reck
-2025,SCHNELLIGKEIT,Laufen,second,f,6,7,8000,7100,6300,30m
-2025,SCHNELLIGKEIT,Laufen,second,f,8,9,7400,6600,5700,30m
-2025,SCHNELLIGKEIT,Laufen,second,f,10,11,11000,10100,9100,50m
-2025,SCHNELLIGKEIT,Laufen,second,f,12,13,10600,9600,8500,50m
-2025,SCHNELLIGKEIT,Laufen,second,f,14,15,18600,17000,15500,100m
-2025,SCHNELLIGKEIT,Laufen,second,f,16,17,17600,16300,15000,100m
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,6,7,46500,38500,30500,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,8,9,42000,34000,28000,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,10,11,39000,31500,25500,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,12,13,35000,29000,23500,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,14,15,33000,27500,21500,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,f,16,17,30500,25500,20000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,f,8,9,41000,36000,31000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,f,10,11,37000,32000,27000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,f,12,13,31000,27000,23500,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,f,14,15,27000,24500,21500,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,f,16,17,25000,22500,20000,““
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,6,7,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,8,9,1,1,1,Boden
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,10,11,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,12,13,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,14,15,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,f,16,17,1,1,1,Sprung
-2025,KOORDINATION,Hochsprung,meter,f,10,11,80,90,100,““
-2025,KOORDINATION,Hochsprung,meter,f,12,13,90,100,110,““
-2025,KOORDINATION,Hochsprung,meter,f,14,15,95,105,115,““
-2025,KOORDINATION,Hochsprung,meter,f,16,17,105,115,125,““
-2025,KOORDINATION,Zonenweitsprung,point,f,6,7,18,21,24,Zonenweitsprung
-2025,KOORDINATION,Zonenweitsprung,point,f,8,9,24,27,30,Zonenweitsprung
-2025,KOORDINATION,Weitsprung,meter,f,10,11,230,260,290,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,f,12,13,280,310,340,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,f,14,15,320,350,380,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,f,16,17,340,370,400,Weitsprung
-2025,KOORDINATION,Drehwurf,point,f,6,7,12,15,21,Drehwurf
-2025,KOORDINATION,Drehwurf,point,f,8,9,18,21,27,Drehwurf
-2025,KOORDINATION,Drehwurf,point,f,10,11,27,30,36,Drehwurf
-2025,KOORDINATION,Schleuderball,meter,f,12,13,1700,1950,2200,Schleuderball
-2025,KOORDINATION,Schleuderball,meter,f,14,15,1950,2250,2550,Schleuderball
-2025,KOORDINATION,Schleuderball,meter,f,16,17,2200,2500,2800,Schleuderball
-2025,KOORDINATION,Seilspringen,point,f,6,7,10,15,25,Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
-2025,KOORDINATION,Seilspringen,point,f,8,9,10,15,25,Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
-2025,KOORDINATION,Seilspringen,point,f,10,11,20,30,40,Grundsprung vorwärts ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,f,12,13,10,20,30,Grundsprung rückwärts ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,f,14,15,10,15,20,Kreuzdurchschlag ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,f,16,17,10,15,20,Kreuzdurchschlag ohne Zwischensprung
-2025,KOORDINATION,Gerätturnen,bool,f,6,7,1,1,1,Schwbebalken
-2025,KOORDINATION,Gerätturnen,bool,f,8,9,1,1,1,Reck
-2025,KOORDINATION,Gerätturnen,bool,f,10,11,1,1,1,Ringe
-2025,KOORDINATION,Gerätturnen,bool,f,12,13,1,1,1,Boden
-2025,KOORDINATION,Gerätturnen,bool,f,14,15,1,1,1, Boden
-2025,KOORDINATION,Gerätturnen,bool,f,16,17,1,1,1, Boden
-2025,AUSDAUER,800 m Lauf,minute,m,6,7,340000,300000,255000,““
-2025,AUSDAUER,800 m Lauf,minute,m,8,9,325000,280000,235000,““
-2025,AUSDAUER,800 m Lauf,minute,m,10,11,305000,260000,215000,““
-2025,AUSDAUER,800 m Lauf,minute,m,12,13,285000,240000,195000,““
-2025,AUSDAUER,800 m Lauf,minute,m,14,15,260000,220000,180000,““
-2025,AUSDAUER,800 m Lauf,minute,m,16,17,245000,205000,165000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,6,7,600000,900000,1200000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,8,9,720000,1020000,1380000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,10,11,1020000,1500000,2100000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,12,13,1500000,2100000,2700000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,14,15,2100000,2700000,3600000,““
-2025,AUSDAUER,Dauer-/Geländelauf,minute,m,16,17,3300000,4200000,5400000,““
-2025,AUSDAUER,Schwimmen,minute,m,6,7,540000,440000,370000,200 m
-2025,AUSDAUER,Schwimmen,minute,m,8,9,480000,405000,340000,200 m
-2025,AUSDAUER,Schwimmen,minute,m,10,11,420000,380000,310000,200 m
-2025,AUSDAUER,Schwimmen,minute,m,12,13,810000,690000,585000,400 m
-2025,AUSDAUER,Schwimmen,minute,m,14,15,720000,615000,530000,400 m
-2025,AUSDAUER,Schwimmen,minute,m,16,17,660000,580000,500000,400 m
-2025,AUSDAUER,Radfahren,minute,m,8,9,1590000,1410000,1230000,5 km
-2025,AUSDAUER,Radfahren,minute,m,10,11,2910000,2460000,2010000,10 km
-2025,AUSDAUER,Radfahren,minute,m,12,13,2580000,2220000,1890000,10 km
-2025,AUSDAUER,Radfahren,minute,m,14,15,1920000,1680000,1440000,10 km
-2025,AUSDAUER,Radfahren,minute,m,16,17,1620000,1410000,1230000,10 km
-2025,KRAFT,Werfen,meter,m,6,7,1200,1500,1700,Schlagball(80g)
-2025,KRAFT,Werfen,meter,m,8,9,1700,2000,2300,Schlagball(80g)
-2025,KRAFT,Werfen,meter,m,10,11,2100,2500,2800,Schlagball(80g)
-2025,KRAFT,Werfen,meter,m,12,13,2600,3000,3300,Wurfball(200g)
-2025,KRAFT,Werfen,meter,m,14,15,3000,3400,3700,Wurfball(200g)
-2025,KRAFT,Werfen,meter,m,16,17,3400,3800,4200,Wurfball(200g)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,6,7,250,350,450,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,8,9,300,400,500,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,10,11,550,650,750,Medizinball(1kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,12,13,625,675,725,Kugelstoßen(3kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,14,15,700,750,800,Kugelstoßen(4kg)
-2025,KRAFT,Medizinball/Kugelstoßen,meter,m,16,17,750,800,850,Kugelstoßen(5kg)
-2025,KRAFT,Standweitsprung,meter,m,6,7,115,135,150,““
-2025,KRAFT,Standweitsprung,meter,m,8,9,130,150,165,““
-2025,KRAFT,Standweitsprung,meter,m,10,11,150,170,185,““
-2025,KRAFT,Standweitsprung,meter,m,12,13,170,190,205,““
-2025,KRAFT,Standweitsprung,meter,m,14,15,190,205,225,““
-2025,KRAFT,Standweitsprung,meter,m,16,17,205,220,240,““
-2025,KRAFT,Gerätturnen,bool,m,6,7,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,m,8,9,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,m,10,11,1,1,1,Barren
-2025,KRAFT,Gerätturnen,bool,m,12,13,1,1,1,Reck
-2025,KRAFT,Gerätturnen,bool,m,14,15,1,1,1,Boden
-2025,KRAFT,Gerätturnen,bool,m,16,17,1,1,1,Reck
-2025,SCHNELLIGKEIT,Laufen,second,m,6,7,7700,6800,6000,30m
-2025,SCHNELLIGKEIT,Laufen,second,m,8,9,7200,6400,5700,30m
-2025,SCHNELLIGKEIT,Laufen,second,m,10,11,10300,9300,8400,50m
-2025,SCHNELLIGKEIT,Laufen,second,m,12,13,9700,8900,8100,50m
-2025,SCHNELLIGKEIT,Laufen,second,m,14,15,17000,15400,14100,100m
-2025,SCHNELLIGKEIT,Laufen,second,m,16,17,16300,14800,13500,100m
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,6,7,46000,38000,30000,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,8,9,41000,33000,26000,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,10,11,36000,29000,22500,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,12,13,33000,27000,21000,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,14,15,31000,25500,20000,““
-2025,SCHNELLIGKEIT,25m Schwimmen,second,m,16,17,29500,24500,19000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,m,8,9,38000,33000,28000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,m,10,11,35000,30500,26000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,m,12,13,29500,26000,22500,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,m,14,15,24000,21500,19000,““
-2025,SCHNELLIGKEIT,200m Radfahren,second,m,16,17,22000,19500,17000,““
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,6,7,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,8,9,1,1,1,Boden
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,10,11,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,12,13,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,14,15,1,1,1,Sprung
-2025,SCHNELLIGKEIT,Gerätturnen,bool,m,16,17,1,1,1,Sprung
-2025,KOORDINATION,Hochsprung,meter,m,10,11,85,95,105,““
-2025,KOORDINATION,Hochsprung,meter,m,12,13,95,105,115,““
-2025,KOORDINATION,Hochsprung,meter,m,14,15,110,120,130,““
-2025,KOORDINATION,Hochsprung,meter,m,16,17,120,130,140,““
-2025,KOORDINATION,Zonenweitsprung,point,m,6,7,18,21,24,Zonenweitsprung
-2025,KOORDINATION,Zonenweitsprung,point,m,8,9,27,30,33,Zonenweitsprung
-2025,KOORDINATION,Weitsprung,meter,m,10,11,260,290,320,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,m,12,13,320,350,380,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,m,14,15,380,410,440,Weitsprung
-2025,KOORDINATION,Weitsprung,meter,m,16,17,430,460,490,Weitsprung
-2025,KOORDINATION,Drehwurf,point,m,6,7,15,18,24,Drehwurf
-2025,KOORDINATION,Drehwurf,point,m,8,9,21,27,33,Drehwurf
-2025,KOORDINATION,Drehwurf,point,m,10,11,33,39,45,Drehwurf
-2025,KOORDINATION,Schleuderball,meter,m,12,13,1950,2400,2750,Schleuderball
-2025,KOORDINATION,Schleuderball,meter,m,14,15,2350,2800,3200,Schleuderball
-2025,KOORDINATION,Schleuderball,meter,m,16,17,2750,3200,3650,Schleuderball
-2025,KOORDINATION,Seilspringen,point,m,6,7,10,15,25,Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
-2025,KOORDINATION,Seilspringen,point,m,8,9,10,15,25,Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
-2025,KOORDINATION,Seilspringen,point,m,10,11,20,30,40,Grundsprung vorwärts ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,m,12,13,10,20,30,Grundsprung rückwärts ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,m,14,15,10,15,20,Kreuzdurchschlag ohne Zwischensprung
-2025,KOORDINATION,Seilspringen,point,m,16,17,10,15,20,Kreuzdurchschlag ohne Zwischensprung
-2025,KOORDINATION,Gerätturnen,bool,m,6,7,1,1,1,Schwebebalken
-2025,KOORDINATION,Gerätturnen,bool,m,8,9,1,1,1,Reck
-2025,KOORDINATION,Gerätturnen,bool,m,10,11,1,1,1,Ringe
-2025,KOORDINATION,Gerätturnen,bool,m,12,13,1,1,1,Boden
-2025,KOORDINATION,Gerätturnen,bool,m,14,15,1,1,1,Boden
-2025,KOORDINATION,Gerätturnen,bool,m,16,17,1,1,1,Boden
+2025;AUSDAUER;800 m Lauf;minute;f;6;7;340000;300000;255000;““
+2025;AUSDAUER;800 m Lauf;minute;f;8;9;325000;290000;250000;““
+2025;AUSDAUER;800 m Lauf;minute;f;10;11;320000;280000;240000;““
+2025;AUSDAUER;800 m Lauf;minute;f;12;13;310000;265000;225000;““
+2025;AUSDAUER;800 m Lauf;minute;f;14;15;300000;260000;215000;““
+2025;AUSDAUER;800 m Lauf;minute;f;16;17;290000;245000;205000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;6;7;480000;720000;1020000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;8;9;600000;900000;1200000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;10;11;900000;1200000;1800000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;12;13;1200000;1800000;2400000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;14;15;1800000;2400000;3000000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;f;16;17;2700000;3600000;4500000;““
+2025;AUSDAUER;Schwimmen;minute;f;6;7;540000;460000;380000;200m
+2025;AUSDAUER;Schwimmen;minute;f;8;9;480000;420000;355000;200m
+2025;AUSDAUER;Schwimmen;minute;f;10;11;440000;385000;330000;200m
+2025;AUSDAUER;Schwimmen;minute;f;12;13;890000;775000;660000;400m
+2025;AUSDAUER;Schwimmen;minute;f;14;15;785000;700000;600000;400m
+2025;AUSDAUER;Schwimmen;minute;f;16;17;710000;630000;545000;400m
+2025;AUSDAUER;Radfahren;minute;f;8;9;1620000;1440000;1260000;5km
+2025;AUSDAUER;Radfahren;minute;f;10;11;3030000;2580000;1080000;10km
+2025;AUSDAUER;Radfahren;minute;f;12;13;2700000;2370000;2010000;10km
+2025;AUSDAUER;Radfahren;minute;f;14;15;2280000;1950;1710000;10km
+2025;AUSDAUER;Radfahren;minute;f;16;17;1950000;1710000;1500000;10km
+2025;KRAFT;Werfen;meter;f;6;7;600;900;1200;Schlagball(80g)
+2025;KRAFT;Werfen;meter;f;8;9;900;1200;1500;Schlagball(80g)
+2025;KRAFT;Werfen;meter;f;10;11;1100;1500;1800;Schlagball(80g)
+2025;KRAFT;Werfen;meter;f;12;13;1500;1800;2200;Schlagball(80g)
+2025;KRAFT;Werfen;meter;f;14;15;2000;2400;2700;Wurfball(200g)
+2025;KRAFT;Werfen;meter;f;16;17;2400;2700;3100;Wurfball(200g)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;6;7;250;350;450;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;8;9;300;400;500;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;10;11;500;600;700;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;12;13;475;525;575;Kugelstoßen(3kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;14;15;550;600;650;Kugelstoßen(4kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;f;16;17;575;625;675;Kugelstoßen(5kg)
+2025;KRAFT;Standweitsprung;meter;f;6;7;105;125;140;““
+2025;KRAFT;Standweitsprung;meter;f;8;9;115;130;150;““
+2025;KRAFT;Standweitsprung;meter;f;10;11;130;145;165;““
+2025;KRAFT;Standweitsprung;meter;f;12;13;140;160;180;““
+2025;KRAFT;Standweitsprung;meter;f;14;15;155;170;190;““
+2025;KRAFT;Standweitsprung;meter;f;16;17;165;180;200;““
+2025;KRAFT;Gerätturnen;bool;f;6;7;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;f;8;9;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;f;10;11;1;1;1;Barren
+2025;KRAFT;Gerätturnen;bool;f;12;13;1;1;1;Reck
+2025;KRAFT;Gerätturnen;bool;f;14;15;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;f;16;17;1;1;1;Reck
+2025;SCHNELLIGKEIT;Laufen;second;f;6;7;8000;7100;6300;30m
+2025;SCHNELLIGKEIT;Laufen;second;f;8;9;7400;6600;5700;30m
+2025;SCHNELLIGKEIT;Laufen;second;f;10;11;11000;10100;9100;50m
+2025;SCHNELLIGKEIT;Laufen;second;f;12;13;10600;9600;8500;50m
+2025;SCHNELLIGKEIT;Laufen;second;f;14;15;18600;17000;15500;100m
+2025;SCHNELLIGKEIT;Laufen;second;f;16;17;17600;16300;15000;100m
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;6;7;46500;38500;30500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;8;9;42000;34000;28000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;10;11;39000;31500;25500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;12;13;35000;29000;23500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;14;15;33000;27500;21500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;f;16;17;30500;25500;20000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;f;8;9;41000;36000;31000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;f;10;11;37000;32000;27000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;f;12;13;31000;27000;23500;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;f;14;15;27000;24500;21500;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;f;16;17;25000;22500;20000;““
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;6;7;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;8;9;1;1;1;Boden
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;10;11;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;12;13;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;14;15;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;f;16;17;1;1;1;Sprung
+2025;KOORDINATION;Hochsprung;meter;f;10;11;80;90;100;““
+2025;KOORDINATION;Hochsprung;meter;f;12;13;90;100;110;““
+2025;KOORDINATION;Hochsprung;meter;f;14;15;95;105;115;““
+2025;KOORDINATION;Hochsprung;meter;f;16;17;105;115;125;““
+2025;KOORDINATION;Zonenweitsprung;point;f;6;7;18;21;24;Zonenweitsprung
+2025;KOORDINATION;Zonenweitsprung;point;f;8;9;24;27;30;Zonenweitsprung
+2025;KOORDINATION;Weitsprung;meter;f;10;11;230;260;290;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;f;12;13;280;310;340;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;f;14;15;320;350;380;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;f;16;17;340;370;400;Weitsprung
+2025;KOORDINATION;Drehwurf;point;f;6;7;12;15;21;Drehwurf
+2025;KOORDINATION;Drehwurf;point;f;8;9;18;21;27;Drehwurf
+2025;KOORDINATION;Drehwurf;point;f;10;11;27;30;36;Drehwurf
+2025;KOORDINATION;Schleuderball;meter;f;12;13;1700;1950;2200;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;f;14;15;1950;2250;2550;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;f;16;17;2200;2500;2800;Schleuderball
+2025;KOORDINATION;Seilspringen;point;f;6;7;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;f;8;9;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;f;10;11;20;30;40;Grundsprung vorwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;f;12;13;10;20;30;Grundsprung rückwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;f;14;15;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;f;16;17;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Gerätturnen;bool;f;6;7;1;1;1;Schwbebalken
+2025;KOORDINATION;Gerätturnen;bool;f;8;9;1;1;1;Reck
+2025;KOORDINATION;Gerätturnen;bool;f;10;11;1;1;1;Ringe
+2025;KOORDINATION;Gerätturnen;bool;f;12;13;1;1;1;Boden
+2025;KOORDINATION;Gerätturnen;bool;f;14;15;1;1;1; Boden
+2025;KOORDINATION;Gerätturnen;bool;f;16;17;1;1;1; Boden
+2025;AUSDAUER;800 m Lauf;minute;m;6;7;340000;300000;255000;““
+2025;AUSDAUER;800 m Lauf;minute;m;8;9;325000;280000;235000;““
+2025;AUSDAUER;800 m Lauf;minute;m;10;11;305000;260000;215000;““
+2025;AUSDAUER;800 m Lauf;minute;m;12;13;285000;240000;195000;““
+2025;AUSDAUER;800 m Lauf;minute;m;14;15;260000;220000;180000;““
+2025;AUSDAUER;800 m Lauf;minute;m;16;17;245000;205000;165000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;6;7;600000;900000;1200000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;8;9;720000;1020000;1380000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;10;11;1020000;1500000;2100000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;12;13;1500000;2100000;2700000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;14;15;2100000;2700000;3600000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;m;16;17;3300000;4200000;5400000;““
+2025;AUSDAUER;Schwimmen;minute;m;6;7;540000;440000;370000;200 m
+2025;AUSDAUER;Schwimmen;minute;m;8;9;480000;405000;340000;200 m
+2025;AUSDAUER;Schwimmen;minute;m;10;11;420000;380000;310000;200 m
+2025;AUSDAUER;Schwimmen;minute;m;12;13;810000;690000;585000;400 m
+2025;AUSDAUER;Schwimmen;minute;m;14;15;720000;615000;530000;400 m
+2025;AUSDAUER;Schwimmen;minute;m;16;17;660000;580000;500000;400 m
+2025;AUSDAUER;Radfahren;minute;m;8;9;1590000;1410000;1230000;5 km
+2025;AUSDAUER;Radfahren;minute;m;10;11;2910000;2460000;2010000;10 km
+2025;AUSDAUER;Radfahren;minute;m;12;13;2580000;2220000;1890000;10 km
+2025;AUSDAUER;Radfahren;minute;m;14;15;1920000;1680000;1440000;10 km
+2025;AUSDAUER;Radfahren;minute;m;16;17;1620000;1410000;1230000;10 km
+2025;KRAFT;Werfen;meter;m;6;7;1200;1500;1700;Schlagball(80g)
+2025;KRAFT;Werfen;meter;m;8;9;1700;2000;2300;Schlagball(80g)
+2025;KRAFT;Werfen;meter;m;10;11;2100;2500;2800;Schlagball(80g)
+2025;KRAFT;Werfen;meter;m;12;13;2600;3000;3300;Wurfball(200g)
+2025;KRAFT;Werfen;meter;m;14;15;3000;3400;3700;Wurfball(200g)
+2025;KRAFT;Werfen;meter;m;16;17;3400;3800;4200;Wurfball(200g)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;6;7;250;350;450;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;8;9;300;400;500;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;10;11;550;650;750;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;12;13;625;675;725;Kugelstoßen(3kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;14;15;700;750;800;Kugelstoßen(4kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;m;16;17;750;800;850;Kugelstoßen(5kg)
+2025;KRAFT;Standweitsprung;meter;m;6;7;115;135;150;““
+2025;KRAFT;Standweitsprung;meter;m;8;9;130;150;165;““
+2025;KRAFT;Standweitsprung;meter;m;10;11;150;170;185;““
+2025;KRAFT;Standweitsprung;meter;m;12;13;170;190;205;““
+2025;KRAFT;Standweitsprung;meter;m;14;15;190;205;225;““
+2025;KRAFT;Standweitsprung;meter;m;16;17;205;220;240;““
+2025;KRAFT;Gerätturnen;bool;m;6;7;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;m;8;9;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;m;10;11;1;1;1;Barren
+2025;KRAFT;Gerätturnen;bool;m;12;13;1;1;1;Reck
+2025;KRAFT;Gerätturnen;bool;m;14;15;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;m;16;17;1;1;1;Reck
+2025;SCHNELLIGKEIT;Laufen;second;m;6;7;7700;6800;6000;30m
+2025;SCHNELLIGKEIT;Laufen;second;m;8;9;7200;6400;5700;30m
+2025;SCHNELLIGKEIT;Laufen;second;m;10;11;10300;9300;8400;50m
+2025;SCHNELLIGKEIT;Laufen;second;m;12;13;9700;8900;8100;50m
+2025;SCHNELLIGKEIT;Laufen;second;m;14;15;17000;15400;14100;100m
+2025;SCHNELLIGKEIT;Laufen;second;m;16;17;16300;14800;13500;100m
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;6;7;46000;38000;30000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;8;9;41000;33000;26000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;10;11;36000;29000;22500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;12;13;33000;27000;21000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;14;15;31000;25500;20000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;m;16;17;29500;24500;19000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;m;8;9;38000;33000;28000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;m;10;11;35000;30500;26000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;m;12;13;29500;26000;22500;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;m;14;15;24000;21500;19000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;m;16;17;22000;19500;17000;““
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;6;7;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;8;9;1;1;1;Boden
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;10;11;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;12;13;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;14;15;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;m;16;17;1;1;1;Sprung
+2025;KOORDINATION;Hochsprung;meter;m;10;11;85;95;105;““
+2025;KOORDINATION;Hochsprung;meter;m;12;13;95;105;115;““
+2025;KOORDINATION;Hochsprung;meter;m;14;15;110;120;130;““
+2025;KOORDINATION;Hochsprung;meter;m;16;17;120;130;140;““
+2025;KOORDINATION;Zonenweitsprung;point;m;6;7;18;21;24;Zonenweitsprung
+2025;KOORDINATION;Zonenweitsprung;point;m;8;9;27;30;33;Zonenweitsprung
+2025;KOORDINATION;Weitsprung;meter;m;10;11;260;290;320;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;m;12;13;320;350;380;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;m;14;15;380;410;440;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;m;16;17;430;460;490;Weitsprung
+2025;KOORDINATION;Drehwurf;point;m;6;7;15;18;24;Drehwurf
+2025;KOORDINATION;Drehwurf;point;m;8;9;21;27;33;Drehwurf
+2025;KOORDINATION;Drehwurf;point;m;10;11;33;39;45;Drehwurf
+2025;KOORDINATION;Schleuderball;meter;m;12;13;1950;2400;2750;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;m;14;15;2350;2800;3200;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;m;16;17;2750;3200;3650;Schleuderball
+2025;KOORDINATION;Seilspringen;point;m;6;7;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;m;8;9;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;m;10;11;20;30;40;Grundsprung vorwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;m;12;13;10;20;30;Grundsprung rückwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;m;14;15;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;m;16;17;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Gerätturnen;bool;m;6;7;1;1;1;Schwebebalken
+2025;KOORDINATION;Gerätturnen;bool;m;8;9;1;1;1;Reck
+2025;KOORDINATION;Gerätturnen;bool;m;10;11;1;1;1;Ringe
+2025;KOORDINATION;Gerätturnen;bool;m;12;13;1;1;1;Boden
+2025;KOORDINATION;Gerätturnen;bool;m;14;15;1;1;1;Boden
+2025;KOORDINATION;Gerätturnen;bool;m;16;17;1;1;1;Boden
+2025;AUSDAUER;800 m Lauf;minute;d;6;7;340000;300000;255000;““
+2025;AUSDAUER;800 m Lauf;minute;d;8;9;325000;280000;235000;““
+2025;AUSDAUER;800 m Lauf;minute;d;10;11;305000;260000;215000;““
+2025;AUSDAUER;800 m Lauf;minute;d;12;13;285000;240000;195000;““
+2025;AUSDAUER;800 m Lauf;minute;d;14;15;260000;220000;180000;““
+2025;AUSDAUER;800 m Lauf;minute;d;16;17;245000;205000;165000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;6;7;600000;900000;1200000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;8;9;720000;1020000;1380000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;10;11;1020000;1500000;2100000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;12;13;1500000;2100000;2700000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;14;15;2100000;2700000;3600000;““
+2025;AUSDAUER;Dauer-/Geländelauf;minute;d;16;17;3300000;4200000;5400000;““
+2025;AUSDAUER;Schwimmen;minute;d;6;7;540000;440000;370000;200 m
+2025;AUSDAUER;Schwimmen;minute;d;8;9;480000;405000;340000;200 m
+2025;AUSDAUER;Schwimmen;minute;d;10;11;420000;380000;310000;200 m
+2025;AUSDAUER;Schwimmen;minute;d;12;13;810000;690000;585000;400 m
+2025;AUSDAUER;Schwimmen;minute;d;14;15;720000;615000;530000;400 m
+2025;AUSDAUER;Schwimmen;minute;d;16;17;660000;580000;500000;400 m
+2025;AUSDAUER;Radfahren;minute;d;8;9;1590000;1410000;1230000;5 km
+2025;AUSDAUER;Radfahren;minute;d;10;11;2910000;2460000;2010000;10 km
+2025;AUSDAUER;Radfahren;minute;d;12;13;2580000;2220000;1890000;10 km
+2025;AUSDAUER;Radfahren;minute;d;14;15;1920000;1680000;1440000;10 km
+2025;AUSDAUER;Radfahren;minute;d;16;17;1620000;1410000;1230000;10 km
+2025;KRAFT;Werfen;meter;d;6;7;1200;1500;1700;Schlagball(80g)
+2025;KRAFT;Werfen;meter;d;8;9;1700;2000;2300;Schlagball(80g)
+2025;KRAFT;Werfen;meter;d;10;11;2100;2500;2800;Schlagball(80g)
+2025;KRAFT;Werfen;meter;d;12;13;2600;3000;3300;Wurfball(200g)
+2025;KRAFT;Werfen;meter;d;14;15;3000;3400;3700;Wurfball(200g)
+2025;KRAFT;Werfen;meter;d;16;17;3400;3800;4200;Wurfball(200g)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;6;7;250;350;450;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;8;9;300;400;500;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;10;11;550;650;750;Medizinball(1kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;12;13;625;675;725;Kugelstoßen(3kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;14;15;700;750;800;Kugelstoßen(4kg)
+2025;KRAFT;Medizinball/Kugelstoßen;meter;d;16;17;750;800;850;Kugelstoßen(5kg)
+2025;KRAFT;Standweitsprung;meter;d;6;7;115;135;150;““
+2025;KRAFT;Standweitsprung;meter;d;8;9;130;150;165;““
+2025;KRAFT;Standweitsprung;meter;d;10;11;150;170;185;““
+2025;KRAFT;Standweitsprung;meter;d;12;13;170;190;205;““
+2025;KRAFT;Standweitsprung;meter;d;14;15;190;205;225;““
+2025;KRAFT;Standweitsprung;meter;d;16;17;205;220;240;““
+2025;KRAFT;Gerätturnen;bool;d;6;7;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;d;8;9;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;d;10;11;1;1;1;Barren
+2025;KRAFT;Gerätturnen;bool;d;12;13;1;1;1;Reck
+2025;KRAFT;Gerätturnen;bool;d;14;15;1;1;1;Boden
+2025;KRAFT;Gerätturnen;bool;d;16;17;1;1;1;Reck
+2025;SCHNELLIGKEIT;Laufen;second;d;6;7;7700;6800;6000;30m
+2025;SCHNELLIGKEIT;Laufen;second;d;8;9;7200;6400;5700;30m
+2025;SCHNELLIGKEIT;Laufen;second;d;10;11;10300;9300;8400;50m
+2025;SCHNELLIGKEIT;Laufen;second;d;12;13;9700;8900;8100;50m
+2025;SCHNELLIGKEIT;Laufen;second;d;14;15;17000;15400;14100;100m
+2025;SCHNELLIGKEIT;Laufen;second;d;16;17;16300;14800;13500;100m
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;6;7;46000;38000;30000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;8;9;41000;33000;26000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;10;11;36000;29000;22500;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;12;13;33000;27000;21000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;14;15;31000;25500;20000;““
+2025;SCHNELLIGKEIT;25m Schwimmen;second;d;16;17;29500;24500;19000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;d;8;9;38000;33000;28000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;d;10;11;35000;30500;26000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;d;12;13;29500;26000;22500;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;d;14;15;24000;21500;19000;““
+2025;SCHNELLIGKEIT;200m Radfahren;second;d;16;17;22000;19500;17000;““
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;6;7;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;8;9;1;1;1;Boden
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;10;11;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;12;13;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;14;15;1;1;1;Sprung
+2025;SCHNELLIGKEIT;Gerätturnen;bool;d;16;17;1;1;1;Sprung
+2025;KOORDINATION;Hochsprung;meter;d;10;11;85;95;105;““
+2025;KOORDINATION;Hochsprung;meter;d;12;13;95;105;115;““
+2025;KOORDINATION;Hochsprung;meter;d;14;15;110;120;130;““
+2025;KOORDINATION;Hochsprung;meter;d;16;17;120;130;140;““
+2025;KOORDINATION;Zonenweitsprung;point;d;6;7;18;21;24;Zonenweitsprung
+2025;KOORDINATION;Zonenweitsprung;point;d;8;9;27;30;33;Zonenweitsprung
+2025;KOORDINATION;Weitsprung;meter;d;10;11;260;290;320;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;d;12;13;320;350;380;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;d;14;15;380;410;440;Weitsprung
+2025;KOORDINATION;Weitsprung;meter;d;16;17;430;460;490;Weitsprung
+2025;KOORDINATION;Drehwurf;point;d;6;7;15;18;24;Drehwurf
+2025;KOORDINATION;Drehwurf;point;d;8;9;21;27;33;Drehwurf
+2025;KOORDINATION;Drehwurf;point;d;10;11;33;39;45;Drehwurf
+2025;KOORDINATION;Schleuderball;meter;d;12;13;1950;2400;2750;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;d;14;15;2350;2800;3200;Schleuderball
+2025;KOORDINATION;Schleuderball;meter;d;16;17;2750;3200;3650;Schleuderball
+2025;KOORDINATION;Seilspringen;point;d;6;7;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;d;8;9;10;15;25;Grundsprung vorwärts mit oder ohne Zwischensprung ODER Galoppsprung
+2025;KOORDINATION;Seilspringen;point;d;10;11;20;30;40;Grundsprung vorwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;d;12;13;10;20;30;Grundsprung rückwärts ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;d;14;15;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Seilspringen;point;d;16;17;10;15;20;Kreuzdurchschlag ohne Zwischensprung
+2025;KOORDINATION;Gerätturnen;bool;d;6;7;1;1;1;Schwebebalken
+2025;KOORDINATION;Gerätturnen;bool;d;8;9;1;1;1;Reck
+2025;KOORDINATION;Gerätturnen;bool;d;10;11;1;1;1;Ringe
+2025;KOORDINATION;Gerätturnen;bool;d;12;13;1;1;1;Boden
+2025;KOORDINATION;Gerätturnen;bool;d;14;15;1;1;1;Boden
+2025;KOORDINATION;Gerätturnen;bool;d;16;17;1;1;1;Boden
