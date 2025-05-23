@@ -10,6 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type CreatePerformanceResponse struct {
@@ -119,33 +121,46 @@ func CreatePerformance(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the athlete's age"})
 		return
 	}
+	// Check if the exercise goal exists for the athlete's age
+	exists, err7 := exerciseGoalExistsForAge(ctx, body.ExerciseId, age, strconv.Itoa(time.Now().Year()))
+	if err7 != nil {
+		endpoints.Logger.Error(ctx, err7)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to check exercise goal"})
+		return
+	}
+	if !exists {
+		err8 := errors.New("No exercise goal found for the athlete's age")
+		endpoints.Logger.Debug(ctx, err8)
+		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goal found for the athlete's age"})
+		return
+	}
 
 	// Translate the performance body to a database entry
 	performanceBodies := make([]PerformanceBody, 1)
 	performanceBodies[0] = body
-	performanceEntries, err7 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
-	if errors.Is(err7, gorm.ErrRecordNotFound) {
-		err7 = errors.Wrap(err7, "No exercise goals for this athlete found")
-		endpoints.Logger.Debug(ctx, err7)
+	performanceEntries, err9 := translatePerformanceBodies(ctx, performanceBodies, age, athlete.Sex)
+	if errors.Is(err9, gorm.ErrRecordNotFound) {
+		err9 = errors.Wrap(err9, "No exercise goals for this athlete found")
+		endpoints.Logger.Debug(ctx, err9)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "No exercise goals found for this athlete"})
 		return
-	} else if err7 != nil {
-		endpoints.Logger.Error(ctx, err7)
+	} else if err9 != nil {
+		endpoints.Logger.Error(ctx, err9)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to get the goals for this athlete"})
 		return
 	}
 
 	// Create performance entry in the database
-	err8 := createNewPerformances(ctx, performanceEntries)
-	if errors.Is(err8, databaseUtils.ErrForeignKeyViolation) {
-		err8 = errors.Wrap(err8, "Athlete or exercise does not exist")
-		endpoints.Logger.Debug(ctx, err8)
+	err10 := createNewPerformances(ctx, performanceEntries)
+	if errors.Is(err10, databaseUtils.ErrForeignKeyViolation) {
+		err10 = errors.Wrap(err10, "Athlete or exercise does not exist")
+		endpoints.Logger.Debug(ctx, err10)
 		c.AbortWithStatusJSON(http.StatusNotFound, endpoints.ErrorResponse{Error: "Athlete or exercise does not exist"})
 		return
 	}
-	if err8 != nil {
-		err8 = errors.Wrap(err8, "Failed to create the performance entry")
-		endpoints.Logger.Error(ctx, err8)
+	if err10 != nil {
+		err10 = errors.Wrap(err10, "Failed to create the performance entry")
+		endpoints.Logger.Error(ctx, err10)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, endpoints.ErrorResponse{Error: "Failed to create the performance entry"})
 		return
 	}
