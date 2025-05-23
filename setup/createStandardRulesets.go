@@ -59,7 +59,7 @@ func CreateStandardRulesets(ctx context.Context) {
 
 func read_csv_to_struct(ctx context.Context, file *os.File) ([]rulesetManagement.RulesetBody, error) {
 	reader := csv.NewReader(file)
-	reader.Comma = ','
+	reader.Comma = ';'
 
 	entries, errread := reader.ReadAll()
 	if errread != nil {
